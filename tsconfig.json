@@ -5,7 +5,8 @@
     "noImplicitAny": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["src/*"],
+      "@assets/*": ["assets/*"]
     },
     "skipLibCheck": true,
     "module": "ESNext",
