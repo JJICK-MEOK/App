@@ -5,7 +5,7 @@
     "noImplicitAny": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": [".*"]
+      "@/*": ["./*"]
     },
     "skipLibCheck": true,
     "module": "ESNext",
