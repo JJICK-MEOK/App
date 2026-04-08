@@ -22,12 +22,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   setToken: (token) => set({ accessToken: token }),
 
   logout: async () => {
-    await tokenStorage.clearAll();
-    set({ user: null, accessToken: null });
+    try {
+      await tokenStorage.clearAll();
+    } finally {
+      set({ user: null, accessToken: null });
+    }
   },
 
   initAuth: async () => {
-    const token = await tokenStorage.getAccessToken();
-    if (token) set({ accessToken: token });
+    try {
+      const token = await tokenStorage.getAccessToken();
+      set({ accessToken: token ?? null });
+    } catch {
+      set({ accessToken: null });
+    }
   },
 }));

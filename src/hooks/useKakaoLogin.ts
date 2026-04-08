@@ -27,18 +27,25 @@ export const useKakaoLogin = () => {
   );
 
   const login = async () => {
-    const result = await promptAsync();
-    if (result.type !== 'success') return;
+    if (!request) return;
+    try {
+      const result = await promptAsync();
+      if (result.type !== 'success') return;
 
-    const { code } = result.params;
-    const { accessToken, refreshToken, user } = await postKakaoLogin(code);
+      const code = result.params?.code;
+      if (!code) throw new Error('Missing Kakao authorization code');
 
-    await Promise.all([
-      tokenStorage.saveAccessToken(accessToken),
-      tokenStorage.saveRefreshToken(refreshToken),
-    ]);
-    setToken(accessToken);
-    setUser(user);
+      const { accessToken, refreshToken, user } = await postKakaoLogin(code);
+      await Promise.all([
+        tokenStorage.saveAccessToken(accessToken),
+        tokenStorage.saveRefreshToken(refreshToken),
+      ]);
+      setToken(accessToken);
+      setUser(user);
+    } catch (error) {
+      console.error('Kakao login failed', error);
+      throw error;
+    }
   };
 
   return { login, isReady: !!request };
