@@ -32,7 +32,7 @@ export default {
     plugins: ['expo-router', 'expo-web-browser', 'expo-secure-store'],
     extra: {
       eas: {
-        projectId: '1a606ff9-09bc-4dd1-9121-8a8d7ca1572f',
+        projectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID,
       },
     },
   },
