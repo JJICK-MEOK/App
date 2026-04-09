@@ -8,6 +8,7 @@ import { useToggle } from './useToggle';
  * 기능:
  * - open / close 상태 관리
  * - ESC로 닫기
+ * - outside click 감지
  *
  * @example
  * const { isOpen, open, close } = useModal();
