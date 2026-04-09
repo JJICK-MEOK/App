@@ -1,15 +1,20 @@
 /**
  * 필수 입력 검사 함수
  *
- * @param {string} value - 검사할 값
- * @returns {string} 에러 메시지, 값이 없으면 '필수 입력' 반환, 있으면 빈 문자열
+ * 기능
+ * - 값이 비어있거나 공백만 있는 경우 '필수 입력' 에러 반환
+ * - 값이 존재하면 빈 문자열 반환
+ *
+ * @param {string} value - 검사할 문자열 값
+ * @returns {string} 에러 메시지
  *
  * @example
- * const error = required(''); // '필수 입력'
- * const ok = required('hello'); // ''
+ * const error1 = required('');   // '필수 입력'
+ * const error2 = required('   '); // '필수 입력' (공백만 있는 경우)
+ * const ok = required('hello');  // '' (유효한 입력)
  */
 export const required = (value: string) => {
-  if (!value) return '필수 입력';
+  if (!value?.trim()) return '필수 입력';
   return '';
 };
 
