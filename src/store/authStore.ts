@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { tokenStorage } from '@/src/lib/secureStore';
 
 interface AuthState {
   user: null | {
@@ -9,7 +10,8 @@ interface AuthState {
 
   setUser: (user: AuthState['user']) => void;
   setToken: (token: string | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
+  initAuth: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,9 +21,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   setUser: (user) => set({ user }),
   setToken: (token) => set({ accessToken: token }),
 
-  logout: () =>
-    set({
-      user: null,
-      accessToken: null,
-    }),
+  logout: async () => {
+    try {
+      await tokenStorage.clearAll();
+    } finally {
+      set({ user: null, accessToken: null });
+    }
+  },
+
+  initAuth: async () => {
+    try {
+      const token = await tokenStorage.getAccessToken();
+      set({ accessToken: token ?? null });
+    } catch {
+      set({ accessToken: null });
+    }
+  },
 }));
