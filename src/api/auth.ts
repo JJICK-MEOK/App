@@ -14,7 +14,10 @@ export const postGoogleLogin = async (code: string): Promise<SocialLoginResponse
   return data;
 };
 
-export const postKakaoLogin = async (code: string): Promise<SocialLoginResponse> => {
-  const { data } = await api.post('/auth/kakao', { code });
+export const postKakaoLogin = async (
+  code: string,
+  redirectUri: string,
+): Promise<SocialLoginResponse> => {
+  const { data } = await api.post('/auth/kakao', { code, redirectUri });
   return data;
 };

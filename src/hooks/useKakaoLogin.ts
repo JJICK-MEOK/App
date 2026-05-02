@@ -1,41 +1,19 @@
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
+import { useState } from 'react';
 import { postKakaoLogin } from '@/src/api/auth';
+import { KAKAO_REDIRECT_URI } from '@/src/components/KakaoWebView/KakaoWebView';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
 
-WebBrowser.maybeCompleteAuthSession();
-
-const discovery = {
-  authorizationEndpoint: 'https://kauth.kakao.com/oauth/authorize',
-  tokenEndpoint: 'https://kauth.kakao.com/oauth/token',
-};
-
 export const useKakaoLogin = () => {
+  const [showWebView, setShowWebView] = useState(false);
   const { setUser, setToken } = useAuthStore();
 
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'jjick-meok' });
+  const login = () => setShowWebView(true);
 
-  const [request, , promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: process.env.EXPO_PUBLIC_KAKAO_APP_KEY!,
-      redirectUri,
-      scopes: ['profile_nickname', 'account_email'],
-      responseType: AuthSession.ResponseType.Code,
-    },
-    discovery,
-  );
-
-  const login = async () => {
-    if (!request) return;
+  const handleCode = async (code: string) => {
+    setShowWebView(false);
     try {
-      const result = await promptAsync();
-      if (result.type !== 'success') return;
-
-      const code = result.params?.code;
-      if (!code) throw new Error('Missing Kakao authorization code');
-
-      const { accessToken, refreshToken, user } = await postKakaoLogin(code);
+      const { accessToken, refreshToken, user } = await postKakaoLogin(code, KAKAO_REDIRECT_URI);
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
@@ -48,5 +26,10 @@ export const useKakaoLogin = () => {
     }
   };
 
-  return { login, isReady: !!request };
+  return {
+    login,
+    showWebView,
+    onWebViewSuccess: handleCode,
+    onWebViewClose: () => setShowWebView(false),
+  };
 };

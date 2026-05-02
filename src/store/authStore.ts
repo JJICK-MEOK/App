@@ -7,6 +7,7 @@ interface AuthState {
     name: string;
   };
   accessToken: string | null;
+  isInitialized: boolean;
 
   setUser: (user: AuthState['user']) => void;
   setToken: (token: string | null) => void;
@@ -17,6 +18,7 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
+  isInitialized: false,
 
   setUser: (user) => set({ user }),
   setToken: (token) => set({ accessToken: token }),
@@ -32,9 +34,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   initAuth: async () => {
     try {
       const token = await tokenStorage.getAccessToken();
-      set({ accessToken: token ?? null });
+      set({ accessToken: token ?? null, isInitialized: true });
     } catch {
-      set({ accessToken: null });
+      set({ accessToken: null, isInitialized: true });
     }
   },
 }));
