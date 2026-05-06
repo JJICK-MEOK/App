@@ -5,6 +5,7 @@ import { ThemeProvider } from 'styled-components/native';
 
 import { queryClient } from '@/src/lib/queryClient';
 import { useAuthStore } from '@/src/store/authStore';
+import { theme } from '@/src/constants/theme';
 
 export default function AppLayout() {
   const initAuth = useAuthStore((s) => s.initAuth);
@@ -15,7 +16,9 @@ export default function AppLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
+      <ThemeProvider theme={theme}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
