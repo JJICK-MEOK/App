@@ -8,7 +8,7 @@ type Props = {
   onPress: () => void;
 };
 
-export default function Chip({ label, selected = false, onPress }: Props) {
+export default function ChipChoice({ label, selected = false, onPress }: Props) {
   return (
     <TouchableOpacity
       onPress={onPress}
