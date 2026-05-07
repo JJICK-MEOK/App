@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   default: {
-    backgroundColor: '#CCCCCC',
+    backgroundColor: colors.disabled,
   },
   selected: {
     backgroundColor: colors.primary.sub,

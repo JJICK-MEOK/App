@@ -6,6 +6,7 @@ const palette = {
   black200: '#222222',
   gray600: '#666666',
   gray400: '#999999',
+  gray200: '#CCCCCC',
   gray100: '#DDDDDD',
   white: '#FFFFFF',
   red: '#FF0000',
@@ -28,6 +29,7 @@ export const colors = {
     default: palette.gray100,
     active: palette.black200,
   },
+  disabled: palette.gray200,
   neutral: {
     white: palette.white,
   },
