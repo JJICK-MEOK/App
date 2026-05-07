@@ -1,4 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Text } from 'react-native';
+import { colors } from '@/src/constants/colors';
+import { typography } from '@/src/constants/typography';
 import { TextField } from './TextField';
 
 const meta: Meta<typeof TextField> = {
@@ -36,5 +39,38 @@ export const ErrorFormat: Story = {
   args: {
     value: 'hello',
     errorMessage: '올바른 이메일 형식으로 입력해주세요',
+  },
+};
+
+export const Password: Story = {
+  args: {
+    placeholder: '비밀번호를 입력해주세요',
+    secureText: true,
+  },
+};
+
+export const PasswordError: Story = {
+  args: {
+    placeholder: '비밀번호를 입력해주세요',
+    secureText: true,
+    errorMessage: '비밀번호가 올바르지 않아요',
+  },
+};
+
+export const WithTimer: Story = {
+  args: {
+    placeholder: '인증번호 6자리',
+    rightElement: (
+      <Text
+        style={{
+          fontFamily: typography.family.base,
+          fontSize: typography.size.xs,
+          fontWeight: typography.weight.regular,
+          color: colors.text.error,
+        }}
+      >
+        3:00
+      </Text>
+    ),
   },
 };
