@@ -1,5 +1,7 @@
 import { TouchableOpacity, Image, StyleSheet } from 'react-native';
 import NaverSvg from '@/assets/images/Login_Naver.svg';
+import KakaoImage from '@/assets/images/Login_Kakao.png';
+import GoogleImage from '@/assets/images/Login_Google.png';
 
 type Provider = 'google' | 'kakao' | 'naver';
 
@@ -18,11 +20,7 @@ export default function SocialLoginButton({ provider, onPress, size = SIZE }: Pr
         <NaverSvg width={size} height={size} />
       ) : (
         <Image
-          source={
-            provider === 'kakao'
-              ? require('@/assets/images/Login_Kakao.png')
-              : require('@/assets/images/Login_Google.png')
-          }
+          source={provider === 'kakao' ? KakaoImage : GoogleImage}
           style={[styles.image, { width: size, height: size }]}
           resizeMode="contain"
         />
