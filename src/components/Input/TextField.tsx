@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
     fontWeight: typography.weight.regular,
     color: colors.text.primary,
     lineHeight: 20,
+    outlineWidth: 0,
   },
   errorText: {
     fontFamily: typography.family.base,
