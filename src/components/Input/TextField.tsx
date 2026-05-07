@@ -10,6 +10,7 @@ type TextFieldProps = Omit<TextInputProps, 'style'> & {
   errorMessage?: string;
   secureText?: boolean;
   rightElement?: ReactNode;
+  disabled?: boolean;
 };
 
 export const TextField = ({
@@ -17,6 +18,7 @@ export const TextField = ({
   errorMessage,
   secureText,
   rightElement,
+  disabled,
   onFocus,
   onBlur,
   ...props
@@ -31,13 +33,17 @@ export const TextField = ({
       ? colors.border.active
       : colors.border.default;
 
+  const bgColor = disabled ? '#F5F5F5' : colors.neutral.white;
+  const textColor = disabled ? colors.disabled : colors.text.primary;
+
   return (
     <View style={[styles.wrapper, hasError ? styles.wrapperError : styles.wrapperDefault]}>
-      <View style={[styles.inputRow, { borderColor }]}>
+      <View style={[styles.inputRow, { borderColor, backgroundColor: bgColor }]}>
         <TextInput
-          style={styles.input}
-          placeholderTextColor={colors.text.tertiary}
+          style={[styles.input, { color: textColor }]}
+          placeholderTextColor={disabled ? colors.disabled : colors.text.tertiary}
           secureTextEntry={secureText && !isPasswordVisible}
+          editable={!disabled}
           onFocus={(e) => {
             setIsFocused(true);
             onFocus?.(e);
