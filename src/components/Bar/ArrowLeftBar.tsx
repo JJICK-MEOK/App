@@ -31,11 +31,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   title: {
-    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
     textAlign: 'center',
     fontFamily: typography.family.base,
     fontSize: typography.size.xl,
     fontWeight: typography.weight.bold,
     color: colors.text.primary,
+    includeFontPadding: false,
+    lineHeight: typography.size.xl,
   },
 });
