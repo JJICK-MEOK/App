@@ -21,7 +21,7 @@ export default function ProgressBar({ step, totalSteps = 4 }: Props) {
 
 const styles = StyleSheet.create({
   track: {
-    width: 335,
+    width: '100%',
     height: 2,
     backgroundColor: colors.border.default,
     borderRadius: 1,

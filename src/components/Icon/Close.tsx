@@ -11,7 +11,13 @@ type Props = {
 
 export default function Close({ variant = 'md', onPress }: Props) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={8}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      hitSlop={variant === 'sm' ? 17 : 8}
+      accessibilityRole="button"
+      accessibilityLabel="닫기"
+    >
       {variant === 'md' ? (
         <CloseLargeSvg width={30} height={30} />
       ) : (

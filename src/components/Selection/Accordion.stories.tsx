@@ -45,27 +45,27 @@ export const Expanded: Story = {
   ),
 };
 
-export const Interactive: Story = {
-  render: () => {
-    const [expanded, setExpanded] = useState(false);
-    const [selected, setSelected] = useState<string[]>([]);
+function InteractiveTemplate() {
+  const [expanded, setExpanded] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
-    const handleDistrictToggle = (district: string) => {
-      setSelected((prev) =>
-        prev.includes(district) ? prev.filter((d) => d !== district) : [...prev, district]
-      );
-    };
-
-    return (
-      <Accordion
-        city="서울"
-        position="topLeft"
-        districts={SEOUL_DISTRICTS}
-        expanded={expanded}
-        selectedDistricts={selected}
-        onToggle={() => setExpanded((prev) => !prev)}
-        onDistrictToggle={handleDistrictToggle}
-      />
+  const handleDistrictToggle = (district: string) => {
+    setSelected((prev) =>
+      prev.includes(district) ? prev.filter((d) => d !== district) : [...prev, district]
     );
-  },
-};
+  };
+
+  return (
+    <Accordion
+      city="서울"
+      position="topLeft"
+      districts={SEOUL_DISTRICTS}
+      expanded={expanded}
+      selectedDistricts={selected}
+      onToggle={() => setExpanded((prev) => !prev)}
+      onDistrictToggle={handleDistrictToggle}
+    />
+  );
+}
+
+export const Interactive: Story = { render: InteractiveTemplate };

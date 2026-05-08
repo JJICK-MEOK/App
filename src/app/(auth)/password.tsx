@@ -66,7 +66,7 @@ export default function PasswordScreen() {
           <Text style={styles.conditionsTitle}>비밀번호 조건</Text>
           {CONDITIONS.map((condition, i) => (
             <View key={condition.key} style={styles.conditionRow}>
-              <Checkbox checked={conditionsMet[i]} onPress={() => {}} size={24} />
+              <Checkbox checked={conditionsMet[i]} readOnly size={24} />
               <Text style={[styles.conditionText, conditionsMet[i] && styles.conditionTextMet]}>
                 {condition.label}
               </Text>

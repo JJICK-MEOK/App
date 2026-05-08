@@ -29,9 +29,9 @@ export const WithValue: Story = {
   args: { value: '직장인이에요' },
 };
 
-export const Interactive: Story = {
-  render: (args) => {
-    const [value, setValue] = useState<string>();
-    return <SelectField {...args} value={value} onChange={setValue} />;
-  },
-};
+function InteractiveTemplate(args: React.ComponentProps<typeof SelectField>) {
+  const [value, setValue] = useState<string>();
+  return <SelectField {...args} value={value} onChange={setValue} />;
+}
+
+export const Interactive: Story = { render: InteractiveTemplate };

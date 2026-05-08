@@ -20,7 +20,7 @@ export default function EmailVerifyScreen() {
   const { email } = useLocalSearchParams<{ email: string }>();
   const [code, setCode] = useState('');
 
-  const isValid = code.length > 0;
+  const isValid = code.length === 6;
 
   return (
     <KeyboardAvoidingView
@@ -53,7 +53,7 @@ export default function EmailVerifyScreen() {
         />
         <View style={styles.resendRow}>
           <Text style={styles.resendCaption}>인증번호를 받지 못했나요?</Text>
-          <TouchableOpacity activeOpacity={0.7}>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => {}}>
             <Text style={styles.resendLink}>재전송</Text>
           </TouchableOpacity>
         </View>

@@ -11,11 +11,22 @@ type Props = {
   size?: number;
 };
 
+const LABEL: Record<Provider, string> = {
+  google: '구글로 로그인',
+  kakao: '카카오로 로그인',
+  naver: '네이버로 로그인',
+};
+
 const SIZE = 55;
 
 export default function SocialLoginButton({ provider, onPress, size = SIZE }: Props) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={LABEL[provider]}
+    >
       {provider === 'naver' ? (
         <NaverSvg width={size} height={size} />
       ) : (

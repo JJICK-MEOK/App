@@ -12,7 +12,13 @@ export default function ChipFilter({ label, onRemove }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity onPress={onRemove} activeOpacity={0.7} hitSlop={6}>
+      <TouchableOpacity
+        onPress={onRemove}
+        activeOpacity={0.7}
+        hitSlop={6}
+        accessibilityRole="button"
+        accessibilityLabel={`${label} 삭제`}
+      >
         <CloseSmallSvg width={10} height={10} />
       </TouchableOpacity>
     </View>

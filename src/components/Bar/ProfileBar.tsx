@@ -14,7 +14,13 @@ export default function ProfileBar({ title, onClose }: Props) {
     <View style={styles.container}>
       <View style={styles.placeholder} />
       <Text style={styles.title}>{title}</Text>
-      <TouchableOpacity onPress={onClose} activeOpacity={0.7} hitSlop={12}>
+      <TouchableOpacity
+        onPress={onClose}
+        activeOpacity={0.7}
+        hitSlop={12}
+        accessibilityRole="button"
+        accessibilityLabel="닫기"
+      >
         <CloseSvg width={30} height={30} />
       </TouchableOpacity>
     </View>
