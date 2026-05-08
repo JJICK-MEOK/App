@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -15,7 +16,9 @@ export default function LoginScreen() {
       locations={[0, 0.5, 1]}
       style={styles.container}
     >
-      <Text style={styles.title}>{'나에게 맞는\n새로운 경험의 시작'}</Text>
+      <Typography size="xxxl" weight="bold" style={styles.title}>
+        {'나에게 맞는\n새로운 경험의 시작'}
+      </Typography>
 
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
@@ -25,17 +28,19 @@ export default function LoginScreen() {
 
       <View style={styles.divider}>
         <View style={styles.dividerLine} />
-        <Text style={styles.dividerText}>또는</Text>
+        <Typography size="lg" color="secondary">
+          또는
+        </Typography>
         <View style={styles.dividerLine} />
       </View>
 
-      <View style={styles.cta}>
+      <CTAContainer>
         <BottomCTA
           label="이메일로 시작하기"
           onPress={() => router.push('/(auth)/email-login')}
           variant="white"
         />
-      </View>
+      </CTAContainer>
     </LinearGradient>
   );
 }
@@ -46,10 +51,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xxxl,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
     lineHeight: 32,
     marginTop: 121,
   },
@@ -70,14 +71,5 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: colors.border.default,
-  },
-  dividerText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
-  },
-  cta: {
-    paddingBottom: 45,
   },
 });

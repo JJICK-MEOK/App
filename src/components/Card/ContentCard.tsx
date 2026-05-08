@@ -1,8 +1,8 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import ChipTag from '@/src/components/Chip/ChipTag';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 const SURFACE_COLOR = '#F5F5F5';
 
@@ -26,10 +26,12 @@ export const ContentCard = ({ title, subtitle, imageUri, tags, onPress }: Conten
 
         <View style={styles.info}>
           <View style={styles.titleArea}>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle} numberOfLines={1}>
+            <Typography size="lg" weight="bold">
+              {title}
+            </Typography>
+            <Typography size="sm" color="secondary" numberOfLines={1}>
               {subtitle}
-            </Text>
+            </Typography>
           </View>
 
           <View style={styles.tags}>
@@ -72,18 +74,6 @@ const styles = StyleSheet.create({
   },
   titleArea: {
     gap: 5,
-  },
-  title: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
-  },
-  subtitle: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
   },
   tags: {
     flexDirection: 'row',

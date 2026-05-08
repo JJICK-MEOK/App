@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Icon from '@/src/components/Icon/Icon';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type SelectFieldProps = {
   options: string[];
@@ -12,11 +12,16 @@ type SelectFieldProps = {
   onChange: (value: string) => void;
 };
 
-export const SelectField = ({ options, value, placeholder = '선택하세요', onChange }: SelectFieldProps) => {
+export const SelectField = ({
+  options,
+  value,
+  placeholder = '선택하세요',
+  onChange,
+}: SelectFieldProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const displayText = value ?? placeholder;
-  const otherOptions = options.filter(opt => opt !== value);
+  const otherOptions = options.filter((opt) => opt !== value);
 
   const handleSelect = (option: string) => {
     onChange(option);
@@ -25,8 +30,10 @@ export const SelectField = ({ options, value, placeholder = '선택하세요', o
 
   return (
     <View style={styles.container}>
-      <Pressable style={styles.header} onPress={() => setIsOpen(prev => !prev)}>
-        <Text style={styles.optionText}>{displayText}</Text>
+      <Pressable style={styles.header} onPress={() => setIsOpen((prev) => !prev)}>
+        <Typography size="md" color="tertiary" style={styles.optionText}>
+          {displayText}
+        </Typography>
         <View style={isOpen ? styles.iconOpen : styles.iconClosed}>
           <Icon name="arrowDown" />
         </View>
@@ -40,7 +47,9 @@ export const SelectField = ({ options, value, placeholder = '선택하세요', o
               onPress={() => handleSelect(option)}
               style={idx > 0 ? styles.optionItem : styles.optionItemFirst}
             >
-              <Text style={styles.optionText}>{option}</Text>
+              <Typography size="md" color="tertiary" style={styles.optionText}>
+                {option}
+              </Typography>
             </Pressable>
           ))}
         </View>
@@ -66,10 +75,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   optionText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.regular,
-    color: colors.text.tertiary,
     lineHeight: 20,
   },
   iconClosed: {

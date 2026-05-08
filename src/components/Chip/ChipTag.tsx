@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   label: string;
@@ -10,7 +10,7 @@ type Props = {
 export default function ChipTag({ label, onPress }: Props) {
   const content = (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Typography size="xs">{label}</Typography>
     </View>
   );
 
@@ -34,10 +34,5 @@ const styles = StyleSheet.create({
     borderColor: colors.border.default,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  label: {
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
   },
 });

@@ -1,19 +1,14 @@
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
 
 export default function EmailLoginScreen() {
   const router = useRouter();
@@ -23,16 +18,15 @@ export default function EmailLoginScreen() {
   const isFormValid = email.trim().length > 0 && password.length > 0;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="이메일로 로그인" />
 
       <View style={styles.content}>
         <View style={styles.form}>
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>이메일</Text>
+            <Typography size="lg" style={styles.label}>
+              이메일
+            </Typography>
             <TextField
               placeholder="example@email.com"
               value={email}
@@ -43,7 +37,9 @@ export default function EmailLoginScreen() {
             />
           </View>
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>비밀번호</Text>
+            <Typography size="lg" style={styles.label}>
+              비밀번호
+            </Typography>
             <TextField
               placeholder="••••••••"
               value={password}
@@ -53,7 +49,7 @@ export default function EmailLoginScreen() {
           </View>
         </View>
 
-        <View style={styles.ctaArea}>
+        <CTAContainer style={styles.ctaArea}>
           <BottomCTA
             label="로그인"
             onPress={() => router.replace('/(tabs)')}
@@ -61,20 +57,23 @@ export default function EmailLoginScreen() {
             disabled={!isFormValid}
           />
           <View style={styles.signupSection}>
-            <Text style={styles.signupCaption}>아직 계정이 없나요?</Text>
+            <Typography size="sm" color="secondary">
+              아직 계정이 없나요?
+            </Typography>
             <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
-              <Text style={styles.signupLink}>이메일로 회원가입</Text>
+              <Typography size="sm" weight="bold" style={styles.signupLink}>
+                이메일로 회원가입
+              </Typography>
             </TouchableOpacity>
           </View>
-        </View>
+        </CTAContainer>
       </View>
-    </KeyboardAvoidingView>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.neutral.white,
   },
   content: {
@@ -89,11 +88,7 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   label: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
-    lineHeight: typography.lineHeight.relaxed,
+    lineHeight: 24,
   },
   ctaArea: {
     paddingTop: 79,
@@ -104,17 +99,7 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: spacing.sm,
   },
-  signupCaption: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
-  },
   signupLink: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
     textDecorationLine: 'underline',
   },
 });

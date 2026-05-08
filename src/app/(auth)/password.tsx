@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import Checkbox from '@/src/components/Icon/Checkbox';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { radius, spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
@@ -29,10 +32,7 @@ export default function PasswordScreen() {
   const isComplete = allMet && passwordsMatch;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="비밀번호 만들기" />
 
       <ScrollView
@@ -42,7 +42,9 @@ export default function PasswordScreen() {
       >
         <View style={styles.form}>
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>비밀번호</Text>
+            <Typography size="lg" style={styles.label}>
+              비밀번호
+            </Typography>
             <TextField
               placeholder="영문, 숫자, 특수문자 포함 8자 이상"
               value={password}
@@ -51,7 +53,9 @@ export default function PasswordScreen() {
             />
           </View>
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>비밀번호 확인</Text>
+            <Typography size="lg" style={styles.label}>
+              비밀번호 확인
+            </Typography>
             <TextField
               placeholder="비밀번호를 다시 입력해주세요"
               value={confirm}
@@ -63,39 +67,43 @@ export default function PasswordScreen() {
         </View>
 
         <View style={styles.conditionsBox}>
-          <Text style={styles.conditionsTitle}>비밀번호 조건</Text>
+          <Typography size="md" style={styles.conditionsTitle}>
+            비밀번호 조건
+          </Typography>
           {CONDITIONS.map((condition, i) => (
             <View key={condition.key} style={styles.conditionRow}>
               <Checkbox checked={conditionsMet[i]} readOnly size={24} />
-              <Text style={[styles.conditionText, conditionsMet[i] && styles.conditionTextMet]}>
+              <Typography
+                size="sm"
+                style={{ color: conditionsMet[i] ? colors.text.primary : colors.text.tertiary }}
+              >
                 {condition.label}
-              </Text>
+              </Typography>
             </View>
           ))}
         </View>
-
-        <View style={styles.cta}>
-          <BottomCTA
-            label="회원가입 완료"
-            onPress={() => router.push('/onboarding/step1')}
-            variant="primary"
-            disabled={!isComplete}
-          />
-        </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+
+      <CTAContainer style={styles.cta}>
+        <BottomCTA
+          label="회원가입 완료"
+          onPress={() => router.push('/onboarding/step1')}
+          variant="primary"
+          disabled={!isComplete}
+        />
+      </CTAContainer>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.neutral.white,
   },
   scrollContent: {
     paddingHorizontal: spacing.xl,
     paddingTop: 63,
-    paddingBottom: 45,
+    paddingBottom: 16,
   },
   form: {
     gap: 32,
@@ -104,10 +112,6 @@ const styles = StyleSheet.create({
     gap: 9,
   },
   label: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
     lineHeight: typography.lineHeight.relaxed,
   },
   conditionsBox: {
@@ -119,10 +123,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   conditionsTitle: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
     marginBottom: spacing.xs,
   },
   conditionRow: {
@@ -130,16 +130,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  conditionText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.tertiary,
-  },
-  conditionTextMet: {
-    color: colors.text.primary,
-  },
   cta: {
-    marginTop: 32,
+    paddingHorizontal: spacing.xl,
+    paddingTop: 16,
   },
 });

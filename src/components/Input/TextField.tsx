@@ -1,9 +1,10 @@
 import { ReactNode, useState } from 'react';
-import { StyleSheet, Text, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TextInput, TextInputProps, TouchableOpacity, View } from 'react-native';
 import Eyes from '@/src/components/Icon/Eyes';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type TextFieldProps = Omit<TextInputProps, 'style'> & {
   helperText?: string;
@@ -65,8 +66,16 @@ export const TextField = ({
         )}
         {!secureText && rightElement}
       </View>
-      {hasError && <Text style={styles.errorText}>{errorMessage}</Text>}
-      {!hasError && helperText && <Text style={styles.helperText}>{helperText}</Text>}
+      {hasError && (
+        <Typography size="xs" color="error">
+          {errorMessage}
+        </Typography>
+      )}
+      {!hasError && helperText && (
+        <Typography size="xs" color="secondary">
+          {helperText}
+        </Typography>
+      )}
     </View>
   );
 };
@@ -99,17 +108,5 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     lineHeight: 20,
     outlineWidth: 0,
-  },
-  errorText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.regular,
-    color: colors.text.error,
-  },
-  helperText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xs,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
   },
 });

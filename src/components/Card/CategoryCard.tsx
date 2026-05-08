@@ -1,7 +1,7 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import AddButton from '@/src/components/Button/AddButton';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type CategoryCardProps = {
   categoryName: string;
@@ -23,8 +23,12 @@ export const CategoryCard = ({
       <View style={styles.info}>
         <Image source={{ uri: imageUri }} style={styles.image} />
         <View style={styles.textArea}>
-          <Text style={styles.categoryName}>{categoryName}</Text>
-          <Text style={styles.subscriberText}>{subscriberText}</Text>
+          <Typography size="xl" style={styles.categoryName}>
+            {categoryName}
+          </Typography>
+          <Typography size="md" color="secondary" style={styles.subscriberText}>
+            {subscriberText}
+          </Typography>
         </View>
       </View>
 
@@ -56,17 +60,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   categoryName: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
     lineHeight: 26,
   },
   subscriberText: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
     lineHeight: 20,
   },
 });

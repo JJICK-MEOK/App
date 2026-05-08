@@ -1,8 +1,8 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import CloseSvg from '@/assets/images/Close.svg';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   title: string;
@@ -13,7 +13,9 @@ export default function ProfileBar({ title, onClose }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.placeholder} />
-      <Text style={styles.title}>{title}</Text>
+      <Typography size="xl" weight="bold" style={styles.title}>
+        {title}
+      </Typography>
       <TouchableOpacity
         onPress={onClose}
         activeOpacity={0.7}
@@ -45,8 +47,5 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     textAlign: 'center',
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
   },
 });

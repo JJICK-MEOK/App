@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type BottomCTAVariant = 'white' | 'primary' | 'dark';
 
@@ -43,7 +43,9 @@ export const BottomCTA = ({
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+      <Typography size="xl" style={[styles.label, { color: textColor }]}>
+        {label}
+      </Typography>
     </Pressable>
   );
 };
@@ -62,9 +64,6 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   label: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.regular,
     textAlign: 'center',
   },
 });

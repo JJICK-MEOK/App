@@ -1,19 +1,14 @@
 import { useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
 
 export default function EmailVerifyScreen() {
   const router = useRouter();
@@ -23,14 +18,13 @@ export default function EmailVerifyScreen() {
   const isValid = code.length === 6;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="이메일 인증" />
 
       <View style={styles.content}>
-        <Text style={styles.description}>입력한 이메일로 인증번호를 보내드렸어요</Text>
+        <Typography size="sm" color="tertiary" style={styles.description}>
+          입력한 이메일로 인증번호를 보내드렸어요
+        </Typography>
 
         <View style={styles.fields}>
           <TextField value={email ?? ''} disabled />
@@ -44,7 +38,7 @@ export default function EmailVerifyScreen() {
         </View>
       </View>
 
-      <View style={styles.cta}>
+      <CTAContainer style={styles.cta}>
         <BottomCTA
           label="인증번호 확인"
           onPress={() => router.push('/(auth)/password')}
@@ -52,19 +46,22 @@ export default function EmailVerifyScreen() {
           disabled={!isValid}
         />
         <View style={styles.resendRow}>
-          <Text style={styles.resendCaption}>인증번호를 받지 못했나요?</Text>
+          <Typography size="sm" color="secondary">
+            인증번호를 받지 못했나요?
+          </Typography>
           <TouchableOpacity activeOpacity={0.7} onPress={() => {}}>
-            <Text style={styles.resendLink}>재전송</Text>
+            <Typography size="sm" weight="bold" style={styles.resendLink}>
+              재전송
+            </Typography>
           </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </CTAContainer>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.neutral.white,
   },
   content: {
@@ -73,10 +70,6 @@ const styles = StyleSheet.create({
     paddingTop: 26,
   },
   description: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.tertiary,
     textAlign: 'center',
     marginBottom: 15,
   },
@@ -85,7 +78,6 @@ const styles = StyleSheet.create({
   },
   cta: {
     paddingHorizontal: spacing.xl,
-    paddingBottom: 45,
     paddingTop: 16,
     gap: spacing.md,
   },
@@ -95,17 +87,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 9,
   },
-  resendCaption: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.secondary,
-  },
   resendLink: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
     textDecorationLine: 'underline',
   },
 });

@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '@/src/components/Logo/Logo';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { typography } from '@/src/constants/typography';
 
@@ -22,7 +23,6 @@ export default function SplashScreen() {
       locations={[0, 0.5, 1]}
       style={styles.container}
     >
-      {/* 배경 장식 원 */}
       <View style={[styles.ellipse, styles.ellipseTopLeft]} />
       <View style={[styles.ellipse, styles.ellipseTopRight]} />
       <View style={[styles.ellipse, styles.ellipseBottomLeft]} />
@@ -30,7 +30,9 @@ export default function SplashScreen() {
       <View style={[styles.ellipse, styles.ellipseCenter]} />
 
       <View style={styles.content}>
-        <Text style={styles.subtitle}>나에게 맞는 활동을</Text>
+        <Typography size="lg" weight="semiBold" color="heading" style={styles.subtitle}>
+          나에게 맞는 활동을
+        </Typography>
         <Logo width={240} height={249} />
       </View>
     </LinearGradient>
@@ -89,10 +91,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   subtitle: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.semiBold,
-    color: colors.text.heading,
     letterSpacing: typography.letterSpacing.wide,
     marginBottom: 4,
   },

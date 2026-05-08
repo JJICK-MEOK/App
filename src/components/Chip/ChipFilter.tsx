@@ -1,7 +1,7 @@
-import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import CloseSmallSvg from '@/assets/images/CloseSmall.svg';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   label: string;
@@ -11,7 +11,7 @@ type Props = {
 export default function ChipFilter({ label, onRemove }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <Typography size="sm">{label}</Typography>
       <TouchableOpacity
         onPress={onRemove}
         activeOpacity={0.7}
@@ -35,10 +35,5 @@ const styles = StyleSheet.create({
     borderRadius: 200,
     borderWidth: 1,
     borderColor: colors.border.default,
-  },
-  label: {
-    fontSize: typography.size.sm,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
   },
 });

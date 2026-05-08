@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -15,15 +17,14 @@ export default function SignupScreen() {
   const isValid = email.trim().length > 0;
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="이메일로 회원가입" />
 
       <View style={styles.content}>
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>이메일 주소</Text>
+          <Typography size="lg" weight="bold">
+            이메일 주소
+          </Typography>
           <TextField
             placeholder="이메일 주소를 입력해주세요"
             value={email}
@@ -36,21 +37,20 @@ export default function SignupScreen() {
         </View>
       </View>
 
-      <View style={styles.cta}>
+      <CTAContainer style={styles.cta}>
         <BottomCTA
           label="계속하기"
           onPress={() => router.push({ pathname: '/(auth)/email-verify', params: { email } })}
           variant="dark"
           disabled={!isValid}
         />
-      </View>
-    </KeyboardAvoidingView>
+      </CTAContainer>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: colors.neutral.white,
   },
   content: {
@@ -61,15 +61,8 @@ const styles = StyleSheet.create({
   fieldGroup: {
     gap: 9,
   },
-  label: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
-  },
   cta: {
     paddingHorizontal: spacing.xl,
-    paddingBottom: 45,
     paddingTop: 16,
   },
 });

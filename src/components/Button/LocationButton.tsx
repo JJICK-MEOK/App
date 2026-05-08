@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 export type LocationPosition = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'middle';
 
@@ -38,7 +38,9 @@ export const LocationButton = ({
       ]}
       onPress={onPress}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Typography size="md" style={styles.label}>
+        {label}
+      </Typography>
     </Pressable>
   );
 };
@@ -59,10 +61,6 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   label: {
-    fontFamily: typography.family.base,
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
     textAlign: 'center',
   },
 });

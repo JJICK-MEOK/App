@@ -1,6 +1,7 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
 import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   label: string;
@@ -15,9 +16,15 @@ export default function GenderButton({ label, selected = false, onPress }: Props
       activeOpacity={0.8}
       style={[styles.container, selected ? styles.selected : styles.default]}
     >
-      <Text style={[styles.label, selected ? styles.labelSelected : styles.labelDefault]}>
+      <Typography
+        size="md"
+        style={{
+          color: selected ? colors.text.primary : colors.text.tertiary,
+          lineHeight: typography.lineHeight.normal,
+        }}
+      >
         {label}
-      </Text>
+      </Typography>
     </TouchableOpacity>
   );
 }
@@ -38,16 +45,5 @@ const styles = StyleSheet.create({
   },
   selected: {
     borderColor: colors.text.secondary,
-  },
-  label: {
-    fontSize: typography.size.md,
-    fontWeight: typography.weight.regular,
-    lineHeight: typography.lineHeight.normal,
-  },
-  labelDefault: {
-    color: colors.text.tertiary,
-  },
-  labelSelected: {
-    color: colors.text.primary,
   },
 });

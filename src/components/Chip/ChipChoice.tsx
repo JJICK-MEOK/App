@@ -1,6 +1,6 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   label: string;
@@ -15,7 +15,7 @@ export default function ChipChoice({ label, selected = false, onPress }: Props) 
       activeOpacity={0.8}
       style={[styles.container, selected ? styles.selected : styles.default]}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Typography size="lg">{label}</Typography>
     </TouchableOpacity>
   );
 }
@@ -33,10 +33,5 @@ const styles = StyleSheet.create({
   },
   selected: {
     backgroundColor: colors.primary.main,
-  },
-  label: {
-    fontSize: typography.size.lg,
-    fontWeight: typography.weight.regular,
-    color: colors.text.primary,
   },
 });

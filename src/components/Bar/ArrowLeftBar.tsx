@@ -1,7 +1,7 @@
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import ArrowLeftSvg from '@/assets/images/ArrowLeft.svg';
 import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
+import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   onPress: () => void;
@@ -14,7 +14,11 @@ export default function ArrowLeftBar({ onPress, title }: Props) {
       <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={12}>
         <ArrowLeftSvg width={10} height={18.5} />
       </TouchableOpacity>
-      {title && <Text style={styles.title}>{title}</Text>}
+      {title && (
+        <Typography size="xl" weight="bold" style={styles.title}>
+          {title}
+        </Typography>
+      )}
     </View>
   );
 }
@@ -35,11 +39,5 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: 'center',
-    fontFamily: typography.family.base,
-    fontSize: typography.size.xl,
-    fontWeight: typography.weight.bold,
-    color: colors.text.primary,
-    includeFontPadding: false,
-    lineHeight: typography.size.xl,
   },
 });
