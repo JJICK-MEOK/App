@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import Close from '@/assets/images/Close.svg';
+import Close from '@/src/components/Icon/Close';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 
 export default function TermsPrivacyScreen() {
@@ -296,7 +296,6 @@ const styles = StyleSheet.create({
     marginTop: 44,
   },
   introSection: {
-    height: 150.75,
     paddingBottom: 1,
     flexDirection: 'column',
     alignItems: 'flex-start',

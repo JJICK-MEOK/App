@@ -18,6 +18,9 @@ const CHIP_ROWS = [
   ['#제대로', '#가볍게'],
 ];
 
+const TOTAL_STEPS = 4;
+const CURRENT_STEP = 3;
+
 export default function OnboardingStep6() {
   const router = useRouter();
   const [selectedChips, setSelectedChips] = useState<Set<string>>(new Set());
@@ -38,7 +41,7 @@ export default function OnboardingStep6() {
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: 251 }]} />
+          <View style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]} />
         </View>
       </View>
       <ArrowLeftBar onPress={() => router.back()} />

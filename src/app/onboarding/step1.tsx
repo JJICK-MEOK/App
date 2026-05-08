@@ -66,7 +66,7 @@ export default function OnboardingStep1() {
   const birthdayError =
     birthDate.length === 6 && !isValidDate(birthDate) ? '존재하지 않는 날짜예요.' : undefined;
 
-  const isFormValid = isNicknameValid && isBirthdayValid && serviceAgree;
+  const isFormValid = isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>

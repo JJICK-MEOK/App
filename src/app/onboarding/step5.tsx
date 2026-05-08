@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import CloseSmallSvg from '@/assets/images/CloseSmall.svg';
+import CloseSmall from '@/assets/images/CloseSmall.svg';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { LocationButton, LocationPosition } from '@/src/components/Button/LocationButton';
@@ -84,6 +84,9 @@ const getPosition = (rowIndex: number, colIndex: number, totalRows: number): Loc
   return 'middle';
 };
 
+const TOTAL_STEPS = 4;
+const CURRENT_STEP = 2;
+
 export default function OnboardingStep5() {
   const router = useRouter();
   const [isSeoulExpanded, setIsSeoulExpanded] = useState(false);
@@ -108,6 +111,10 @@ export default function OnboardingStep5() {
         setSelectedLocations((prev) => {
           const next = new Set(prev);
           ALL_SEOUL_DISTRICTS.forEach((d) => next.delete(d));
+          const nonSeoulSelected = NON_SEOUL_REGIONS.filter((r) => next.has(r));
+          if (nonSeoulSelected.length > 2) {
+            nonSeoulSelected.slice(2).forEach((r) => next.delete(r));
+          }
           return next;
         });
       }
@@ -187,7 +194,7 @@ export default function OnboardingStep5() {
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: 168 }]} />
+          <View style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]} />
         </View>
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
@@ -211,7 +218,7 @@ export default function OnboardingStep5() {
                     {chip}
                   </Typography>
                   <TouchableOpacity onPress={() => removeChip(chip)} hitSlop={8}>
-                    <CloseSmallSvg width={10} height={10} />
+                    <CloseSmall width={10} height={10} />
                   </TouchableOpacity>
                 </View>
               ))}

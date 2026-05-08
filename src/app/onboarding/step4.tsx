@@ -32,6 +32,9 @@ const TOPICS: Topic[] = [
   { id: 14, name: '기타', subscribers: '00,000' },
 ];
 
+const TOTAL_STEPS = 4;
+const CURRENT_STEP = 1;
+
 export default function OnboardingStep4() {
   const router = useRouter();
   const [selectedTopics, setSelectedTopics] = useState<Set<number>>(new Set());
@@ -49,7 +52,9 @@ export default function OnboardingStep4() {
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: 84 }]} />
+          <View
+            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
+          />
         </View>
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
