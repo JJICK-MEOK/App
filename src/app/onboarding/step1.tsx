@@ -152,30 +152,33 @@ export default function OnboardingStep1() {
           </View>
 
           <View style={styles.agreeSubItems}>
-            <TouchableOpacity
-              style={styles.agreeRow}
-              onPress={() => setServiceAgree((v) => !v)}
-              activeOpacity={0.7}
-            >
-              <Checkbox checked={serviceAgree} readOnly />
+            <View style={styles.agreeRow}>
+              <TouchableOpacity onPress={() => setServiceAgree((v) => !v)} activeOpacity={0.7}>
+                <Checkbox checked={serviceAgree} readOnly />
+              </TouchableOpacity>
               <Text style={styles.agreeItemText}>
-                <Text style={styles.agreeUnderline}>서비스 이용약관</Text>
+                <Text onPress={() => router.push('/terms/service')} style={styles.agreeUnderline}>
+                  서비스 이용약관
+                </Text>
                 <Text> 및 </Text>
-                <Text style={styles.agreeUnderline}>개인정보 취급 방침</Text>
+                <Text onPress={() => router.push('/terms/privacy')} style={styles.agreeUnderline}>
+                  개인정보 취급 방침
+                </Text>
                 <Text> 동의</Text>
               </Text>
-            </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-              style={styles.agreeRow}
-              onPress={() => setMarketingAgree((v) => !v)}
-              activeOpacity={0.7}
-            >
-              <Checkbox checked={marketingAgree} readOnly />
-              <Typography size="sm" style={styles.agreeItemText}>
-                마케팅 정보 수신 동의 (선택)
-              </Typography>
-            </TouchableOpacity>
+            <View style={styles.agreeRow}>
+              <TouchableOpacity onPress={() => setMarketingAgree((v) => !v)} activeOpacity={0.7}>
+                <Checkbox checked={marketingAgree} readOnly />
+              </TouchableOpacity>
+              <Text style={styles.agreeItemText}>
+                <Text onPress={() => router.push('/terms/marketing')} style={styles.agreeUnderline}>
+                  마케팅 정보 수신 동의
+                </Text>
+                <Text>(선택)</Text>
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
