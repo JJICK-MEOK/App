@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     fontSize: typography.size.md,
     fontWeight: typography.weight.regular,
     color: colors.text.primary,
-    lineHeight: 20,
+    textAlignVertical: 'center',
     outlineWidth: 0,
   },
 });

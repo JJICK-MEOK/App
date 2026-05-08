@@ -31,7 +31,7 @@ export const SelectField = ({
   return (
     <View style={styles.container}>
       <Pressable style={styles.header} onPress={() => setIsOpen((prev) => !prev)}>
-        <Typography size="md" color="tertiary" style={styles.optionText}>
+        <Typography size="md" color={value ? 'primary' : 'tertiary'} style={styles.optionText}>
           {displayText}
         </Typography>
         <View style={isOpen ? styles.iconOpen : styles.iconClosed}>
