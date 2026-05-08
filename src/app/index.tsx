@@ -1,9 +1,97 @@
-import { View, Text } from 'react-native';
+import { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import Logo from '@/src/components/Logo/Logo';
+import { Typography } from '@/src/components/Typography/Typography';
+import { colors } from '@/src/constants/colors';
+import { typography } from '@/src/constants/typography';
 
-export default function Index() {
+export default function SplashScreen() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      router.replace('/(auth)/login');
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>임시 테스트 화면</Text>
-    </View>
+    <LinearGradient
+      colors={[colors.primary.main, colors.primary.sub, colors.primary.light]}
+      locations={[0, 0.5, 1]}
+      style={styles.container}
+    >
+      <View style={[styles.ellipse, styles.ellipseTopLeft]} />
+      <View style={[styles.ellipse, styles.ellipseTopRight]} />
+      <View style={[styles.ellipse, styles.ellipseBottomLeft]} />
+      <View style={[styles.ellipse, styles.ellipseBottomRight]} />
+      <View style={[styles.ellipse, styles.ellipseCenter]} />
+
+      <View style={styles.content}>
+        <Typography size="lg" weight="semiBold" color="heading" style={styles.subtitle}>
+          나에게 맞는 활동을
+        </Typography>
+        <Logo width={240} height={249} />
+      </View>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  ellipse: {
+    position: 'absolute',
+    borderRadius: 999,
+    opacity: 0.5,
+  },
+  ellipseTopLeft: {
+    width: 423,
+    height: 336,
+    backgroundColor: colors.primary.main,
+    top: -149,
+    left: -166,
+  },
+  ellipseTopRight: {
+    width: 372,
+    height: 329,
+    backgroundColor: colors.primary.sub,
+    top: 5,
+    right: -150,
+  },
+  ellipseBottomLeft: {
+    width: 469,
+    height: 305,
+    backgroundColor: colors.primary.main,
+    bottom: 60,
+    left: -88,
+  },
+  ellipseBottomRight: {
+    width: 372,
+    height: 388,
+    backgroundColor: colors.primary.sub,
+    top: 317,
+    right: -150,
+  },
+  ellipseCenter: {
+    width: 222,
+    height: 197,
+    backgroundColor: colors.primary.light,
+    top: 262,
+    alignSelf: 'center',
+    left: '50%',
+    marginLeft: -111,
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subtitle: {
+    letterSpacing: typography.letterSpacing.wide,
+    marginBottom: 4,
+  },
+});

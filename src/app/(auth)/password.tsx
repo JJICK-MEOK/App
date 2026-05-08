@@ -1,0 +1,137 @@
+import { useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import Checkbox from '@/src/components/Icon/Checkbox';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
+import { TextField } from '@/src/components/Input/TextField';
+import { Typography } from '@/src/components/Typography/Typography';
+import { colors } from '@/src/constants/colors';
+import { radius, spacing } from '@/src/constants/spacing';
+import { typography } from '@/src/constants/typography';
+
+const CONDITIONS = [
+  { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
+  { key: 'letter', label: '영문 포함', check: (pw: string) => /[a-zA-Z]/.test(pw) },
+  { key: 'number', label: '숫자 포함', check: (pw: string) => /[0-9]/.test(pw) },
+  { key: 'special', label: '특수문자 포함', check: (pw: string) => /[^a-zA-Z0-9]/.test(pw) },
+] as const;
+
+export default function PasswordScreen() {
+  const router = useRouter();
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
+
+  const conditionsMet = CONDITIONS.map((c) => c.check(password));
+  const allMet = conditionsMet.every(Boolean);
+  const passwordsMatch = password.length > 0 && password === confirm;
+  const confirmError =
+    confirm.length > 0 && !passwordsMatch ? '비밀번호가 일치하지 않아요' : undefined;
+  const isComplete = allMet && passwordsMatch;
+
+  return (
+    <ScreenLayout withKeyboard style={styles.container}>
+      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 만들기" />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.form}>
+          <View style={styles.fieldGroup}>
+            <Typography size="lg" style={styles.label}>
+              비밀번호
+            </Typography>
+            <TextField
+              placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+              value={password}
+              onChangeText={setPassword}
+              secureText
+            />
+          </View>
+          <View style={styles.fieldGroup}>
+            <Typography size="lg" style={styles.label}>
+              비밀번호 확인
+            </Typography>
+            <TextField
+              placeholder="비밀번호를 다시 입력해주세요"
+              value={confirm}
+              onChangeText={setConfirm}
+              secureText
+              errorMessage={confirmError}
+            />
+          </View>
+        </View>
+
+        <View style={styles.conditionsBox}>
+          <Typography size="md" style={styles.conditionsTitle}>
+            비밀번호 조건
+          </Typography>
+          {CONDITIONS.map((condition, i) => (
+            <View key={condition.key} style={styles.conditionRow}>
+              <Checkbox checked={conditionsMet[i]} readOnly size={24} />
+              <Typography
+                size="sm"
+                style={{ color: conditionsMet[i] ? colors.text.primary : colors.text.tertiary }}
+              >
+                {condition.label}
+              </Typography>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+
+      <CTAContainer style={styles.cta}>
+        <BottomCTA
+          label="회원가입 완료"
+          onPress={() => router.push('/onboarding/step1')}
+          variant="primary"
+          disabled={!isComplete}
+        />
+      </CTAContainer>
+    </ScreenLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.neutral.white,
+  },
+  scrollContent: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: 63,
+    paddingBottom: 16,
+  },
+  form: {
+    gap: 32,
+  },
+  fieldGroup: {
+    gap: 9,
+  },
+  label: {
+    lineHeight: typography.lineHeight.relaxed,
+  },
+  conditionsBox: {
+    marginTop: 24,
+    backgroundColor: '#F5F5F5',
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    gap: 8,
+  },
+  conditionsTitle: {
+    marginBottom: spacing.xs,
+  },
+  conditionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cta: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: 16,
+  },
+});

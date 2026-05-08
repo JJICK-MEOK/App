@@ -1,0 +1,75 @@
+import { StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
+import { Typography } from '@/src/components/Typography/Typography';
+import { colors } from '@/src/constants/colors';
+
+export default function LoginScreen() {
+  const router = useRouter();
+
+  return (
+    <LinearGradient
+      colors={[colors.primary.main, colors.primary.sub, colors.primary.light]}
+      locations={[0, 0.5, 1]}
+      style={styles.container}
+    >
+      <Typography size="xxxl" weight="bold" style={styles.title}>
+        {'나에게 맞는\n새로운 경험의 시작'}
+      </Typography>
+
+      <View style={styles.socialButtons}>
+        <SocialLoginButton provider="naver" onPress={() => {}} />
+        <SocialLoginButton provider="google" onPress={() => {}} />
+        <SocialLoginButton provider="kakao" onPress={() => {}} />
+      </View>
+
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Typography size="lg" color="secondary">
+          또는
+        </Typography>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <CTAContainer>
+        <BottomCTA
+          label="이메일로 시작하기"
+          onPress={() => router.push('/(auth)/email-login')}
+          variant="white"
+        />
+      </CTAContainer>
+    </LinearGradient>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  title: {
+    lineHeight: 32,
+    marginTop: 121,
+  },
+  socialButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 31,
+    marginTop: 'auto',
+    marginBottom: 16,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 23,
+    marginBottom: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border.default,
+  },
+});

@@ -1,12 +1,14 @@
 {
   "name": "jjick-meok",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "fix": "npm run format && npm run lint"
@@ -19,6 +21,7 @@
     "expo": "54.0.33",
     "expo-auth-session": "~7.0.10",
     "expo-constants": "~18.0.13",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",
@@ -30,16 +33,24 @@
     "react-native": "0.81.5",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.16.0",
+    "react-native-svg": "^15.15.4",
     "react-native-web": "^0.21.2",
     "styled-components": "^6.3.12",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^8.6.18",
+    "@storybook/react": "^8.6.18",
+    "@storybook/react-vite": "^8.6.18",
     "@types/react": "~19.1.10",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
-    "typescript": "~5.9.2"
+    "react-native-svg-transformer": "^1.5.3",
+    "storybook": "^8.6.18",
+    "typescript": "~5.9.2",
+    "vite": "^8.0.11",
+    "vite-plugin-svgr": "^5.2.0"
   },
   "private": true
 }
