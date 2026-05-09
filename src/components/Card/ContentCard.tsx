@@ -47,7 +47,7 @@ export const ContentCard = ({ title, subtitle, imageUri, tags, onPress }: Conten
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.border.default,
+    backgroundColor: SURFACE_COLOR,
     borderRadius: radius.sm,
     padding: 10,
     width: '100%',

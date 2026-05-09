@@ -87,7 +87,7 @@ export default function PasswordScreen() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => router.push('/onboarding/step1')}
+          onPress={() => router.push('/(auth)/signup-complete')}
           variant="primary"
           disabled={!isComplete}
         />

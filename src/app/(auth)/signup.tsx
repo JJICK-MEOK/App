@@ -23,7 +23,7 @@ export default function SignupScreen() {
       <View style={styles.content}>
         <View style={styles.fieldGroup}>
           <Typography size="lg" weight="bold">
-            이메일 주소
+            이메일을 입력해 주세요
           </Typography>
           <TextField
             placeholder="이메일 주소를 입력해주세요"
