@@ -51,7 +51,7 @@ export default function OnboardingStep1() {
     const currentYY = new Date().getFullYear() % 100;
     const fullYear = yy <= currentYY ? 2000 + yy : 1900 + yy;
     const date = new Date(fullYear, mm - 1, dd);
-    return date.getMonth() === mm - 1 && date.getDate() === dd;
+    return date.getMonth() === mm - 1 && date.getDate() === dd && date <= new Date();
   };
 
   const nicknameHasInvalidChars = nickname.length > 0 && !/^[가-힣a-zA-Z0-9]+$/.test(nickname);
@@ -66,7 +66,8 @@ export default function OnboardingStep1() {
   const birthdayError =
     birthDate.length === 6 && !isValidDate(birthDate) ? '존재하지 않는 날짜예요.' : undefined;
 
-  const isFormValid = isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
+  const isFormValid =
+    isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>

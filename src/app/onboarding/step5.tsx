@@ -26,6 +26,7 @@ const SEOUL_EXPANDED_ROWS = [
   ['성동', '성북', '송파', '양천'],
   ['영등포', '용산', '은평', '종로'],
   ['중구', '중랑', '', ''],
+  ['충북', '충남', '세종', '대전'],
   ['광주', '전북', '경북', '대구'],
   ['제주', '전남', '경남/울산', '부산'],
 ];
@@ -194,7 +195,9 @@ export default function OnboardingStep5() {
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]} />
+          <View
+            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
+          />
         </View>
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
@@ -317,7 +320,7 @@ const styles = StyleSheet.create({
     height: 57,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
-  progressContainer: { paddingHorizontal: 20, marginBottom: 9, marginTop: 53 },
+  progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
   progressTrack: { height: 2, backgroundColor: '#DDD' },
   progressFill: { height: 2, backgroundColor: '#FFE066' },
 });

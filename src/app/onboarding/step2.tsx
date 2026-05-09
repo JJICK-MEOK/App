@@ -16,7 +16,7 @@ export default function OnboardingStep2() {
         <View style={styles.checkContainer}>
           <Icon name="check" size={90} />
           <Typography size="xxxl" weight="bold">
-            회원가입 완료!
+            프로필 설정 완료!
           </Typography>
         </View>
       </View>
