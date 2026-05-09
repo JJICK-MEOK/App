@@ -1,4 +1,5 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Pressable } from 'react-native';
+import { Typography } from '@/src/components/Typography/Typography';
 
 /**
  * Dropdown 컴포넌트
@@ -22,7 +23,7 @@ export const Dropdown = ({ options, onSelect }: any) => {
     <View>
       {options.map((item: any, idx: number) => (
         <Pressable key={idx} onPress={() => onSelect(item)}>
-          <Text>{item}</Text>
+          <Typography>{item}</Typography>
         </Pressable>
       ))}
     </View>
