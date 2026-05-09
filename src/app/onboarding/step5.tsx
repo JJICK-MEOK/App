@@ -194,7 +194,9 @@ export default function OnboardingStep5() {
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]} />
+          <View
+            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
+          />
         </View>
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
@@ -317,7 +319,7 @@ const styles = StyleSheet.create({
     height: 57,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
-  progressContainer: { paddingHorizontal: 20, marginBottom: 9, marginTop: 53 },
+  progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
   progressTrack: { height: 2, backgroundColor: '#DDD' },
   progressFill: { height: 2, backgroundColor: '#FFE066' },
 });
