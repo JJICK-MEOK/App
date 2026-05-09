@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '@/src/components/Logo/Logo';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { typography } from '@/src/constants/typography';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -23,11 +25,14 @@ export default function SplashScreen() {
       locations={[0, 0.5, 1]}
       style={styles.container}
     >
-      <View style={[styles.ellipse, styles.ellipseTopLeft]} />
-      <View style={[styles.ellipse, styles.ellipseTopRight]} />
-      <View style={[styles.ellipse, styles.ellipseBottomLeft]} />
-      <View style={[styles.ellipse, styles.ellipseBottomRight]} />
-      <View style={[styles.ellipse, styles.ellipseCenter]} />
+      <View style={styles.circleWrapper}>
+        <View style={styles.circleRow}>
+          <View style={styles.topicImage} />
+          <View style={styles.topicImage} />
+          <View style={styles.topicImage} />
+          <View style={styles.topicImage} />
+        </View>
+      </View>
 
       <View style={styles.content}>
         <Typography size="lg" weight="semiBold" color="heading" style={styles.subtitle}>
@@ -42,48 +47,27 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 20,
   },
-  ellipse: {
-    position: 'absolute',
-    borderRadius: 999,
-    opacity: 0.5,
+  circleWrapper: {
+    width: SCREEN_WIDTH,
+    overflow: 'hidden',
+    alignItems: 'center',
+    marginBottom: 59,
+    marginLeft: -20,
   },
-  ellipseTopLeft: {
-    width: 423,
-    height: 336,
-    backgroundColor: colors.primary.main,
-    top: -149,
-    left: -166,
+  circleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
   },
-  ellipseTopRight: {
-    width: 372,
-    height: 329,
-    backgroundColor: colors.primary.sub,
-    top: 5,
-    right: -150,
-  },
-  ellipseBottomLeft: {
-    width: 469,
-    height: 305,
-    backgroundColor: colors.primary.main,
-    bottom: 60,
-    left: -88,
-  },
-  ellipseBottomRight: {
-    width: 372,
-    height: 388,
-    backgroundColor: colors.primary.sub,
-    top: 317,
-    right: -150,
-  },
-  ellipseCenter: {
-    width: 222,
-    height: 197,
-    backgroundColor: colors.primary.light,
-    top: 262,
-    alignSelf: 'center',
-    left: '50%',
-    marginLeft: -111,
+  topicImage: {
+    width: 135,
+    height: 135,
+    borderRadius: 135,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+    backgroundColor: '#D9D9D9',
   },
   content: {
     flex: 1,
