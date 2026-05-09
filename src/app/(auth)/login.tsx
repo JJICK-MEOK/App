@@ -7,11 +7,14 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
+import { KakaoWebView } from '@/src/components/KakaoWebView/KakaoWebView';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login, showWebView, onWebViewSuccess, onWebViewClose } = useKakaoLogin();
 
   return (
     <LinearGradient
@@ -33,8 +36,10 @@ export default function LoginScreen() {
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
         <SocialLoginButton provider="google" onPress={handleGoogleLogin} />
-        <SocialLoginButton provider="kakao" onPress={() => {}} />
+        <SocialLoginButton provider="kakao" onPress={login} />
       </View>
+
+      {showWebView && <KakaoWebView onSuccess={onWebViewSuccess} onClose={onWebViewClose} />}
 
       <View style={styles.divider}>
         <View style={styles.dividerLine} />
