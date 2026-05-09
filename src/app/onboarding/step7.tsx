@@ -45,6 +45,6 @@ const styles = StyleSheet.create({
 
   title: { textAlign: 'center' },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
-  progressContainer: { paddingHorizontal: 20, marginBottom: 9, marginTop: 53 },
+  progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
   progressTrack: { height: 2, backgroundColor: '#FFE066' },
 });

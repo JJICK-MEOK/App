@@ -43,20 +43,34 @@ export default function OnboardingStep1() {
     setBirthDate(text.replace(/\D/g, ''));
   };
 
-  const isValidDate = (value: string): boolean => {
+  const parseBirthDate = (value: string): Date | null => {
     const yy = parseInt(value.slice(0, 2), 10);
     const mm = parseInt(value.slice(2, 4), 10);
     const dd = parseInt(value.slice(4, 6), 10);
-    if (mm < 1 || mm > 12) return false;
+    if (mm < 1 || mm > 12) return null;
     const currentYY = new Date().getFullYear() % 100;
     const fullYear = yy <= currentYY ? 2000 + yy : 1900 + yy;
     const date = new Date(fullYear, mm - 1, dd);
-    return date.getMonth() === mm - 1 && date.getDate() === dd;
+    if (date.getMonth() !== mm - 1 || date.getDate() !== dd) return null;
+    if (date > new Date()) return null;
+    return date;
+  };
+
+  const getAge = (birth: Date): number => {
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
   };
 
   const nicknameHasInvalidChars = nickname.length > 0 && !/^[가-힣a-zA-Z0-9]+$/.test(nickname);
   const isNicknameValid = nickname.length >= 2 && !nicknameHasInvalidChars;
-  const isBirthdayValid = birthDate.length === 6 && isValidDate(birthDate);
+
+  const parsedBirth = birthDate.length === 6 ? parseBirthDate(birthDate) : null;
+  const age = parsedBirth ? getAge(parsedBirth) : null;
+  const isAgeValid = age !== null && age >= 14 && age <= 59;
+  const isBirthdayValid = parsedBirth !== null && isAgeValid;
 
   const nicknameError = nicknameHasInvalidChars
     ? '한글, 영문, 숫자만 사용할 수 있어요.'
@@ -64,9 +78,14 @@ export default function OnboardingStep1() {
       ? '2자 이상 입력해주세요.'
       : undefined;
   const birthdayError =
-    birthDate.length === 6 && !isValidDate(birthDate) ? '존재하지 않는 날짜예요.' : undefined;
+    birthDate.length === 6 && parsedBirth === null
+      ? '존재하지 않은 날짜입니다.'
+      : birthDate.length === 6 && parsedBirth !== null && !isAgeValid
+        ? '찍먹은 만 14세 이상부터 만 59세 이하까지 가입할 수 있습니다.'
+        : undefined;
 
-  const isFormValid = isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
+  const isFormValid =
+    isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
