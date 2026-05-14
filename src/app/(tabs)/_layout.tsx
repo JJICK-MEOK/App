@@ -21,6 +21,7 @@ const TAB_TO_ROUTE: Record<TabKey, string> = {
 export default function TabsLayout() {
   return (
     <Tabs
+      screenOptions={{ headerShown: false }}
       tabBar={({ state, navigation }) => {
         const currentRoute = state.routes[state.index].name;
         const activeTab = ROUTE_TO_TAB[currentRoute] ?? 'home';

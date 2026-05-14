@@ -1,11 +1,5 @@
-import { View, StyleSheet } from 'react-native';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 
 export default function HomeScreen() {
-  return <View style={styles.container} />;
+  return <ScreenLayout>{null}</ScreenLayout>;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
