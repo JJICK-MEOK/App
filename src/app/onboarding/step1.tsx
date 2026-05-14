@@ -90,7 +90,6 @@ export default function OnboardingStep1() {
   return (
     <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
