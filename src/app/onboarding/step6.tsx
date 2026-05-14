@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import ChipChoice from '@/src/components/Chip/ChipChoice';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -17,9 +18,6 @@ const CHIP_ROWS = [
   ['#예술적', '#어울리는', '#내향인환영'],
   ['#제대로', '#가볍게'],
 ];
-
-const TOTAL_STEPS = 4;
-const CURRENT_STEP = 3;
 
 export default function OnboardingStep6() {
   const router = useRouter();
@@ -40,11 +38,7 @@ export default function OnboardingStep6() {
   return (
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          <View
-            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
-          />
-        </View>
+        <ProgressBar step={3} />
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -121,6 +115,4 @@ const styles = StyleSheet.create({
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
-  progressTrack: { height: 2, backgroundColor: '#DDD' },
-  progressFill: { height: 2, backgroundColor: '#FFE066' },
 });

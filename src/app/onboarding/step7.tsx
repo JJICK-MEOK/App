@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -13,7 +14,7 @@ export default function OnboardingStep7() {
   return (
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
-        <View style={styles.progressTrack} />
+        <ProgressBar step={4} />
       </View>
       <View style={styles.checkContainer}>
         <Icon name="check" size={90} />
@@ -46,5 +47,4 @@ const styles = StyleSheet.create({
   title: { textAlign: 'center' },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
-  progressTrack: { height: 2, backgroundColor: '#FFE066' },
 });
