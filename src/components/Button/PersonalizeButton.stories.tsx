@@ -11,5 +11,5 @@ export default meta;
 type Story = StoryObj<typeof PersonalizeButton>;
 
 export const Default: Story = {
-  args: { label: '버튼 텍스트' },
+  args: { label: '나만의 경험 탐색하기' },
 };

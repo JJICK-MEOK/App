@@ -12,7 +12,10 @@ export default meta;
 type Story = StoryObj<typeof ChipBadge>;
 
 export const ActivityCategory: Story = {
-  args: { variant: 'activityCategory' },
+  args: {
+    variant: 'preference',
+    label: '#취향태그',
+  },
 };
 
 export const Promotion: Story = {

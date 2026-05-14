@@ -15,4 +15,11 @@ const meta: Meta<typeof RecommendationCard> = {
 export default meta;
 type Story = StoryObj<typeof RecommendationCard>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    days: 7,
+    title: '후킹용/설명용\n프로그램 관련 멘트',
+    preferences: ['#취향태그', '#취향태그'],
+    category: '활동카테고리',
+  },
+};
