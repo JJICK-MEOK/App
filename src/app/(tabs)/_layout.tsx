@@ -1,6 +1,6 @@
 import { Tabs, useSegments } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
-import { SafeAreaView, Edge } from 'react-native-safe-area-context';
+import { Edge, SafeAreaView } from 'react-native-safe-area-context';
 import BottomNav, { TabKey } from '@/src/components/Nav/BottomNav';
 import { colors } from '@/src/constants/colors';
 
@@ -26,7 +26,10 @@ export default function TabsLayout() {
   const edges: Edge[] = isHome ? [] : ['top'];
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutral.white }} edges={edges}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: isHome ? 'transparent' : colors.neutral.white }}
+      edges={edges}
+    >
       <Tabs
         screenOptions={{ headerShown: false }}
         tabBar={({ state, navigation }) => {
@@ -55,8 +58,11 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   navWrapper: {
+    position: 'absolute',
+    bottom: 22,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    paddingBottom: 22,
     backgroundColor: 'transparent',
   },
 });
