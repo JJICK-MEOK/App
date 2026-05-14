@@ -10,7 +10,11 @@ const meta: Meta<typeof DDay> = {
 export default meta;
 type Story = StoryObj<typeof DDay>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    days: 11,
+  },
+};
 
 export const Today: Story = {
   args: { days: 0 },
