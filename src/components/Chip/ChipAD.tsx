@@ -2,15 +2,11 @@ import { View, StyleSheet } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
-type Props = {
-  label: string;
-};
-
-export default function ChipAD({ label }: Props) {
+export default function ChipAD() {
   return (
     <View style={styles.container}>
       <Typography size="xs" style={styles.text}>
-        {label}
+        AD
       </Typography>
     </View>
   );
