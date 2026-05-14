@@ -50,7 +50,6 @@ const styles = StyleSheet.create({
   title: {
     color: '#222',
     textAlign: 'center',
-    lineHeight: 20,
     letterSpacing: 1,
   },
   icons: {
