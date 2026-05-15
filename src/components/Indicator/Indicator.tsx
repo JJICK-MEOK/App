@@ -6,10 +6,11 @@ type Props = {
 };
 
 export default function Indicator({ count, activeIndex }: Props) {
+  const safeIndex = Math.min(Math.max(activeIndex, 0), count - 1);
   return (
     <View style={styles.container}>
       {Array.from({ length: count }).map((_, i) =>
-        i === activeIndex ? (
+        i === safeIndex ? (
           <View key={i} style={styles.active} />
         ) : (
           <View key={i} style={styles.inactive} />

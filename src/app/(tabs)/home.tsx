@@ -16,6 +16,8 @@ import ArrowRight from '@/assets/images/ArrowRight.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 
+const BANNER_WIDTH = 335;
+
 const ICONS = [
   { Svg: Program, width: 33, height: 33, label: '프로그램' },
   { Svg: OneDay, width: 32, height: 32, label: '원데이' },
@@ -48,7 +50,7 @@ export default function HomeScreen() {
                   pagingEnabled
                   showsHorizontalScrollIndicator={false}
                   onMomentumScrollEnd={(e) => {
-                    const index = Math.round(e.nativeEvent.contentOffset.x / 335);
+                    const index = Math.round(e.nativeEvent.contentOffset.x / BANNER_WIDTH);
                     setActiveIndex(index);
                   }}
                 >
@@ -212,7 +214,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   banner: {
-    width: 335,
+    width: BANNER_WIDTH,
     height: 161,
     borderRadius: 15,
     backgroundColor: '#FFF',

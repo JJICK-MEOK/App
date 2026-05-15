@@ -1,6 +1,6 @@
-import { View, StyleSheet } from 'react-native';
-import SearchIcon from '@/assets/images/Search.svg';
-import BellIcon from '@/assets/images/Bell.svg';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import Search from '@/assets/images/Search.svg';
+import Bell from '@/assets/images/Bell.svg';
 import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
@@ -18,8 +18,22 @@ export default function TopNav({ name }: Props) {
         </Typography>
       </View>
       <View style={styles.icons}>
-        <SearchIcon width={28} height={28} />
-        <BellIcon width={28} height={28} />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            /* router.push('/search') */
+          }}
+        >
+          <Search width={28} height={28} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => {
+            /* router.push('/notifications') */
+          }}
+        >
+          <Bell width={28} height={28} />
+        </TouchableOpacity>
       </View>
     </View>
   );

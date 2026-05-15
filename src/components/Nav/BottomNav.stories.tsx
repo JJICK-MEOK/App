@@ -17,13 +17,15 @@ type Story = StoryObj<typeof BottomNav>;
 
 export const Default: Story = {};
 
+const InteractiveBottomNav = () => {
+  const [active, setActive] = useState<TabKey>('home');
+  return (
+    <View style={{ padding: 20 }}>
+      <BottomNav activeTab={active} onTabChange={setActive} />
+    </View>
+  );
+};
+
 export const Interactive: Story = {
-  render: () => {
-    const [active, setActive] = useState<TabKey>('home');
-    return (
-      <View style={{ padding: 20 }}>
-        <BottomNav activeTab={active} onTabChange={setActive} />
-      </View>
-    );
-  },
+  render: () => <InteractiveBottomNav />,
 };
