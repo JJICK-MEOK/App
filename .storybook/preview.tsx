@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Preview, StoryFn } from '@storybook/react';
 import { View } from 'react-native';
 

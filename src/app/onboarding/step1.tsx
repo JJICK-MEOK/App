@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import GenderButton from '@/src/components/Button/GenderButton';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import Checkbox from '@/src/components/Icon/Checkbox';
-import Close from '@/src/components/Icon/Close';
 import { SelectField } from '@/src/components/Input/SelectField';
 import { TextField } from '@/src/components/Input/TextField';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -89,13 +89,7 @@ export default function OnboardingStep1() {
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      <View style={styles.header}>
-        <Typography size="xl" weight="bold" style={styles.headerTitle}>
-          프로필을 만들어 주세요
-        </Typography>
-        <Close onPress={() => router.back()} />
-      </View>
-
+      <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -217,20 +211,6 @@ export default function OnboardingStep1() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.neutral.white,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    gap: 136,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.default,
-    backgroundColor: colors.neutral.white,
-  },
-  headerTitle: {
-    color: colors.text.primary,
-    textAlign: 'center',
   },
   scrollContent: {
     paddingHorizontal: 20,

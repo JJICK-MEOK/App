@@ -70,11 +70,10 @@ const styles = StyleSheet.create({
     paddingTop: 26,
   },
   description: {
-    textAlign: 'center',
     marginBottom: 15,
   },
   fields: {
-    gap: 57,
+    gap: 13,
   },
   cta: {
     paddingHorizontal: spacing.xl,

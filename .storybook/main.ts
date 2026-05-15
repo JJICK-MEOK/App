@@ -13,10 +13,15 @@ const config: StorybookConfig = {
   viteFinal(config) {
     return mergeConfig(config, {
       plugins: [svgr({ include: '**/*.svg' })],
+      esbuild: {
+        jsx: 'automatic',
+        jsxImportSource: 'react',
+      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '..'),
-          'react-native': 'react-native-web',
+          'react-native/Libraries/Utilities/codegenNativeComponent': path.resolve(__dirname, './mocks/codegenNativeComponent.ts'),
+          'react-native': path.resolve(__dirname, '../node_modules/react-native-web'),
         },
       },
     });

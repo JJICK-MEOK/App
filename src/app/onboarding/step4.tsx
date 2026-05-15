@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CategoryCard } from '@/src/components/Card/CategoryCard';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -32,9 +33,6 @@ const TOPICS: Topic[] = [
   { id: 14, name: '기타', subscribers: '00,000' },
 ];
 
-const TOTAL_STEPS = 4;
-const CURRENT_STEP = 1;
-
 export default function OnboardingStep4() {
   const router = useRouter();
   const [selectedTopics, setSelectedTopics] = useState<Set<number>>(new Set());
@@ -51,11 +49,7 @@ export default function OnboardingStep4() {
   return (
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          <View
-            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
-          />
-        </View>
+        <ProgressBar step={1} />
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
 
@@ -127,6 +121,4 @@ const styles = StyleSheet.create({
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
-  progressTrack: { height: 2, backgroundColor: '#DDD' },
-  progressFill: { height: 2, backgroundColor: '#FFE066' },
 });

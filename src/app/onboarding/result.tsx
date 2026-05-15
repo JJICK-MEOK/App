@@ -55,7 +55,7 @@ export default function OnboardingResult() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="더 많은 추천 확인하기"
-          onPress={() => router.replace('/(tabs)')}
+          onPress={() => router.replace('/(tabs)/home')}
           variant="primary"
         />
       </CTAContainer>

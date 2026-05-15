@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import CloseSmall from '@/assets/images/CloseSmall.svg';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
+import ChipFilter from '@/src/components/Chip/ChipFilter';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { LocationButton, LocationPosition } from '@/src/components/Button/LocationButton';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -84,9 +85,6 @@ const getPosition = (rowIndex: number, colIndex: number, totalRows: number): Loc
   if (rowIndex === totalRows - 1 && colIndex === 3) return 'bottomRight';
   return 'middle';
 };
-
-const TOTAL_STEPS = 4;
-const CURRENT_STEP = 2;
 
 export default function OnboardingStep5() {
   const router = useRouter();
@@ -194,11 +192,7 @@ export default function OnboardingStep5() {
   return (
     <ScreenLayout style={styles.container}>
       <View style={styles.progressContainer}>
-        <View style={styles.progressTrack}>
-          <View
-            style={[styles.progressFill, { width: `${(CURRENT_STEP / TOTAL_STEPS) * 100}%` }]}
-          />
-        </View>
+        <ProgressBar step={2} />
       </View>
       <ArrowLeftBar onPress={() => router.back()} />
 
@@ -216,14 +210,7 @@ export default function OnboardingStep5() {
           {chips.length > 0 && (
             <View style={styles.chipRow}>
               {chips.map((chip) => (
-                <View key={chip} style={styles.chip}>
-                  <Typography size="sm" style={styles.chipLabel}>
-                    {chip}
-                  </Typography>
-                  <TouchableOpacity onPress={() => removeChip(chip)} hitSlop={8}>
-                    <CloseSmall width={10} height={10} />
-                  </TouchableOpacity>
-                </View>
+                <ChipFilter key={chip} label={chip} onRemove={() => removeChip(chip)} />
               ))}
             </View>
           )}
@@ -291,20 +278,6 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 200,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-  },
-  chipLabel: {
-    color: colors.text.primary,
-    textAlign: 'center',
-  },
   grid: {
     width: 332,
     borderRadius: 20,
@@ -321,6 +294,4 @@ const styles = StyleSheet.create({
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, marginBottom: 9 },
-  progressTrack: { height: 2, backgroundColor: '#DDD' },
-  progressFill: { height: 2, backgroundColor: '#FFE066' },
 });
