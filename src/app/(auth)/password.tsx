@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import Checkbox from '@/src/components/Icon/Checkbox';
@@ -11,6 +12,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { radius, spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
+import { postSignup } from '@/src/api/auth';
 
 const CONDITIONS = [
   { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
@@ -21,8 +23,10 @@ const CONDITIONS = [
 
 export default function PasswordScreen() {
   const router = useRouter();
+  const { email } = useLocalSearchParams<{ email: string }>();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [signupError, setSignupError] = useState('');
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -30,6 +34,21 @@ export default function PasswordScreen() {
   const confirmError =
     confirm.length > 0 && !passwordsMatch ? '비밀번호가 일치하지 않아요' : undefined;
   const isComplete = allMet && passwordsMatch;
+
+  const { mutate: signup, isPending } = useMutation({
+    mutationFn: () => postSignup(email ?? '', password),
+    onSuccess: () => {
+      router.push('/(auth)/signup-complete');
+    },
+    onError: (error: any) => {
+      const code = error?.response?.data?.code;
+      if (code === 'EMAIL_ALREADY_EXISTS') {
+        setSignupError('이미 가입된 이메일입니다.');
+      } else {
+        setSignupError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -85,11 +104,16 @@ export default function PasswordScreen() {
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
+        {signupError ? (
+          <Typography size="sm" color="error" style={styles.errorText}>
+            {signupError}
+          </Typography>
+        ) : null}
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => router.push('/(auth)/signup-complete')}
+          onPress={() => signup()}
           variant="primary"
-          disabled={!isComplete}
+          disabled={!isComplete || isPending}
         />
       </CTAContainer>
     </ScreenLayout>
@@ -133,5 +157,9 @@ const styles = StyleSheet.create({
   cta: {
     paddingHorizontal: spacing.xl,
     paddingTop: 16,
+    gap: spacing.sm,
+  },
+  errorText: {
+    textAlign: 'center',
   },
 });

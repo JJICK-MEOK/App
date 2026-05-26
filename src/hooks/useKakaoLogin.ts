@@ -1,5 +1,6 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import { postKakaoLogin } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
@@ -12,7 +13,8 @@ const discovery = {
 };
 
 export const useKakaoLogin = () => {
-  const { setUser, setToken } = useAuthStore();
+  const router = useRouter();
+  const { setToken } = useAuthStore();
 
   const redirectUri = AuthSession.makeRedirectUri({ scheme: 'jjick-meok' });
 
@@ -35,13 +37,13 @@ export const useKakaoLogin = () => {
       const code = result.params?.code;
       if (!code) throw new Error('Missing Kakao authorization code');
 
-      const { accessToken, refreshToken, user } = await postKakaoLogin(code);
+      const { accessToken, refreshToken } = await postKakaoLogin(code);
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
-      setUser(user);
+      router.replace('/(tabs)');
     } catch (error) {
       console.error('Kakao login failed', error);
       throw error;

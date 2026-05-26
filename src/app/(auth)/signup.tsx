@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -9,12 +10,32 @@ import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
+import { postEmailSendCode } from '@/src/api/auth';
 
 export default function SignupScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const isValid = email.trim().length > 0;
+
+  const { mutate: sendCode, isPending } = useMutation({
+    mutationFn: () => postEmailSendCode(email),
+    onSuccess: () => {
+      setErrorMessage('');
+      router.push({ pathname: '/(auth)/email-verify', params: { email } });
+    },
+    onError: (error: any) => {
+      const code = error?.response?.data?.code;
+      if (code === 'EMAIL_ALREADY_EXISTS') {
+        setErrorMessage('이미 가입된 이메일입니다.');
+      } else if (code === 'INVALID_EMAIL_FORMAT') {
+        setErrorMessage('올바른 이메일 형식이 아닙니다.');
+      } else {
+        setErrorMessage('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -28,11 +49,15 @@ export default function SignupScreen() {
           <TextField
             placeholder="이메일 주소를 입력해주세요"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setErrorMessage('');
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            helperText="올바른 이메일 형식으로 입력해주세요"
+            helperText={!errorMessage ? '올바른 이메일 형식으로 입력해주세요' : undefined}
+            errorMessage={errorMessage || undefined}
           />
         </View>
       </View>
@@ -40,9 +65,9 @@ export default function SignupScreen() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="계속하기"
-          onPress={() => router.push({ pathname: '/(auth)/email-verify', params: { email } })}
+          onPress={() => sendCode()}
           variant="dark"
-          disabled={!isValid}
+          disabled={!isValid || isPending}
         />
       </CTAContainer>
     </ScreenLayout>

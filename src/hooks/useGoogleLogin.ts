@@ -1,5 +1,6 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
+import { useRouter } from 'expo-router';
 import { postGoogleLogin } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
@@ -12,7 +13,8 @@ const discovery = {
 };
 
 export const useGoogleLogin = () => {
-  const { setUser, setToken } = useAuthStore();
+  const router = useRouter();
+  const { setToken } = useAuthStore();
 
   const redirectUri = AuthSession.makeRedirectUri({ scheme: 'jjick-meok' });
 
@@ -31,14 +33,14 @@ export const useGoogleLogin = () => {
     if (result.type !== 'success') return;
 
     const { code } = result.params;
-    const { accessToken, refreshToken, user } = await postGoogleLogin(code);
+    const { accessToken, refreshToken } = await postGoogleLogin(code);
 
     await Promise.all([
       tokenStorage.saveAccessToken(accessToken),
       tokenStorage.saveRefreshToken(refreshToken),
     ]);
     setToken(accessToken);
-    setUser(user);
+    router.replace('/(tabs)');
   };
 
   return { login, isReady: !!request };

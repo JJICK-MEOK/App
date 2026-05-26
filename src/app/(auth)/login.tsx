@@ -1,17 +1,20 @@
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { handleGoogleLogin } from '@/src/components/GoogleWebView/GoogleWebView';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
+import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const { login: googleLogin } = useGoogleLogin();
+  const { login: kakaoLogin } = useKakaoLogin();
 
   return (
     <LinearGradient
@@ -32,8 +35,8 @@ export default function LoginScreen() {
       </View>
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
-        <SocialLoginButton provider="google" onPress={handleGoogleLogin} />
-        <SocialLoginButton provider="kakao" onPress={() => {}} />
+        <SocialLoginButton provider="google" onPress={googleLogin} />
+        <SocialLoginButton provider="kakao" onPress={kakaoLogin} />
       </View>
 
       <View style={styles.divider}>
