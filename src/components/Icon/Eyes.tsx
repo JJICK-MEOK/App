@@ -7,7 +7,7 @@ type Props = SvgProps & {
   size?: number;
 };
 
-export default function Eyes({ visible = true, size = 20, ...props }: Props) {
+export default function Eyes({ visible = true, size = 15, ...props }: Props) {
   const SvgIcon = visible ? EyeOnSvg : EyeOffSvg;
   return <SvgIcon width={size} height={size} {...props} />;
 }

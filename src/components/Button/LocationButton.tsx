@@ -9,6 +9,7 @@ type LocationButtonProps = {
   position?: LocationPosition;
   selected?: boolean;
   selectedColor?: string;
+  defaultBg?: string;
   onPress: () => void;
 };
 
@@ -25,15 +26,17 @@ export const LocationButton = ({
   position = 'middle',
   selected = false,
   selectedColor,
+  defaultBg,
   onPress,
 }: LocationButtonProps) => {
   const selectedBg = selectedColor ?? colors.primary.sub;
+  const unselectedBg = defaultBg ?? colors.neutral.white;
   return (
     <Pressable
       style={({ pressed }) => [
         styles.button,
         borderRadiusByPosition[position],
-        { backgroundColor: selected ? selectedBg : colors.neutral.white },
+        { backgroundColor: selected ? selectedBg : unselectedBg },
         pressed && styles.pressed,
       ]}
       onPress={onPress}

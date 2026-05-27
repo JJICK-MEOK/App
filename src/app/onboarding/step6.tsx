@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
@@ -9,27 +10,46 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { getTags, TagItem } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
 
-const CHIP_ROWS = [
-  ['#조용한', '#편안한', '#활기찬', '#사람많은'],
-  ['#혼자서', '#소규모', '#감성적'],
-  ['#새로운', '#배움', '#힐링', '#도전적'],
-  ['#힙한', '#아날로그', '#실용적'],
-  ['#예술적', '#어울리는', '#내향인환영'],
-  ['#제대로', '#가볍게'],
-];
+const ROW_SIZES = [4, 3, 4, 3, 4, 2];
+
+function groupIntoRows(tags: TagItem[]): TagItem[][] {
+  const rows: TagItem[][] = [];
+  let idx = 0;
+  for (let i = 0; idx < tags.length; i++) {
+    const size = ROW_SIZES[i % ROW_SIZES.length];
+    rows.push(tags.slice(idx, idx + size));
+    idx += size;
+  }
+  return rows;
+}
 
 export default function OnboardingStep6() {
   const router = useRouter();
-  const [selectedChips, setSelectedChips] = useState<Set<string>>(new Set());
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
 
-  const toggleChip = (label: string) => {
-    setSelectedChips((prev) => {
+  const { setPreferenceTagIds } = useOnboardingStore();
+
+  const {
+    data: tags = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['tags', 'PREFERENCE_TAG'],
+    queryFn: () => getTags('PREFERENCE_TAG'),
+  });
+
+  if (error) console.error('취향 태그 조회 실패', error);
+
+  const toggleTag = (id: number) => {
+    setSelectedTagIds((prev) => {
       const next = new Set(prev);
-      if (next.has(label)) {
-        next.delete(label);
+      if (next.has(id)) {
+        next.delete(id);
       } else if (next.size < 5) {
-        next.add(label);
+        next.add(id);
       }
       return next;
     });
@@ -51,30 +71,35 @@ export default function OnboardingStep6() {
           </Typography>
         </View>
 
-        <View style={styles.chipWrapper}>
+        {isLoading ? (
+          <ActivityIndicator color={colors.text.secondary} />
+        ) : (
           <View style={styles.chipContainer}>
-            {CHIP_ROWS.map((row, rowIndex) => (
-              <View key={rowIndex} style={styles.chipRow}>
-                {row.map((label) => (
+            {groupIntoRows(tags).map((row, rowIdx) => (
+              <View key={rowIdx} style={styles.tagRow}>
+                {row.map((tag) => (
                   <ChipChoice
-                    key={label}
-                    label={label}
-                    selected={selectedChips.has(label)}
-                    onPress={() => toggleChip(label)}
+                    key={tag.id}
+                    label={`#${tag.name}`}
+                    selected={selectedTagIds.has(tag.id)}
+                    onPress={() => toggleTag(tag.id)}
                   />
                 ))}
               </View>
             ))}
           </View>
-        </View>
+        )}
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="다음"
-          onPress={() => router.push('/onboarding/step7')}
+          onPress={() => {
+            setPreferenceTagIds(Array.from(selectedTagIds));
+            router.push('/onboarding/step7');
+          }}
           variant="primary"
-          disabled={selectedChips.size === 0}
+          disabled={selectedTagIds.size === 0}
         />
       </CTAContainer>
     </ScreenLayout>
@@ -99,18 +124,12 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 20,
   },
-  chipWrapper: {
-    marginHorizontal: -20,
-    overflow: 'hidden',
-  },
   chipContainer: {
-    flexDirection: 'column',
     gap: 16,
-    alignItems: 'center',
   },
-  chipRow: {
+  tagRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
     gap: 7,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },

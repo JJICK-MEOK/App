@@ -15,9 +15,11 @@ export default function ArrowLeftBar({ onPress, title }: Props) {
         <ArrowLeftSvg width={10} height={18.5} />
       </TouchableOpacity>
       {title && (
-        <Typography size="xl" weight="bold" style={styles.title}>
-          {title}
-        </Typography>
+        <View style={styles.titleWrapper} pointerEvents="none">
+          <Typography size="xl" weight="bold" style={styles.title}>
+            {title}
+          </Typography>
+        </View>
       )}
     </View>
   );
@@ -34,10 +36,13 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     gap: 10,
   },
-  title: {
+  titleWrapper: {
     position: 'absolute',
     left: 0,
     right: 0,
+    alignItems: 'center',
+  },
+  title: {
     textAlign: 'center',
   },
 });

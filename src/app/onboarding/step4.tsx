@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
@@ -9,36 +9,29 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-
-type Topic = {
-  id: number;
-  name: string;
-  subscribers: string;
-};
-
-const TOPICS: Topic[] = [
-  { id: 1, name: '운동 / 액티비티', subscribers: '00,000' },
-  { id: 2, name: '문화 / 공연 / 축제', subscribers: '00,000' },
-  { id: 3, name: '공예 / 만들기', subscribers: '00,000' },
-  { id: 4, name: '댄스 / 무용', subscribers: '00,000' },
-  { id: 5, name: '요리 / 베이킹', subscribers: '00,000' },
-  { id: 6, name: '사진 / 영상', subscribers: '00,000' },
-  { id: 7, name: '음악 / 악기', subscribers: '00,000' },
-  { id: 8, name: '인문학 / 책 / 글', subscribers: '00,000' },
-  { id: 9, name: '여행 / 산책 / 탐방', subscribers: '00,000' },
-  { id: 10, name: '해외 / 외국어', subscribers: '00,000' },
-  { id: 11, name: '봉사활동', subscribers: '00,000' },
-  { id: 12, name: '자기계발 / 클래스', subscribers: '00,000' },
-  { id: 13, name: '커리어 / 실무', subscribers: '00,000' },
-  { id: 14, name: '기타', subscribers: '00,000' },
-];
+import { getTags } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useState } from 'react';
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const [selectedTopics, setSelectedTopics] = useState<Set<number>>(new Set());
+  const { setTopicTagIds } = useOnboardingStore();
+  const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(new Set());
+
+  const {
+    data: topics = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['tags', 'TOPIC_CATEGORY'],
+    queryFn: () => getTags('TOPIC_CATEGORY'),
+  });
+
+  if (error) console.error('태그 조회 실패', error);
+  console.log('관심 주제 태그:', topics);
 
   const toggleTopic = (id: number) => {
-    setSelectedTopics((prev) => {
+    setSelectedTopicIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
@@ -63,26 +56,33 @@ export default function OnboardingStep4() {
           </Typography>
         </View>
 
-        <View style={styles.cardList}>
-          {TOPICS.map((topic) => (
-            <CategoryCard
-              key={topic.id}
-              categoryName={topic.name}
-              subscriberText={`${topic.subscribers}명이 구독했어요`}
-              imageUri=""
-              subscribed={selectedTopics.has(topic.id)}
-              onSubscribePress={() => toggleTopic(topic.id)}
-            />
-          ))}
-        </View>
+        {isLoading ? (
+          <ActivityIndicator color={colors.text.secondary} />
+        ) : (
+          <View style={styles.cardList}>
+            {topics.map((topic) => (
+              <CategoryCard
+                key={topic.id}
+                categoryName={topic.name}
+                subscriberText="00,000명이 구독했어요"
+                imageUri={`https://picsum.photos/seed/${topic.id}/70/70`}
+                subscribed={selectedTopicIds.has(topic.id)}
+                onSubscribePress={() => toggleTopic(topic.id)}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="다음"
-          onPress={() => router.push('/onboarding/step5')}
+          onPress={() => {
+            setTopicTagIds(Array.from(selectedTopicIds));
+            router.push('/onboarding/step5');
+          }}
           variant="primary"
-          disabled={selectedTopics.size === 0}
+          disabled={selectedTopicIds.size === 0}
         />
       </CTAContainer>
     </ScreenLayout>
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 16,
     alignItems: 'flex-start',
-    gap: 24,
+    gap: 72,
   },
   headerBlock: {
     width: '100%',

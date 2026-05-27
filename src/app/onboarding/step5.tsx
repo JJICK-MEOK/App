@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import ChipFilter from '@/src/components/Chip/ChipFilter';
@@ -10,73 +11,22 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { getRegions } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
 
-const NORMAL_ROWS = [
-  ['서울', '경기', '인천', '강원'],
-  ['충북', '충남', '세종', '대전'],
-  ['광주', '전북', '경북', '대구'],
-  ['제주', '전남', '경남/울산', '부산'],
-];
+const SEOUL_LABEL = '서울';
+const SEOUL_ALL_LABEL = '서울전체';
+const COLS = 4;
 
-const SEOUL_EXPANDED_ROWS = [
-  ['서울', '경기', '인천', '강원'],
-  ['서울전체', '강남', '강동', '강북'],
-  ['강서', '관악', '광진', '구로'],
-  ['금천', '노원', '도봉', '동대문'],
-  ['동작', '마포', '서대문', '서초'],
-  ['성동', '성북', '송파', '양천'],
-  ['영등포', '용산', '은평', '종로'],
-  ['중구', '중랑', '', ''],
-  ['충북', '충남', '세종', '대전'],
-  ['광주', '전북', '경북', '대구'],
-  ['제주', '전남', '경남/울산', '부산'],
-];
-
-const ALL_SEOUL_DISTRICTS = [
-  '강남',
-  '강동',
-  '강북',
-  '강서',
-  '관악',
-  '광진',
-  '구로',
-  '금천',
-  '노원',
-  '도봉',
-  '동대문',
-  '동작',
-  '마포',
-  '서대문',
-  '서초',
-  '성동',
-  '성북',
-  '송파',
-  '양천',
-  '영등포',
-  '용산',
-  '은평',
-  '종로',
-  '중구',
-  '중랑',
-];
-
-const NON_SEOUL_REGIONS = [
-  '경기',
-  '인천',
-  '강원',
-  '충북',
-  '충남',
-  '세종',
-  '대전',
-  '광주',
-  '전북',
-  '경북',
-  '대구',
-  '제주',
-  '전남',
-  '경남/울산',
-  '부산',
-];
+const chunkRows = (items: string[]): string[][] => {
+  const rows: string[][] = [];
+  for (let i = 0; i < items.length; i += COLS) {
+    const row = items.slice(i, i + COLS);
+    while (row.length < COLS) row.push('');
+    rows.push(row);
+  }
+  return rows;
+};
 
 const getPosition = (rowIndex: number, colIndex: number, totalRows: number): LocationPosition => {
   if (rowIndex === 0 && colIndex === 0) return 'topLeft';
@@ -92,25 +42,62 @@ export default function OnboardingStep5() {
   const [isSeoulAllSelected, setIsSeoulAllSelected] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
 
-  const displayRows = isSeoulExpanded ? SEOUL_EXPANDED_ROWS : NORMAL_ROWS;
+  const { setRegionIds } = useOnboardingStore();
+
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    error: regionsError,
+  } = useQuery({
+    queryKey: ['regions'],
+    queryFn: () => getRegions(),
+  });
+
+  if (regionsError) console.error('지역 조회 실패', regionsError);
+
+  const seoulProvince = provinces.find((p) => p.name === SEOUL_LABEL);
+
+  const { data: seoulDistricts = [] } = useQuery({
+    queryKey: ['regions', seoulProvince?.id],
+    queryFn: () => getRegions(seoulProvince!.id),
+    enabled: !!seoulProvince && isSeoulExpanded,
+  });
+
+  const provinceNames = provinces.map((p) => p.name);
+  const districtNames = seoulDistricts.map((d) => d.name);
+  const nonSeoulProvinceNames = provinceNames.filter((n) => n !== SEOUL_LABEL);
+
+  const displayRows = useMemo(() => {
+    if (!isSeoulExpanded || seoulDistricts.length === 0) {
+      return chunkRows(provinceNames);
+    }
+    const normalRows = chunkRows(provinceNames);
+    const seoulRowIndex = Math.floor(provinceNames.indexOf(SEOUL_LABEL) / COLS);
+    const districtRows = chunkRows([SEOUL_ALL_LABEL, ...districtNames]);
+    return [
+      ...normalRows.slice(0, seoulRowIndex + 1),
+      ...districtRows,
+      ...normalRows.slice(seoulRowIndex + 1),
+    ];
+  }, [isSeoulExpanded, provinceNames, districtNames, seoulDistricts.length]);
 
   const handlePress = (label: string) => {
     if (!label) return;
 
-    if (label === '서울') {
+    if (label === SEOUL_LABEL) {
       setIsSeoulExpanded((prev) => !prev);
       return;
     }
 
-    if (label === '서울전체') {
+    if (label === SEOUL_ALL_LABEL) {
       if (isSeoulAllSelected) {
         setIsSeoulAllSelected(false);
       } else {
         setIsSeoulAllSelected(true);
         setSelectedLocations((prev) => {
           const next = new Set(prev);
-          ALL_SEOUL_DISTRICTS.forEach((d) => next.delete(d));
-          const nonSeoulSelected = NON_SEOUL_REGIONS.filter((r) => next.has(r));
+          districtNames.forEach((d) => next.delete(d));
+          const nonSeoulSelected = nonSeoulProvinceNames.filter((r) => next.has(r));
           if (nonSeoulSelected.length > 2) {
             nonSeoulSelected.slice(2).forEach((r) => next.delete(r));
           }
@@ -120,7 +107,7 @@ export default function OnboardingStep5() {
       return;
     }
 
-    if (ALL_SEOUL_DISTRICTS.includes(label)) {
+    if (districtNames.includes(label)) {
       if (isSeoulAllSelected) return;
       setSelectedLocations((prev) => {
         const next = new Set(prev);
@@ -134,7 +121,7 @@ export default function OnboardingStep5() {
       return;
     }
 
-    // Non-Seoul region
+    // 비서울 시/도
     const limit = isSeoulAllSelected ? 2 : 3;
     setSelectedLocations((prev) => {
       const next = new Set(prev);
@@ -142,7 +129,7 @@ export default function OnboardingStep5() {
         next.delete(label);
       } else {
         const currentCount = isSeoulAllSelected
-          ? NON_SEOUL_REGIONS.filter((r) => next.has(r)).length
+          ? nonSeoulProvinceNames.filter((r) => next.has(r)).length
           : next.size;
         if (currentCount < limit) {
           next.add(label);
@@ -153,30 +140,36 @@ export default function OnboardingStep5() {
   };
 
   const isSelected = (label: string) => {
-    if (label === '서울') return isSeoulAllSelected;
-    if (label === '서울전체') return isSeoulAllSelected;
-    if (ALL_SEOUL_DISTRICTS.includes(label))
-      return isSeoulAllSelected || selectedLocations.has(label);
+    if (label === SEOUL_LABEL) return isSeoulExpanded || isSeoulAllSelected;
+    if (label === SEOUL_ALL_LABEL) return isSeoulAllSelected;
+    if (districtNames.includes(label)) return isSeoulAllSelected || selectedLocations.has(label);
     return selectedLocations.has(label);
+  };
+
+  const getDefaultBg = (label: string): string | undefined => {
+    if (districtNames.includes(label) || label === SEOUL_ALL_LABEL) {
+      return 'rgba(255, 242, 166, 0.8)';
+    }
+    return undefined;
   };
 
   const getChips = (): string[] => {
     const chips: string[] = [];
     if (isSeoulAllSelected) {
-      chips.push('서울');
+      chips.push(SEOUL_LABEL);
     } else {
-      ALL_SEOUL_DISTRICTS.forEach((d) => {
+      districtNames.forEach((d) => {
         if (selectedLocations.has(d)) chips.push(d);
       });
     }
-    NON_SEOUL_REGIONS.forEach((r) => {
+    nonSeoulProvinceNames.forEach((r) => {
       if (selectedLocations.has(r)) chips.push(r);
     });
     return chips;
   };
 
   const removeChip = (label: string) => {
-    if (label === '서울') {
+    if (label === SEOUL_LABEL) {
       setIsSeoulAllSelected(false);
       return;
     }
@@ -185,6 +178,29 @@ export default function OnboardingStep5() {
       next.delete(label);
       return next;
     });
+  };
+
+  const nameToId = useMemo(() => {
+    const map: Record<string, number> = {};
+    provinces.forEach((p) => (map[p.name] = p.id));
+    seoulDistricts.forEach((d) => (map[d.name] = d.id));
+    if (seoulProvince) map[SEOUL_ALL_LABEL] = seoulProvince.id;
+    return map;
+  }, [provinces, seoulDistricts, seoulProvince]);
+
+  const getSelectedRegionIds = (): number[] => {
+    const ids: number[] = [];
+    if (isSeoulAllSelected && nameToId[SEOUL_ALL_LABEL]) {
+      ids.push(nameToId[SEOUL_ALL_LABEL]);
+    } else {
+      districtNames.forEach((d) => {
+        if (selectedLocations.has(d) && nameToId[d]) ids.push(nameToId[d]);
+      });
+    }
+    nonSeoulProvinceNames.forEach((r) => {
+      if (selectedLocations.has(r) && nameToId[r]) ids.push(nameToId[r]);
+    });
+    return ids;
   };
 
   const chips = getChips();
@@ -206,7 +222,7 @@ export default function OnboardingStep5() {
           </Typography>
         </View>
 
-        <View style={styles.locationArea}>
+        <View style={styles.chipContainer}>
           {chips.length > 0 && (
             <View style={styles.chipRow}>
               {chips.map((chip) => (
@@ -214,7 +230,11 @@ export default function OnboardingStep5() {
               ))}
             </View>
           )}
+        </View>
 
+        {isProvincesLoading ? (
+          <ActivityIndicator color={colors.text.secondary} />
+        ) : (
           <View style={styles.grid}>
             {displayRows.map((row, rowIndex) => (
               <View key={rowIndex} style={styles.gridRow}>
@@ -225,6 +245,7 @@ export default function OnboardingStep5() {
                       label={location}
                       position={getPosition(rowIndex, colIndex, displayRows.length)}
                       selected={isSelected(location)}
+                      defaultBg={getDefaultBg(location)}
                       onPress={() => handlePress(location)}
                     />
                   ) : (
@@ -234,13 +255,16 @@ export default function OnboardingStep5() {
               </View>
             ))}
           </View>
-        </View>
+        )}
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="다음"
-          onPress={() => router.push('/onboarding/step6')}
+          onPress={() => {
+            setRegionIds(getSelectedRegionIds());
+            router.push('/onboarding/step6');
+          }}
           variant="primary"
           disabled={chips.length === 0}
         />
@@ -255,10 +279,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 99,
-    gap: 24,
     alignItems: 'center',
   },
-
   headerBlock: {
     width: '100%',
     gap: 13,
@@ -267,11 +289,11 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 20,
   },
-  locationArea: {
+  chipContainer: {
     width: 332,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 21,
+    height: 112,
+    justifyContent: 'flex-end',
+    paddingBottom: 21,
   },
   chipRow: {
     flexDirection: 'row',

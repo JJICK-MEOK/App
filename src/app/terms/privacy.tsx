@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
 import Close from '@/src/components/Icon/Close';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 
@@ -8,6 +8,7 @@ export default function TermsPrivacyScreen() {
 
   return (
     <ScreenLayout style={styles.container}>
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.header}>
         <Close onPress={() => router.back()} />
         <Text style={styles.headerTitle}>찍먹 개인정보 처리방침</Text>

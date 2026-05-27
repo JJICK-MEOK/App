@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '@/src/store/authStore';
+import { tokenStorage } from '@/src/lib/secureStore';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -22,3 +23,50 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        refreshPromise = (async () => {
+          try {
+            const refreshToken = await tokenStorage.getRefreshToken();
+            if (!refreshToken) throw new Error('No refresh token');
+
+            const { data } = await axios.post(`${API_BASE_URL}/auth/reissue`, { refreshToken });
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data;
+
+            await Promise.all([
+              tokenStorage.saveAccessToken(newAccessToken),
+              tokenStorage.saveRefreshToken(newRefreshToken),
+            ]);
+            useAuthStore.getState().setToken(newAccessToken);
+            return newAccessToken;
+          } finally {
+            isRefreshing = false;
+            refreshPromise = null;
+          }
+        })();
+      }
+
+      try {
+        const newAccessToken = await refreshPromise!;
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch {
+        await useAuthStore.getState().logout();
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);

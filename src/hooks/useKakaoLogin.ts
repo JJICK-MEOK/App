@@ -1,52 +1,35 @@
-import * as AuthSession from 'expo-auth-session';
-import * as WebBrowser from 'expo-web-browser';
+import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { postKakaoLogin } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
 
-WebBrowser.maybeCompleteAuthSession();
-
-const discovery = {
-  authorizationEndpoint: 'https://kauth.kakao.com/oauth/authorize',
-  tokenEndpoint: 'https://kauth.kakao.com/oauth/token',
-};
-
 export const useKakaoLogin = () => {
-  const { setUser, setToken } = useAuthStore();
+  const router = useRouter();
+  const { setToken } = useAuthStore();
+  const [showWebView, setShowWebView] = useState(false);
 
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'jjick-meok' });
+  const login = () => setShowWebView(true);
 
-  const [request, , promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: process.env.EXPO_PUBLIC_KAKAO_APP_KEY!,
-      redirectUri,
-      scopes: ['profile_nickname', 'account_email'],
-      responseType: AuthSession.ResponseType.Code,
-    },
-    discovery,
-  );
-
-  const login = async () => {
-    if (!request) return;
+  const handleCode = async (code: string) => {
+    setShowWebView(false);
     try {
-      const result = await promptAsync();
-      if (result.type !== 'success') return;
-
-      const code = result.params?.code;
-      if (!code) throw new Error('Missing Kakao authorization code');
-
-      const { accessToken, refreshToken, user } = await postKakaoLogin(code);
+      const { accessToken, refreshToken, registrationStatus } = await postKakaoLogin(code);
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
-      setUser(user);
-    } catch (error) {
-      console.error('Kakao login failed', error);
-      throw error;
+
+      if (registrationStatus === 'NOT_STARTED') {
+        router.replace('/onboarding/step1');
+      } else {
+        router.replace('/(tabs)/home');
+      }
+    } catch (error: any) {
+      console.error('[useKakaoLogin] login error:', error?.response?.data ?? error);
     }
   };
 
-  return { login, isReady: !!request };
+  return { login, showWebView, onCode: handleCode, onClose: () => setShowWebView(false) };
 };

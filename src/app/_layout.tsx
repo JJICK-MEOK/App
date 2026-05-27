@@ -13,7 +13,7 @@ export default function AppLayout() {
 
   useEffect(() => {
     initAuth();
-  }, []);
+  }, [initAuth]);
 
   return (
     <SafeAreaProvider>

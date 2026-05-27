@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -9,6 +10,9 @@ import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
+import { postLogin } from '@/src/api/auth';
+import { tokenStorage } from '@/src/lib/secureStore';
+import { useAuthStore } from '@/src/store/authStore';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -24,10 +28,12 @@ const isValidEmail = (value: string): boolean => {
 
 export default function EmailLoginScreen() {
   const router = useRouter();
+  const { setToken } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const emailValid = isValidEmail(email);
   const isFormValid = emailValid && password.length > 0;
@@ -42,6 +48,34 @@ export default function EmailLoginScreen() {
 
   const passwordError =
     passwordTouched && password.length === 0 ? '비밀번호를 입력해주세요.' : undefined;
+
+  const { mutate: login, isPending } = useMutation({
+    mutationFn: () => postLogin(email, password),
+    onSuccess: async ({ accessToken, refreshToken, registrationStatus }) => {
+      await Promise.all([
+        tokenStorage.saveAccessToken(accessToken),
+        tokenStorage.saveRefreshToken(refreshToken),
+      ]);
+      setToken(accessToken);
+
+      if (registrationStatus === 'NOT_STARTED') {
+        router.replace('/onboarding/step1');
+      } else {
+        router.replace('/(tabs)/home');
+      }
+    },
+    onError: (error: any) => {
+      console.error('[email-login] login error:', error?.response?.data ?? error);
+      const code = error?.response?.data?.code;
+      if (code === 'INVALID_LOGIN') {
+        setLoginError('이메일 또는 비밀번호가 올바르지 않습니다.');
+      } else if (code === 'USER_INACTIVE') {
+        setLoginError('사용할 수 없는 계정입니다.');
+      } else {
+        setLoginError('로그인에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -80,22 +114,25 @@ export default function EmailLoginScreen() {
         </View>
 
         <CTAContainer style={styles.ctaArea}>
+          {loginError ? (
+            <Typography size="sm" color="error" style={styles.loginError}>
+              {loginError}
+            </Typography>
+          ) : null}
           <BottomCTA
             label="로그인"
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => login()}
             variant="dark"
-            disabled={!isFormValid}
+            disabled={!isFormValid || isPending}
           />
           <View style={styles.signupSection}>
             <Typography size="sm" color="secondary">
               아직 계정이 없나요?
             </Typography>
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/signup')}
-              activeOpacity={0.7}
-              style={styles.signupButton}
-            >
-              <Typography style={styles.signupButtonText}>이메일로 회원가입</Typography>
+            <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
+              <Typography size="sm" weight="bold" style={styles.signupLink}>
+                이메일로 회원가입
+              </Typography>
             </TouchableOpacity>
           </View>
         </CTAContainer>
@@ -131,18 +168,10 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: spacing.sm,
   },
-  signupButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#222',
-    backgroundColor: '#222',
+  signupLink: {
+    textDecorationLine: 'underline',
   },
-  signupButtonText: {
-    fontFamily: 'Pretendard',
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.neutral.white,
+  loginError: {
+    textAlign: 'center',
   },
 });

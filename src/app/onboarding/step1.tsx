@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import GenderButton from '@/src/components/Button/GenderButton';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
@@ -11,6 +12,8 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { postCreateProfile } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
 
 type Gender = '남성' | '여성' | '선택 안함';
 
@@ -22,8 +25,18 @@ const STATUS_OPTIONS = [
   '기타',
 ];
 
+const GENDER_MAP = { 남성: 'MALE', 여성: 'FEMALE', '선택 안함': 'NONE' } as const;
+const STATUS_MAP = {
+  대학생이에요: 'STUDENT',
+  직장인이에요: 'WORKER',
+  '취업/진로를 준비 중이에요': 'JOB_SEEKER',
+  '프리랜서/자유롭게 일하고 있어요': 'FREELANCER',
+  기타: 'ETC',
+} as const;
+
 export default function OnboardingStep1() {
   const router = useRouter();
+  const saveNickname = useOnboardingStore((s) => s.setNickname);
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | null>(null);
   const [birthDate, setBirthDate] = useState('');
@@ -86,6 +99,28 @@ export default function OnboardingStep1() {
 
   const isFormValid =
     isNicknameValid && isBirthdayValid && gender !== null && status !== '' && serviceAgree;
+
+  const { mutate: createProfile, isPending } = useMutation({
+    mutationFn: () => {
+      const formatted = `${parsedBirth!.getFullYear()}-${String(parsedBirth!.getMonth() + 1).padStart(2, '0')}-${String(parsedBirth!.getDate()).padStart(2, '0')}`;
+      return postCreateProfile({
+        nickname,
+        birthDate: formatted,
+        gender: GENDER_MAP[gender!],
+        status: STATUS_MAP[status as keyof typeof STATUS_MAP],
+        serviceTermsAgreed: serviceAgree,
+        privacyPolicyAgreed: serviceAgree,
+        marketingAgreed: marketingAgree,
+      });
+    },
+    onSuccess: () => {
+      saveNickname(nickname);
+      router.push('/onboarding/step2');
+    },
+    onError: (error: any) => {
+      console.error('프로필 생성 실패', error);
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -199,9 +234,9 @@ export default function OnboardingStep1() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="다음"
-          onPress={() => router.push('/onboarding/step2')}
+          onPress={() => createProfile()}
           variant="primary"
-          disabled={!isFormValid}
+          disabled={!isFormValid || isPending}
         />
       </CTAContainer>
     </ScreenLayout>

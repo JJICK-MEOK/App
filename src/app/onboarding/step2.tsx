@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import Icon from '@/src/components/Icon/Icon';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -12,6 +12,7 @@ export default function OnboardingStep2() {
 
   return (
     <ScreenLayout style={styles.container}>
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.content}>
         <View style={styles.checkContainer}>
           <Icon name="check" size={90} />

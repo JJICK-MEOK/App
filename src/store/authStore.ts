@@ -4,7 +4,8 @@ import { tokenStorage } from '@/src/lib/secureStore';
 interface AuthState {
   user: null | {
     id: number;
-    name: string;
+    email: string;
+    profileCompleted: boolean;
   };
   accessToken: string | null;
 

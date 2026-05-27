@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import Checkbox from '@/src/components/Icon/Checkbox';
@@ -11,6 +12,9 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { radius, spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
+import { postLogin, postSignup } from '@/src/api/auth';
+import { tokenStorage } from '@/src/lib/secureStore';
+import { useAuthStore } from '@/src/store/authStore';
 
 const CONDITIONS = [
   { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
@@ -21,8 +25,11 @@ const CONDITIONS = [
 
 export default function PasswordScreen() {
   const router = useRouter();
+  const { email } = useLocalSearchParams<{ email: string }>();
+  const { setToken } = useAuthStore();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [signupError, setSignupError] = useState('');
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -30,6 +37,30 @@ export default function PasswordScreen() {
   const confirmError =
     confirm.length > 0 && !passwordsMatch ? '비밀번호가 일치하지 않아요' : undefined;
   const isComplete = allMet && passwordsMatch;
+
+  const { mutate: signup, isPending } = useMutation({
+    mutationFn: async () => {
+      await postSignup(email ?? '', password);
+      const { accessToken, refreshToken } = await postLogin(email ?? '', password);
+      await Promise.all([
+        tokenStorage.saveAccessToken(accessToken),
+        tokenStorage.saveRefreshToken(refreshToken),
+      ]);
+      setToken(accessToken);
+    },
+    onSuccess: () => {
+      router.replace('/(auth)/signup-complete');
+    },
+    onError: (error: any) => {
+      console.error('[password] signup error:', error?.response?.data ?? error);
+      const code = error?.response?.data?.code;
+      if (code === 'EMAIL_ALREADY_EXISTS') {
+        setSignupError('이미 가입된 이메일입니다.');
+      } else {
+        setSignupError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -42,8 +73,8 @@ export default function PasswordScreen() {
       >
         <View style={styles.form}>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
-              비밀번호
+            <Typography size="xl" weight="bold">
+              {'비밀번호를\n입력해 주세요'}
             </Typography>
             <TextField
               placeholder="영문, 숫자, 특수문자 포함 8자 이상"
@@ -53,9 +84,6 @@ export default function PasswordScreen() {
             />
           </View>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
-              비밀번호 확인
-            </Typography>
             <TextField
               placeholder="비밀번호를 다시 입력해주세요"
               value={confirm}
@@ -85,11 +113,16 @@ export default function PasswordScreen() {
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
+        {signupError ? (
+          <Typography size="sm" color="error" style={styles.errorText}>
+            {signupError}
+          </Typography>
+        ) : null}
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => router.push('/(auth)/signup-complete')}
-          variant="primary"
-          disabled={!isComplete}
+          onPress={() => signup()}
+          variant="dark"
+          disabled={!isComplete || isPending}
         />
       </CTAContainer>
     </ScreenLayout>
@@ -102,20 +135,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 63,
+    paddingTop: 39,
     paddingBottom: 16,
   },
   form: {
     gap: 32,
   },
   fieldGroup: {
-    gap: 9,
+    gap: 15,
   },
   label: {
     lineHeight: typography.lineHeight.relaxed,
   },
   conditionsBox: {
-    marginTop: 24,
+    marginTop: 105,
     backgroundColor: '#F5F5F5',
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
@@ -133,5 +166,9 @@ const styles = StyleSheet.create({
   cta: {
     paddingHorizontal: spacing.xl,
     paddingTop: 16,
+    gap: spacing.sm,
+  },
+  errorText: {
+    textAlign: 'center',
   },
 });

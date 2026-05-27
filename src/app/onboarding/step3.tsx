@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -16,6 +16,7 @@ export default function OnboardingStep3() {
       end={{ x: 0, y: 1 }}
       style={styles.container}
     >
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.content}>
         <Typography size="xxxl" weight="bold" style={styles.title}>
           {'내가 뭘 좋아하는지\n아직 잘 모르겠다면?'}
