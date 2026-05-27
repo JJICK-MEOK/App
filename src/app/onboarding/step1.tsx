@@ -13,6 +13,7 @@ import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { postCreateProfile } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
 
 type Gender = '남성' | '여성' | '선택 안함';
 
@@ -24,17 +25,18 @@ const STATUS_OPTIONS = [
   '기타',
 ];
 
-const GENDER_MAP = { '남성': 'MALE', '여성': 'FEMALE', '선택 안함': 'NONE' } as const;
+const GENDER_MAP = { 남성: 'MALE', 여성: 'FEMALE', '선택 안함': 'NONE' } as const;
 const STATUS_MAP = {
-  '대학생이에요': 'STUDENT',
-  '직장인이에요': 'WORKER',
+  대학생이에요: 'STUDENT',
+  직장인이에요: 'WORKER',
   '취업/진로를 준비 중이에요': 'JOB_SEEKER',
   '프리랜서/자유롭게 일하고 있어요': 'FREELANCER',
-  '기타': 'ETC',
+  기타: 'ETC',
 } as const;
 
 export default function OnboardingStep1() {
   const router = useRouter();
+  const saveNickname = useOnboardingStore((s) => s.setNickname);
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | null>(null);
   const [birthDate, setBirthDate] = useState('');
@@ -112,6 +114,7 @@ export default function OnboardingStep1() {
       });
     },
     onSuccess: () => {
+      saveNickname(nickname);
       router.push('/onboarding/step2');
     },
     onError: (error: any) => {

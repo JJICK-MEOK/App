@@ -21,7 +21,7 @@ export const CategoryCard = ({
   return (
     <View style={styles.container}>
       <View style={styles.info}>
-        <Image source={{ uri: imageUri }} style={styles.image} />
+        {imageUri ? <Image source={{ uri: imageUri }} style={styles.image} /> : null}
         <View style={styles.textArea}>
           <Typography size="xl" style={styles.categoryName}>
             {categoryName}
@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   image: {
     width: 70,
     height: 70,
+    aspectRatio: 1,
     borderRadius: 35,
   },
   textArea: {

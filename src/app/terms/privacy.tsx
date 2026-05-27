@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Close from '@/src/components/Icon/Close';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';

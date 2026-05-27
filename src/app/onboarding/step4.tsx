@@ -18,10 +18,17 @@ export default function OnboardingStep4() {
   const { setTopicTagIds } = useOnboardingStore();
   const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(new Set());
 
-  const { data: topics = [], isLoading } = useQuery({
+  const {
+    data: topics = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['tags', 'TOPIC_CATEGORY'],
     queryFn: () => getTags('TOPIC_CATEGORY'),
   });
+
+  if (error) console.error('태그 조회 실패', error);
+  console.log('관심 주제 태그:', topics);
 
   const toggleTopic = (id: number) => {
     setSelectedTopicIds((prev) => {
@@ -57,8 +64,8 @@ export default function OnboardingStep4() {
               <CategoryCard
                 key={topic.id}
                 categoryName={topic.name}
-                subscriberText=""
-                imageUri=""
+                subscriberText="00,000명이 구독했어요"
+                imageUri={`https://picsum.photos/seed/${topic.id}/70/70`}
                 subscribed={selectedTopicIds.has(topic.id)}
                 onSubscribePress={() => toggleTopic(topic.id)}
               />
@@ -89,7 +96,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 16,
     alignItems: 'flex-start',
-    gap: 24,
+    gap: 72,
   },
   headerBlock: {
     width: '100%',

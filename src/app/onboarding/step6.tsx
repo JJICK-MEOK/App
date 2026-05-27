@@ -10,8 +10,21 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-import { getTags } from '@/src/api/user';
+import { getTags, TagItem } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+
+const ROW_SIZES = [4, 3, 4, 3, 4, 2];
+
+function groupIntoRows(tags: TagItem[]): TagItem[][] {
+  const rows: TagItem[][] = [];
+  let idx = 0;
+  for (let i = 0; idx < tags.length; i++) {
+    const size = ROW_SIZES[i % ROW_SIZES.length];
+    rows.push(tags.slice(idx, idx + size));
+    idx += size;
+  }
+  return rows;
+}
 
 export default function OnboardingStep6() {
   const router = useRouter();
@@ -19,10 +32,16 @@ export default function OnboardingStep6() {
 
   const { setPreferenceTagIds } = useOnboardingStore();
 
-  const { data: tags = [], isLoading } = useQuery({
+  const {
+    data: tags = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ['tags', 'PREFERENCE_TAG'],
     queryFn: () => getTags('PREFERENCE_TAG'),
   });
+
+  if (error) console.error('취향 태그 조회 실패', error);
 
   const toggleTag = (id: number) => {
     setSelectedTagIds((prev) => {
@@ -55,17 +74,19 @@ export default function OnboardingStep6() {
         {isLoading ? (
           <ActivityIndicator color={colors.text.secondary} />
         ) : (
-          <View style={styles.chipWrapper}>
-            <View style={styles.chipContainer}>
-              {tags.map((tag) => (
-                <ChipChoice
-                  key={tag.id}
-                  label={`#${tag.name}`}
-                  selected={selectedTagIds.has(tag.id)}
-                  onPress={() => toggleTag(tag.id)}
-                />
-              ))}
-            </View>
+          <View style={styles.chipContainer}>
+            {groupIntoRows(tags).map((row, rowIdx) => (
+              <View key={rowIdx} style={styles.tagRow}>
+                {row.map((tag) => (
+                  <ChipChoice
+                    key={tag.id}
+                    label={`#${tag.name}`}
+                    selected={selectedTagIds.has(tag.id)}
+                    onPress={() => toggleTag(tag.id)}
+                  />
+                ))}
+              </View>
+            ))}
           </View>
         )}
       </ScrollView>
@@ -103,16 +124,13 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 20,
   },
-  chipWrapper: {
-    marginHorizontal: -20,
-    overflow: 'hidden',
-  },
   chipContainer: {
+    gap: 19,
+  },
+  tagRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    gap: 7,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, marginBottom: 9 },

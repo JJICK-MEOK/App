@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
-import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
@@ -12,14 +11,56 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { postEmailVerifyCode, postEmailSendCode } from '@/src/api/auth';
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function EmailVerifyScreen() {
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email: string }>();
+  const { email, expiresIn: expiresInParam } = useLocalSearchParams<{
+    email: string;
+    expiresIn: string;
+  }>();
+  const initialDuration = useRef(parseInt(expiresInParam ?? '180', 10));
+
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
   const [resendMessage, setResendMessage] = useState('');
+  const [timeLeft, setTimeLeft] = useState(initialDuration.current);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isValid = code.length === 6;
+  const isExpired = timeLeft === 0;
+  const isValid = code.length === 6 && !isExpired;
+
+  const startTimer = useCallback((duration: number) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setTimeLeft(duration);
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    startTimer(initialDuration.current);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [startTimer]);
+
+  useEffect(() => {
+    if (isExpired) {
+      setCodeError('유효시간이 만료되었습니다. 다시 시도해주세요.');
+    }
+  }, [isExpired]);
 
   const { mutate: verifyCode, isPending: isVerifying } = useMutation({
     mutationFn: () => postEmailVerifyCode(email ?? '', code),
@@ -27,11 +68,12 @@ export default function EmailVerifyScreen() {
       router.push({ pathname: '/(auth)/password', params: { email } });
     },
     onError: (error: any) => {
+      console.error('[email-verify] verifyCode error:', error?.response?.data ?? error);
       const errorCode = error?.response?.data?.code;
       if (errorCode === 'INVALID_EMAIL_CODE') {
         setCodeError('인증번호가 올바르지 않습니다.');
       } else if (errorCode === 'EMAIL_CODE_EXPIRED') {
-        setCodeError('인증번호가 만료되었습니다. 재전송해주세요.');
+        setCodeError('유효시간이 만료되었습니다. 다시 시도해주세요.');
       } else if (errorCode === 'EMAIL_ALREADY_EXISTS') {
         setCodeError('이미 가입된 이메일입니다.');
       } else {
@@ -42,11 +84,14 @@ export default function EmailVerifyScreen() {
 
   const { mutate: resendCode, isPending: isResending } = useMutation({
     mutationFn: () => postEmailSendCode(email ?? ''),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setCode('');
       setCodeError('');
       setResendMessage('인증번호를 재전송했습니다.');
+      startTimer(data.expiresIn);
     },
     onError: (error: any) => {
+      console.error('[email-verify] resendCode error:', error?.response?.data ?? error);
       const errorCode = error?.response?.data?.code;
       if (errorCode === 'EMAIL_CODE_RATE_LIMITED') {
         setResendMessage('잠시 후 다시 시도해주세요.');
@@ -72,16 +117,21 @@ export default function EmailVerifyScreen() {
             value={code}
             onChangeText={(text) => {
               setCode(text);
-              setCodeError('');
+              if (!isExpired) setCodeError('');
             }}
             keyboardType="number-pad"
             maxLength={6}
             errorMessage={codeError || undefined}
+            rightElement={
+              <Typography size="xs" style={styles.timer}>
+                {formatTime(timeLeft)}
+              </Typography>
+            }
           />
         </View>
       </View>
 
-      <CTAContainer style={styles.cta}>
+      <View style={styles.cta}>
         <BottomCTA
           label="인증번호 확인"
           onPress={() => verifyCode()}
@@ -110,7 +160,7 @@ export default function EmailVerifyScreen() {
             </>
           )}
         </View>
-      </CTAContainer>
+      </View>
     </ScreenLayout>
   );
 }
@@ -120,7 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.white,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.xl,
     paddingTop: 26,
   },
@@ -132,7 +181,7 @@ const styles = StyleSheet.create({
   },
   cta: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 16,
+    paddingTop: 96,
     gap: spacing.md,
   },
   resendRow: {
@@ -143,5 +192,8 @@ const styles = StyleSheet.create({
   },
   resendLink: {
     textDecorationLine: 'underline',
+  },
+  timer: {
+    color: colors.text.error,
   },
 });

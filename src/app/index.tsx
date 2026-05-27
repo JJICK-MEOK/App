@@ -15,7 +15,7 @@ export default function SplashScreen() {
       router.replace('/(auth)/login');
     }, 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <LinearGradient

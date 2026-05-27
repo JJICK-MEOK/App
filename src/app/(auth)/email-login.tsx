@@ -51,15 +51,21 @@ export default function EmailLoginScreen() {
 
   const { mutate: login, isPending } = useMutation({
     mutationFn: () => postLogin(email, password),
-    onSuccess: async ({ accessToken, refreshToken }) => {
+    onSuccess: async ({ accessToken, refreshToken, registrationStatus }) => {
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
-      router.replace('/(tabs)');
+
+      if (registrationStatus === 'NOT_STARTED') {
+        router.replace('/onboarding/step1');
+      } else {
+        router.replace('/(tabs)/home');
+      }
     },
     onError: (error: any) => {
+      console.error('[email-login] login error:', error?.response?.data ?? error);
       const code = error?.response?.data?.code;
       if (code === 'INVALID_LOGIN') {
         setLoginError('이메일 또는 비밀번호가 올바르지 않습니다.');
@@ -123,12 +129,10 @@ export default function EmailLoginScreen() {
             <Typography size="sm" color="secondary">
               아직 계정이 없나요?
             </Typography>
-            <TouchableOpacity
-              onPress={() => router.push('/(auth)/signup')}
-              activeOpacity={0.7}
-              style={styles.signupButton}
-            >
-              <Typography style={styles.signupButtonText}>이메일로 회원가입</Typography>
+            <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
+              <Typography size="sm" weight="bold" style={styles.signupLink}>
+                이메일로 회원가입
+              </Typography>
             </TouchableOpacity>
           </View>
         </CTAContainer>
@@ -164,19 +168,8 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingTop: spacing.sm,
   },
-  signupButton: {
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: '#222',
-    backgroundColor: '#222',
-  },
-  signupButtonText: {
-    fontFamily: 'Pretendard',
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.neutral.white,
+  signupLink: {
+    textDecorationLine: 'underline',
   },
   loginError: {
     textAlign: 'center',

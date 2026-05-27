@@ -12,7 +12,9 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { radius, spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
-import { postSignup } from '@/src/api/auth';
+import { postLogin, postSignup } from '@/src/api/auth';
+import { tokenStorage } from '@/src/lib/secureStore';
+import { useAuthStore } from '@/src/store/authStore';
 
 const CONDITIONS = [
   { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
@@ -24,6 +26,7 @@ const CONDITIONS = [
 export default function PasswordScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
+  const { setToken } = useAuthStore();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [signupError, setSignupError] = useState('');
@@ -36,11 +39,20 @@ export default function PasswordScreen() {
   const isComplete = allMet && passwordsMatch;
 
   const { mutate: signup, isPending } = useMutation({
-    mutationFn: () => postSignup(email ?? '', password),
+    mutationFn: async () => {
+      await postSignup(email ?? '', password);
+      const { accessToken, refreshToken } = await postLogin(email ?? '', password);
+      await Promise.all([
+        tokenStorage.saveAccessToken(accessToken),
+        tokenStorage.saveRefreshToken(refreshToken),
+      ]);
+      setToken(accessToken);
+    },
     onSuccess: () => {
-      router.push('/(auth)/signup-complete');
+      router.replace('/(auth)/signup-complete');
     },
     onError: (error: any) => {
+      console.error('[password] signup error:', error?.response?.data ?? error);
       const code = error?.response?.data?.code;
       if (code === 'EMAIL_ALREADY_EXISTS') {
         setSignupError('이미 가입된 이메일입니다.');
@@ -61,8 +73,8 @@ export default function PasswordScreen() {
       >
         <View style={styles.form}>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
-              비밀번호
+            <Typography size="xl" weight="bold">
+              {'비밀번호를\n입력해 주세요'}
             </Typography>
             <TextField
               placeholder="영문, 숫자, 특수문자 포함 8자 이상"
@@ -72,9 +84,6 @@ export default function PasswordScreen() {
             />
           </View>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
-              비밀번호 확인
-            </Typography>
             <TextField
               placeholder="비밀번호를 다시 입력해주세요"
               value={confirm}
@@ -112,7 +121,7 @@ export default function PasswordScreen() {
         <BottomCTA
           label="회원가입 완료"
           onPress={() => signup()}
-          variant="primary"
+          variant="dark"
           disabled={!isComplete || isPending}
         />
       </CTAContainer>

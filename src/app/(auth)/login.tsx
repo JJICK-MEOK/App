@@ -6,15 +6,16 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
+// import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
 import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
+import { KakaoWebView } from '@/src/components/KakaoWebView/KakaoWebView';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login: googleLogin } = useGoogleLogin();
-  const { login: kakaoLogin } = useKakaoLogin();
+  // const { login: googleLogin } = useGoogleLogin();
+  const { login: kakaoLogin, showWebView, onCode, onClose } = useKakaoLogin();
 
   return (
     <LinearGradient
@@ -35,7 +36,7 @@ export default function LoginScreen() {
       </View>
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
-        <SocialLoginButton provider="google" onPress={googleLogin} />
+        <SocialLoginButton provider="google" onPress={() => {}} />
         <SocialLoginButton provider="kakao" onPress={kakaoLogin} />
       </View>
 
@@ -54,6 +55,8 @@ export default function LoginScreen() {
           variant="white"
         />
       </CTAContainer>
+
+      <KakaoWebView visible={showWebView} onCode={onCode} onClose={onClose} />
     </LinearGradient>
   );
 }

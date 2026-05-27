@@ -28,6 +28,7 @@ interface LoginResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
+  registrationStatus: 'NOT_STARTED' | 'PROFILE_COMPLETED';
 }
 
 export const postLogin = async (email: string, password: string): Promise<LoginResponse> => {

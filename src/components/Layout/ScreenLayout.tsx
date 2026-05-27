@@ -1,5 +1,13 @@
 import { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, StyleProp, View, ViewStyle } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleProp,
+  TouchableWithoutFeedback,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Props = {
@@ -13,13 +21,15 @@ export function ScreenLayout({ children, withKeyboard = false, style }: Props) {
 
   if (withKeyboard) {
     return (
-      <KeyboardAvoidingView
-        style={[{ flex: 1 }, style]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={insets.top}
-      >
-        {children}
-      </KeyboardAvoidingView>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          style={[{ flex: 1 }, style]}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={insets.top}
+        >
+          {children}
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     );
   }
 

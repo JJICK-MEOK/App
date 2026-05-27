@@ -44,10 +44,16 @@ export default function OnboardingStep5() {
 
   const { setRegionIds } = useOnboardingStore();
 
-  const { data: provinces = [], isLoading: isProvincesLoading } = useQuery({
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    error: regionsError,
+  } = useQuery({
     queryKey: ['regions'],
     queryFn: () => getRegions(),
   });
+
+  if (regionsError) console.error('지역 조회 실패', regionsError);
 
   const seoulProvince = provinces.find((p) => p.name === SEOUL_LABEL);
 
@@ -134,10 +140,17 @@ export default function OnboardingStep5() {
   };
 
   const isSelected = (label: string) => {
-    if (label === SEOUL_LABEL) return isSeoulAllSelected;
+    if (label === SEOUL_LABEL) return isSeoulExpanded || isSeoulAllSelected;
     if (label === SEOUL_ALL_LABEL) return isSeoulAllSelected;
     if (districtNames.includes(label)) return isSeoulAllSelected || selectedLocations.has(label);
     return selectedLocations.has(label);
+  };
+
+  const getDefaultBg = (label: string): string | undefined => {
+    if (districtNames.includes(label) || label === SEOUL_ALL_LABEL) {
+      return 'rgba(255, 242, 166, 0.8)';
+    }
+    return undefined;
   };
 
   const getChips = (): string[] => {
@@ -209,7 +222,7 @@ export default function OnboardingStep5() {
           </Typography>
         </View>
 
-        <View style={styles.locationArea}>
+        <View style={styles.chipContainer}>
           {chips.length > 0 && (
             <View style={styles.chipRow}>
               {chips.map((chip) => (
@@ -217,31 +230,32 @@ export default function OnboardingStep5() {
               ))}
             </View>
           )}
-
-          {isProvincesLoading ? (
-            <ActivityIndicator color={colors.text.secondary} />
-          ) : (
-            <View style={styles.grid}>
-              {displayRows.map((row, rowIndex) => (
-                <View key={rowIndex} style={styles.gridRow}>
-                  {row.map((location, colIndex) =>
-                    location ? (
-                      <LocationButton
-                        key={`${rowIndex}-${colIndex}`}
-                        label={location}
-                        position={getPosition(rowIndex, colIndex, displayRows.length)}
-                        selected={isSelected(location)}
-                        onPress={() => handlePress(location)}
-                      />
-                    ) : (
-                      <View key={`${rowIndex}-empty-${colIndex}`} style={styles.emptyCell} />
-                    ),
-                  )}
-                </View>
-              ))}
-            </View>
-          )}
         </View>
+
+        {isProvincesLoading ? (
+          <ActivityIndicator color={colors.text.secondary} />
+        ) : (
+          <View style={styles.grid}>
+            {displayRows.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.gridRow}>
+                {row.map((location, colIndex) =>
+                  location ? (
+                    <LocationButton
+                      key={`${rowIndex}-${colIndex}`}
+                      label={location}
+                      position={getPosition(rowIndex, colIndex, displayRows.length)}
+                      selected={isSelected(location)}
+                      defaultBg={getDefaultBg(location)}
+                      onPress={() => handlePress(location)}
+                    />
+                  ) : (
+                    <View key={`${rowIndex}-empty-${colIndex}`} style={styles.emptyCell} />
+                  ),
+                )}
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
@@ -265,7 +279,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 32,
     paddingBottom: 99,
-    gap: 24,
     alignItems: 'center',
   },
   headerBlock: {
@@ -276,11 +289,11 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: 20,
   },
-  locationArea: {
+  chipContainer: {
     width: 332,
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 21,
+    height: 112,
+    justifyContent: 'flex-end',
+    paddingBottom: 21,
   },
   chipRow: {
     flexDirection: 'row',

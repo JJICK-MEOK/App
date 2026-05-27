@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
 import { ContentCard } from '@/src/components/Card/ContentCard';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -30,13 +31,14 @@ const MOCK_CARDS = [
 
 export default function OnboardingResult() {
   const router = useRouter();
+  const nickname = useOnboardingStore((s) => s.nickname);
 
   return (
     <ScreenLayout style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
           <Text style={styles.title}>
-            {'00님은\n'}
+            {`${nickname}님은\n`}
             <Text style={styles.highlight}>{'소규모 ・가벼운 체험형'}</Text>
             {' 을\n선호해요'}
           </Text>

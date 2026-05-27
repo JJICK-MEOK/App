@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
-import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
@@ -12,27 +11,52 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { postEmailSendCode } from '@/src/api/auth';
 
+const isValidEmail = (value: string): boolean => {
+  if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
+  if (/\s/.test(value)) return false;
+  const atIndex = value.indexOf('@');
+  if (atIndex <= 0) return false;
+  const domain = value.slice(atIndex + 1);
+  if (!domain) return false;
+  const dotIndex = domain.indexOf('.');
+  if (dotIndex <= 0) return false;
+  return domain.slice(dotIndex + 1).length > 0;
+};
+
 export default function SignupScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [serverError, setServerError] = useState('');
 
-  const isValid = email.trim().length > 0;
+  const emailValid = isValidEmail(email);
+
+  const emailError = emailTouched
+    ? email.length === 0
+      ? '이메일을 입력해주세요.'
+      : !emailValid
+        ? '올바른 이메일 형식으로 입력해주세요.'
+        : undefined
+    : undefined;
+
+  const displayError = emailError || serverError || undefined;
 
   const { mutate: sendCode, isPending } = useMutation({
     mutationFn: () => postEmailSendCode(email),
-    onSuccess: () => {
-      setErrorMessage('');
-      router.push({ pathname: '/(auth)/email-verify', params: { email } });
+    onSuccess: (data) => {
+      setServerError('');
+      router.push({
+        pathname: '/(auth)/email-verify',
+        params: { email, expiresIn: String(data.expiresIn) },
+      });
     },
     onError: (error: any) => {
+      console.error('[signup] sendCode error:', error?.response?.data ?? error);
       const code = error?.response?.data?.code;
-      if (code === 'EMAIL_ALREADY_EXISTS') {
-        setErrorMessage('이미 가입된 이메일입니다.');
-      } else if (code === 'INVALID_EMAIL_FORMAT') {
-        setErrorMessage('올바른 이메일 형식이 아닙니다.');
+      if (code === 'EMAIL_ALREADY_EXISTS' || code === 'COMMON_409') {
+        setServerError('이미 가입되어 있는 이메일이에요.');
       } else {
-        setErrorMessage('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+        setServerError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
       }
     },
   });
@@ -43,33 +67,34 @@ export default function SignupScreen() {
 
       <View style={styles.content}>
         <View style={styles.fieldGroup}>
-          <Typography size="lg" weight="bold">
-            이메일을 입력해 주세요
+          <Typography size="xl" weight="bold">
+            {'이메일을\n입력해 주세요'}
           </Typography>
           <TextField
             placeholder="이메일 주소를 입력해주세요"
             value={email}
             onChangeText={(text) => {
               setEmail(text);
-              setErrorMessage('');
+              setServerError('');
             }}
+            onBlur={() => setEmailTouched(true)}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            helperText={!errorMessage ? '올바른 이메일 형식으로 입력해주세요' : undefined}
-            errorMessage={errorMessage || undefined}
+            helperText={!displayError ? '올바른 이메일 형식으로 입력해주세요' : undefined}
+            errorMessage={displayError}
           />
         </View>
       </View>
 
-      <CTAContainer style={styles.cta}>
+      <View style={styles.cta}>
         <BottomCTA
           label="계속하기"
           onPress={() => sendCode()}
           variant="dark"
-          disabled={!isValid || isPending}
+          disabled={!emailValid || isPending}
         />
-      </CTAContainer>
+      </View>
     </ScreenLayout>
   );
 }
@@ -79,7 +104,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.white,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.xl,
     paddingTop: 63,
   },
@@ -88,6 +112,6 @@ const styles = StyleSheet.create({
   },
   cta: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 16,
+    paddingTop: 72,
   },
 });
