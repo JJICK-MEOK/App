@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 26,
+    paddingTop: 64,
   },
   description: {
     marginBottom: 15,

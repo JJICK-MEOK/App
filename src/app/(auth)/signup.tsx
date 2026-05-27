@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     paddingTop: 63,
   },
   fieldGroup: {
-    gap: 9,
+    gap: 15,
   },
   cta: {
     paddingHorizontal: spacing.xl,

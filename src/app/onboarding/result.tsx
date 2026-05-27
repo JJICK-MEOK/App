@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 import { ContentCard } from '@/src/components/Card/ContentCard';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
@@ -35,6 +35,7 @@ export default function OnboardingResult() {
 
   return (
     <ScreenLayout style={styles.container}>
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
           <Text style={styles.title}>

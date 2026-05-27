@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '@/src/components/Logo/Logo';
 import { Typography } from '@/src/components/Typography/Typography';
@@ -23,6 +23,7 @@ export default function SplashScreen() {
       locations={[0, 0.5, 1]}
       style={styles.container}
     >
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.content}>
         <Typography size="lg" weight="semiBold" color="heading" style={styles.subtitle}>
           나에게 맞는 활동을

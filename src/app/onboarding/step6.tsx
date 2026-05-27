@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   chipContainer: {
-    gap: 19,
+    gap: 16,
   },
   tagRow: {
     flexDirection: 'row',

@@ -135,20 +135,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 63,
+    paddingTop: 39,
     paddingBottom: 16,
   },
   form: {
     gap: 32,
   },
   fieldGroup: {
-    gap: 9,
+    gap: 15,
   },
   label: {
     lineHeight: typography.lineHeight.relaxed,
   },
   conditionsBox: {
-    marginTop: 24,
+    marginTop: 105,
     backgroundColor: '#F5F5F5',
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,

@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -23,6 +23,7 @@ export default function LoginScreen() {
       locations={[0, 0.5, 1]}
       style={styles.container}
     >
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <Typography size="xxxl" weight="bold" style={styles.title}>
         {'나에게 맞는\n새로운 경험의 시작'}
       </Typography>

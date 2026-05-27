@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -19,6 +19,7 @@ export default function OnboardingStep7() {
 
   return (
     <ScreenLayout style={styles.container}>
+      <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.progressContainer}>
         <ProgressBar step={4} />
       </View>
