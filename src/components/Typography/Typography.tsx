@@ -1,4 +1,4 @@
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { Text, TextProps } from 'react-native';
 import { typography } from '@/src/constants/typography';
 import { colors } from '@/src/constants/colors';
 
@@ -23,11 +23,12 @@ export const Typography = ({
     <Text
       allowFontScaling={false}
       style={[
-        styles.base,
         {
-          fontSize: typography.size[size],
+          fontFamily: 'Pretendard',
           fontWeight: typography.weight[weight],
+          fontSize: typography.size[size],
           color: colors.text[color],
+          includeFontPadding: false,
         },
         style,
       ]}
@@ -35,10 +36,3 @@ export const Typography = ({
     />
   );
 };
-
-const styles = StyleSheet.create({
-  base: {
-    fontFamily: typography.family.base,
-    includeFontPadding: false,
-  },
-});

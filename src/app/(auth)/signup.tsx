@@ -1,15 +1,19 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
+import VerificationButton, { VerificationStatus } from '@/src/components/Button/VerificationButton';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-import { postEmailSendCode } from '@/src/api/auth';
+import { typography } from '@/src/constants/typography';
+import { postEmailSendCode, postEmailVerifyCode } from '@/src/api/auth';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -23,37 +27,74 @@ const isValidEmail = (value: string): boolean => {
   return domain.slice(dotIndex + 1).length > 0;
 };
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+type Step = 'email' | 'verify';
+
 export default function SignupScreen() {
   const router = useRouter();
+
+  const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const emailValid = isValidEmail(email);
+  const isExpired = step === 'verify' && timeLeft === 0;
+  const canNext = step === 'verify' && code.length === 6 && !isExpired;
 
-  const emailError = emailTouched
-    ? email.length === 0
-      ? '이메일을 입력해주세요.'
-      : !emailValid
-        ? '올바른 이메일 형식으로 입력해주세요.'
-        : undefined
-    : undefined;
+  const emailError =
+    (emailTouched && email.length > 0 && !emailValid
+      ? '올바른 이메일 형식으로 입력해주세요.'
+      : serverError) || undefined;
 
-  const displayError = emailError || serverError || undefined;
+  const startTimer = useCallback((duration: number) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setTimeLeft(duration);
+    intervalRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
 
-  const { mutate: sendCode, isPending } = useMutation({
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isExpired) {
+      setCodeError('유효시간이 만료되었습니다. 다시 시도해주세요.');
+    }
+  }, [isExpired]);
+
+  const { mutate: sendCode, isPending: isSending } = useMutation({
     mutationFn: () => postEmailSendCode(email),
     onSuccess: (data) => {
       setServerError('');
-      router.push({
-        pathname: '/(auth)/email-verify',
-        params: { email, expiresIn: String(data.expiresIn) },
-      });
+      setCode('');
+      setCodeError('');
+      startTimer(data.expiresIn);
+      setStep('verify');
     },
     onError: (error: any) => {
-      console.error('[signup] sendCode error:', error?.response?.data ?? error);
-      const code = error?.response?.data?.code;
-      if (code === 'EMAIL_ALREADY_EXISTS' || code === 'COMMON_409') {
+      const errorCode = error?.response?.data?.code;
+      if (errorCode === 'EMAIL_ALREADY_EXISTS' || errorCode === 'COMMON_409') {
         setServerError('이미 가입되어 있는 이메일이에요.');
       } else {
         setServerError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
@@ -61,17 +102,62 @@ export default function SignupScreen() {
     },
   });
 
+  const { mutate: resendCode, isPending: isResending } = useMutation({
+    mutationFn: () => postEmailSendCode(email),
+    onSuccess: (data) => {
+      setCode('');
+      setCodeError('');
+      startTimer(data.expiresIn);
+    },
+    onError: (error: any) => {
+      const errorCode = error?.response?.data?.code;
+      setCodeError(
+        errorCode === 'EMAIL_CODE_RATE_LIMITED'
+          ? '잠시 후 다시 시도해주세요.'
+          : '재전송에 실패했습니다.',
+      );
+    },
+  });
+
+  const { mutate: verifyCode, isPending: isVerifying } = useMutation({
+    mutationFn: () => postEmailVerifyCode(email, code),
+    onSuccess: () => {
+      router.push({ pathname: '/(auth)/password', params: { email } });
+    },
+    onError: (error: any) => {
+      const errorCode = error?.response?.data?.code;
+      if (errorCode === 'INVALID_EMAIL_CODE') {
+        setCodeError('인증번호가 올바르지 않습니다.');
+      } else if (errorCode === 'EMAIL_CODE_EXPIRED') {
+        setCodeError('유효시간이 만료되었습니다. 다시 시도해주세요.');
+      } else if (errorCode === 'EMAIL_ALREADY_EXISTS') {
+        setCodeError('이미 가입된 이메일입니다.');
+      } else {
+        setCodeError('인증에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+  });
+
+  const verificationStatus: VerificationStatus =
+    isSending || isResending ? 'disabled' :
+    step === 'verify' ? 'resend' :
+    emailValid ? 'enabled' : 'disabled';
+
   return (
     <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="이메일로 회원가입" />
+      <View style={styles.progressWrapper}>
+        <ProgressBar step={1} />
+      </View>
 
       <View style={styles.content}>
-        <View style={styles.fieldGroup}>
-          <Typography size="xl" weight="bold">
-            {'이메일을\n입력해 주세요'}
-          </Typography>
+        <Typography size="lg" weight="medium" style={styles.title}>
+          {'이메일을\n입력해 주세요'}
+        </Typography>
+
+        <View style={styles.fields}>
           <TextField
-            placeholder="이메일 주소를 입력해주세요"
+            placeholder="user@example.com"
             value={email}
             onChangeText={(text) => {
               setEmail(text);
@@ -81,20 +167,41 @@ export default function SignupScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            helperText={!displayError ? '올바른 이메일 형식으로 입력해주세요' : undefined}
-            errorMessage={displayError}
+            editable={step === 'email'}
+            errorMessage={emailError}
+            rightElement={
+              <VerificationButton
+                status={verificationStatus}
+                onPress={step === 'email' ? () => sendCode() : () => resendCode()}
+              />
+            }
           />
+
+          {step === 'verify' && (
+            <TextField
+              placeholder="인증번호 6자리를 입력해주세요"
+              value={code}
+              onChangeText={(text) => {
+                setCode(text);
+                if (!isExpired) setCodeError('');
+              }}
+              keyboardType="number-pad"
+              maxLength={6}
+              errorMessage={codeError || undefined}
+              rightElement={<Text style={styles.timer}>{formatTime(timeLeft)}</Text>}
+            />
+          )}
         </View>
       </View>
 
-      <View style={styles.cta}>
+      <CTAContainer style={styles.cta}>
         <BottomCTA
-          label="계속하기"
-          onPress={() => sendCode()}
+          label="다음"
+          onPress={() => verifyCode()}
           variant="dark"
-          disabled={!emailValid || isPending}
+          disabled={!canNext || isVerifying}
         />
-      </View>
+      </CTAContainer>
     </ScreenLayout>
   );
 }
@@ -104,14 +211,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.white,
   },
   content: {
+    flex: 1,
     paddingHorizontal: spacing.xl,
-    paddingTop: 63,
+    paddingTop: 38,
   },
-  fieldGroup: {
-    gap: 15,
+  title: {
+    lineHeight: 24,
+    marginBottom: 15,
+  },
+  fields: {
+    gap: 13,
+  },
+  progressWrapper: {
+    paddingHorizontal: spacing.xl,
   },
   cta: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 72,
+    paddingTop: 16,
+  },
+  timer: {
+    fontFamily: typography.family.base,
+    fontSize: typography.size.sm,
+    fontWeight: typography.weight.medium,
+    color: colors.text.error,
   },
 });

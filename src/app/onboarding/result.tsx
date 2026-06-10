@@ -1,7 +1,8 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 import { ContentCard, type ContentCardTag } from '@/src/components/Card/ContentCard';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -11,33 +12,33 @@ import { colors } from '@/src/constants/colors';
 const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: ContentCardTag[] }[] =
   [
     {
-      title: '아무것도 몰라도\n락스타가 될 수 있어!',
-      subtitle: '201P Rookies 13기',
-      imageUri: '',
-      tags: [
-        { label: '#소규모', variant: 'groupSize' },
-        { label: '#실내', variant: 'intensity' },
-        { label: '#체험형', variant: 'purpose' },
-      ],
-    },
-    {
-      title: '아무것도 몰라도\n락스타가 될 수 있어!',
-      subtitle: '201P Rookies 13기',
-      imageUri: '',
-      tags: [
-        { label: '#가벼운', variant: 'duration' },
-        { label: '#실외', variant: 'intensity' },
-        { label: '#혼자서', variant: 'groupSize' },
-      ],
-    },
-    {
-      title: '아무것도 몰라도\n락스타가 될 수 있어!',
+      title: '201P 밴드\nROOKIES 프로젝트',
       subtitle: '201P Rookies 13기',
       imageUri: '',
       tags: [
         { label: '#힐링', variant: 'mood' },
+        { label: '#단기', variant: 'duration' },
         { label: '#소규모', variant: 'groupSize' },
-        { label: '#체험형', variant: 'purpose' },
+      ],
+    },
+    {
+      title: '201P 밴드\nROOKIES 프로젝트',
+      subtitle: '201P Rookies 13기',
+      imageUri: '',
+      tags: [
+        { label: '#힐링', variant: 'mood' },
+        { label: '#단기', variant: 'duration' },
+        { label: '#소규모', variant: 'groupSize' },
+      ],
+    },
+    {
+      title: '201P 밴드\nROOKIES 프로젝트',
+      subtitle: '201P Rookies 13기',
+      imageUri: '',
+      tags: [
+        { label: '#힐링', variant: 'mood' },
+        { label: '#단기', variant: 'duration' },
+        { label: '#소규모', variant: 'groupSize' },
       ],
     },
   ];
@@ -49,15 +50,16 @@ export default function OnboardingResult() {
   return (
     <ScreenLayout style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
+      <View style={styles.progressContainer}>
+        <ProgressBar step={4} />
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
-          <Text style={styles.title}>
-            {`${nickname}님은\n`}
-            <Text style={styles.highlight}>{'소규모 ・가벼운 체험형'}</Text>
-            {' 을\n선호해요'}
-          </Text>
+          <Typography size="xxxl" weight="semiBold" style={styles.title}>
+            {`${nickname}님은\n소규모・가벼운 체험형을\n선호해요`}
+          </Typography>
           <Typography size="md" style={styles.subtitle}>
-            나만을 위한 추천 활동을 확인하세요.
+            나만을 위한 추천 활동을 확인하세요
           </Typography>
         </View>
 
@@ -72,7 +74,7 @@ export default function OnboardingResult() {
         <BottomCTA
           label="더 많은 추천 확인하기"
           onPress={() => router.replace('/(tabs)/home')}
-          variant="primary"
+          variant="dark"
         />
       </CTAContainer>
     </ScreenLayout>
@@ -81,32 +83,25 @@ export default function OnboardingResult() {
 
 const styles = StyleSheet.create({
   container: { backgroundColor: colors.neutral.white },
+  progressContainer: { paddingHorizontal: 20, paddingTop: 9, paddingBottom: 7 },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 32,
+    paddingTop: 52,
     paddingBottom: 16,
-    gap: 39,
+    gap: 32,
   },
   headerBlock: {
-    gap: 13,
+    gap: 10,
   },
   title: {
-    fontFamily: 'Pretendard',
-    fontSize: 24,
-    fontWeight: '700',
     lineHeight: 32,
-    color: colors.text.primary,
-  },
-  highlight: {
-    backgroundColor: colors.primary.sub,
   },
   subtitle: {
     color: colors.text.secondary,
     lineHeight: 20,
   },
   cardList: {
-    flexDirection: 'column',
-    gap: 34,
+    gap: 13,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
 });

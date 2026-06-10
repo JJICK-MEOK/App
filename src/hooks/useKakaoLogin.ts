@@ -22,7 +22,7 @@ export const useKakaoLogin = () => {
       setToken(accessToken);
 
       if (registrationStatus === 'NOT_STARTED') {
-        router.replace('/onboarding/step1');
+        router.replace('/(auth)/profile-setup');
       } else {
         router.replace('/(tabs)/home');
       }

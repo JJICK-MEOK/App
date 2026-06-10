@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
+    width: '100%',
   },
   info: {
     flexDirection: 'row',
@@ -57,5 +58,6 @@ const styles = StyleSheet.create({
   },
   textArea: {
     gap: 6,
+    width: 133,
   },
 });
