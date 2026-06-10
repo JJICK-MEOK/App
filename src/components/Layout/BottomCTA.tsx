@@ -12,7 +12,7 @@ type LayoutBottomCTAProps = {
 export const BottomCTA = ({ label, onPress, variant, disabled }: LayoutBottomCTAProps) => {
   const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.container, { paddingBottom: Math.max(45, insets.bottom + 16) }]}>
+    <View style={[styles.container, { paddingBottom: Math.max(50, insets.bottom + 16) }]}>
       <BottomCTAButton label={label} onPress={onPress} variant={variant} disabled={disabled} />
     </View>
   );

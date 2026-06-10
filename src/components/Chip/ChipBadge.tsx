@@ -1,19 +1,52 @@
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
-type Variant = 'activityCategory' | 'promotion' | 'preference';
+type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+export type ChipBadgeVariant = 'category' | 'categoryDark' | 'ad' | TagVariant;
 
 type Props = {
   label: string;
-  variant: Variant;
+  variant: ChipBadgeVariant;
   onPress?: () => void;
 };
 
+const TAG_VARIANTS: TagVariant[] = ['mood', 'intensity', 'duration', 'groupSize', 'purpose'];
+
+function getVariantStyles(variant: ChipBadgeVariant): { container: ViewStyle; text: TextStyle } {
+  if (TAG_VARIANTS.includes(variant as TagVariant)) {
+    const tagColors = colors.tag[variant as TagVariant];
+    return {
+      container: { backgroundColor: tagColors.bg, paddingVertical: 4 },
+      text: { color: tagColors.text },
+    };
+  }
+  switch (variant) {
+    case 'category':
+      return {
+        container: { backgroundColor: colors.neutral.surface, paddingVertical: 4 },
+        text: { color: colors.text.tertiary },
+      };
+    case 'categoryDark':
+      return {
+        container: { backgroundColor: colors.text.secondary, paddingVertical: 2 },
+        text: { color: colors.disabled },
+      };
+    case 'ad':
+    default:
+      return {
+        container: { borderWidth: 1, borderColor: colors.border.default, paddingVertical: 2 },
+        text: { color: colors.border.default },
+      };
+  }
+}
+
 export default function ChipBadge({ label, variant, onPress }: Props) {
+  const { container: variantContainer, text: variantText } = getVariantStyles(variant);
+
   const content = (
-    <View style={[styles.container, styles[variant]]}>
-      <Typography size="xs" style={textStyles[variant]}>
+    <View style={[styles.container, variantContainer]}>
+      <Typography size="sm" weight="medium" style={variantText}>
         {label}
       </Typography>
     </View>
@@ -33,42 +66,9 @@ export default function ChipBadge({ label, variant, onPress }: Props) {
 const styles = StyleSheet.create({
   container: {
     alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  activityCategory: {
-    paddingVertical: 5,
-    paddingHorizontal: 7,
-    borderRadius: 200,
-    backgroundColor: '#F5F5F5',
-  },
-  promotion: {
-    paddingVertical: 3,
-    paddingHorizontal: 7,
-    borderRadius: 200,
-    backgroundColor: colors.text.secondary,
-  },
-  preference: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 100,
-    backgroundColor: colors.primary.sub,
-    borderWidth: 1,
-    borderColor: colors.primary.sub,
-  },
-});
-
-const textStyles = StyleSheet.create({
-  activityCategory: {
-    color: colors.text.secondary,
-    textAlign: 'center',
-  },
-  promotion: {
-    color: colors.border.default,
-    textAlign: 'center',
-  },
-  preference: {
-    color: colors.text.secondary,
-    textAlign: 'center',
   },
 });

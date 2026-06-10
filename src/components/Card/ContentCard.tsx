@@ -1,16 +1,18 @@
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import ChipTag from '@/src/components/Chip/ChipTag';
+import ChipBadge, { ChipBadgeVariant } from '@/src/components/Chip/ChipBadge';
 import { colors } from '@/src/constants/colors';
-import { radius } from '@/src/constants/spacing';
 import { Typography } from '@/src/components/Typography/Typography';
 
-const SURFACE_COLOR = '#F5F5F5';
+export type ContentCardTag = {
+  label: string;
+  variant: ChipBadgeVariant;
+};
 
 type ContentCardProps = {
   title: string;
   subtitle: string;
   imageUri: string;
-  tags: string[];
+  tags: ContentCardTag[];
   onPress?: () => void;
 };
 
@@ -21,24 +23,22 @@ export const ContentCard = ({ title, subtitle, imageUri, tags, onPress }: Conten
       onPress={onPress}
       disabled={!onPress}
     >
-      <View style={styles.row}>
-        <Image source={{ uri: imageUri }} style={styles.image} />
+      <Image source={{ uri: imageUri }} style={styles.image} />
 
-        <View style={styles.info}>
-          <View style={styles.titleArea}>
-            <Typography size="lg" weight="bold">
-              {title}
-            </Typography>
-            <Typography size="sm" color="secondary" numberOfLines={1}>
-              {subtitle}
-            </Typography>
-          </View>
+      <View style={styles.info}>
+        <View style={styles.titleArea}>
+          <Typography size="lg" weight="semiBold" color="primary">
+            {title}
+          </Typography>
+          <Typography size="sm" weight="medium" color="secondary">
+            {subtitle}
+          </Typography>
+        </View>
 
-          <View style={styles.tags}>
-            {tags.map((tag) => (
-              <ChipTag key={tag} label={tag} />
-            ))}
-          </View>
+        <View style={styles.tags}>
+          {tags.map((tag, index) => (
+            <ChipBadge key={index} label={tag.label} variant={tag.variant} />
+          ))}
         </View>
       </View>
     </Pressable>
@@ -47,37 +47,34 @@ export const ContentCard = ({ title, subtitle, imageUri, tags, onPress }: Conten
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: SURFACE_COLOR,
-    borderRadius: radius.sm,
-    padding: 10,
-    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 5,
+    gap: 20,
+    width: 334,
   },
   pressed: {
     opacity: 0.8,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 13,
-  },
   image: {
-    width: 117,
-    height: 117,
-    borderRadius: radius.sm,
+    width: 105,
+    height: 105,
+    borderRadius: 9,
     borderWidth: 1,
     borderColor: colors.border.default,
-    backgroundColor: SURFACE_COLOR,
+    backgroundColor: colors.neutral.surface,
+    flexShrink: 0,
   },
   info: {
     flex: 1,
-    gap: 10,
+    gap: 14,
   },
   titleArea: {
-    gap: 5,
+    gap: 6,
   },
   tags: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 3,
+    gap: 5,
   },
 });

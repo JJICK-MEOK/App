@@ -17,15 +17,15 @@ export default function RecommendationCard({ category, days, title, preferences 
       <View style={styles.image} />
       <View style={styles.content}>
         <View style={styles.infoRow}>
-          <ChipBadge label={category} variant="activityCategory" />
+          <ChipBadge label={category} variant="category" />
           <DDay days={days} style={styles.dday} />
         </View>
         <Typography size="xl" weight="bold" style={styles.title}>
           {title}
         </Typography>
         <View style={styles.preferences}>
-          <ChipBadge label={preferences[0]} variant="preference" />
-          <ChipBadge label={preferences[1]} variant="preference" />
+          <ChipBadge label={preferences[0]} variant="mood" />
+          <ChipBadge label={preferences[1]} variant="mood" />
         </View>
       </View>
     </View>

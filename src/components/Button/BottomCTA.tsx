@@ -32,7 +32,7 @@ export const BottomCTA = ({
   variant = 'white',
   disabled = false,
 }: BottomCTAProps) => {
-  const bgColor = disabled ? '#EAEAEA' : backgroundColors[variant];
+  const bgColor = disabled ? colors.disabled : backgroundColors[variant];
   const textColor = disabled ? colors.neutral.white : textColors[variant];
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -69,7 +69,7 @@ export const BottomCTA = ({
         onPressOut={!disabled ? handlePressOut : undefined}
         disabled={disabled}
       >
-        <Typography size="xl" style={[styles.label, { color: textColor }]}>
+        <Typography size="xl" weight="medium" style={[styles.label, { color: textColor }]}>
           {label}
         </Typography>
       </Pressable>
@@ -83,12 +83,11 @@ const styles = StyleSheet.create({
   },
   button: {
     width: '100%',
-    height: 55,
-    borderRadius: radius.full,
+    height: 48,
+    borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 15,
+    padding: 10,
   },
   label: {
     textAlign: 'center',

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import Icon from '@/src/components/Icon/Icon';
+import ArrowDownSvg from '@/assets/images/ArrowDown.svg';
 import { colors } from '@/src/constants/colors';
-import { radius } from '@/src/constants/spacing';
 import { Typography } from '@/src/components/Typography/Typography';
 
 type SelectFieldProps = {
@@ -29,25 +28,21 @@ export const SelectField = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isOpen && styles.containerOpen]}>
       <Pressable style={styles.header} onPress={() => setIsOpen((prev) => !prev)}>
-        <Typography size="md" color={value ? 'primary' : 'tertiary'} style={styles.optionText}>
+        <Typography size="md" weight="medium" color={value ? 'primary' : 'primary'}>
           {displayText}
         </Typography>
-        <View style={isOpen ? styles.iconOpen : styles.iconClosed}>
-          <Icon name="arrowDown" />
+        <View style={isOpen ? styles.arrowUp : undefined}>
+          <ArrowDownSvg width={30} height={30} />
         </View>
       </Pressable>
 
       {isOpen && (
         <View style={styles.optionList}>
-          {otherOptions.map((option, idx) => (
-            <Pressable
-              key={option}
-              onPress={() => handleSelect(option)}
-              style={idx > 0 ? styles.optionItem : styles.optionItemFirst}
-            >
-              <Typography size="md" color="tertiary" style={styles.optionText}>
+          {otherOptions.map((option) => (
+            <Pressable key={option} onPress={() => handleSelect(option)}>
+              <Typography size="md" color="tertiary">
                 {option}
               </Typography>
             </Pressable>
@@ -63,33 +58,28 @@ const styles = StyleSheet.create({
     width: '100%',
     borderWidth: 1,
     borderColor: colors.disabled,
-    borderRadius: radius.sm,
+    borderRadius: 10,
     backgroundColor: colors.neutral.white,
-    paddingLeft: 18,
-    paddingRight: 10,
-    paddingVertical: 7,
+  },
+  containerOpen: {
+    borderRadius: 10,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    height: 41,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
   },
-  optionText: {
-    lineHeight: 20,
-  },
-  iconClosed: {
-    transform: [{ rotate: '0deg' }],
-  },
-  iconOpen: {
-    transform: [{ rotate: '-90deg' }],
+  arrowUp: {
+    transform: [{ rotate: '180deg' }],
   },
   optionList: {
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    gap: 15,
     borderTopWidth: 1,
-    borderTopColor: '#EAEAEA',
-    marginTop: 7,
-    paddingTop: 12,
-    gap: 10,
+    borderTopColor: colors.border.light,
   },
-  optionItemFirst: {},
-  optionItem: {},
 });

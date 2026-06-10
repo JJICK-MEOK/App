@@ -8,8 +8,15 @@ const palette = {
   gray400: '#999999',
   gray200: '#CCCCCC',
   gray100: '#DDDDDD',
+  gray50: '#F5F5F5',
+  gray75: '#EAEAEA',
   white: '#FFFFFF',
-  red: '#FF0000',
+  red: '#FF5252',
+  pink500: '#FF6E8A',
+  purple500: '#9273FF',
+  green500: '#00CA3D',
+  blue500: '#3D6AFF',
+  orange500: '#FF5900',
 } as const;
 
 export const colors = {
@@ -28,9 +35,18 @@ export const colors = {
   border: {
     default: palette.gray100,
     active: palette.black200,
+    light: palette.gray75,
   },
   disabled: palette.gray200,
   neutral: {
     white: palette.white,
+    surface: palette.gray50,
+  },
+  tag: {
+    mood: { bg: 'rgba(255,110,138,0.1)', text: 'rgba(255,110,138,0.7)' },
+    intensity: { bg: 'rgba(146,115,255,0.1)', text: 'rgba(146,115,255,0.7)' },
+    duration: { bg: 'rgba(0,202,61,0.1)', text: 'rgba(0,202,61,0.7)' },
+    groupSize: { bg: 'rgba(61,106,255,0.1)', text: 'rgba(61,106,255,0.7)' },
+    purpose: { bg: 'rgba(255,89,0,0.1)', text: 'rgba(255,89,0,0.7)' },
   },
 } as const;

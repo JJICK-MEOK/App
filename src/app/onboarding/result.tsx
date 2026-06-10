@@ -1,33 +1,46 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
-import { ContentCard } from '@/src/components/Card/ContentCard';
+import { ContentCard, type ContentCardTag } from '@/src/components/Card/ContentCard';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
-const MOCK_CARDS = [
-  {
-    title: '아무것도 몰라도\n락스타가 될 수 있어!',
-    subtitle: '201P Rookies 13기',
-    imageUri: '',
-    tags: ['#소규모', '#실내', '#체험형'],
-  },
-  {
-    title: '아무것도 몰라도\n락스타가 될 수 있어!',
-    subtitle: '201P Rookies 13기',
-    imageUri: '',
-    tags: ['#가벼운', '#실외', '#혼자서'],
-  },
-  {
-    title: '아무것도 몰라도\n락스타가 될 수 있어!',
-    subtitle: '201P Rookies 13기',
-    imageUri: '',
-    tags: ['#힐링', '#소규모', '#체험형'],
-  },
-];
+const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: ContentCardTag[] }[] =
+  [
+    {
+      title: '아무것도 몰라도\n락스타가 될 수 있어!',
+      subtitle: '201P Rookies 13기',
+      imageUri: '',
+      tags: [
+        { label: '#소규모', variant: 'groupSize' },
+        { label: '#실내', variant: 'intensity' },
+        { label: '#체험형', variant: 'purpose' },
+      ],
+    },
+    {
+      title: '아무것도 몰라도\n락스타가 될 수 있어!',
+      subtitle: '201P Rookies 13기',
+      imageUri: '',
+      tags: [
+        { label: '#가벼운', variant: 'duration' },
+        { label: '#실외', variant: 'intensity' },
+        { label: '#혼자서', variant: 'groupSize' },
+      ],
+    },
+    {
+      title: '아무것도 몰라도\n락스타가 될 수 있어!',
+      subtitle: '201P Rookies 13기',
+      imageUri: '',
+      tags: [
+        { label: '#힐링', variant: 'mood' },
+        { label: '#소규모', variant: 'groupSize' },
+        { label: '#체험형', variant: 'purpose' },
+      ],
+    },
+  ];
 
 export default function OnboardingResult() {
   const router = useRouter();
