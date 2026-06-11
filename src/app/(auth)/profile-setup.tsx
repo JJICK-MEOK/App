@@ -155,7 +155,12 @@ export default function ProfileSetupScreen() {
           </Typography>
           <View style={styles.genderRow}>
             {(['남성', '여성', '선택 안함'] as Gender[]).map((g) => (
-              <GenderButton key={g} label={g} selected={gender === g} onPress={() => setGender(g)} />
+              <GenderButton
+                key={g}
+                label={g}
+                selected={gender === g}
+                onPress={() => setGender(g)}
+              />
             ))}
           </View>
         </View>

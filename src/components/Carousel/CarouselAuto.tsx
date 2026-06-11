@@ -13,7 +13,10 @@ type Props = {
 export default function CarouselAuto({ images = [], duration = 10000 }: Props) {
   const translateX = useRef(new Animated.Value(0)).current;
 
-  const normalized = Array.from({ length: 6 }, (_, i) => images[i % images.length] ?? null);
+  const normalized =
+    images.length === 0
+      ? Array(6).fill(null)
+      : Array.from({ length: 6 }, (_, i) => images[i % images.length] ?? null);
   const looped = [...normalized, ...normalized];
 
   useEffect(() => {

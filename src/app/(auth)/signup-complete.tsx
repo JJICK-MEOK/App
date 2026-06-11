@@ -17,7 +17,7 @@ export default function SignupCompleteScreen() {
       router.replace('/onboarding/step1');
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <ScreenLayout style={styles.container}>

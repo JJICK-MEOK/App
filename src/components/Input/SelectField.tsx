@@ -30,7 +30,7 @@ export const SelectField = ({
   return (
     <View style={[styles.container, isOpen && styles.containerOpen]}>
       <Pressable style={styles.header} onPress={() => setIsOpen((prev) => !prev)}>
-        <Typography size="md" weight="medium" color={value ? 'primary' : 'primary'}>
+        <Typography size="md" weight="medium" color="primary">
           {displayText}
         </Typography>
         <View style={isOpen ? styles.arrowUp : undefined}>

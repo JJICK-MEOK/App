@@ -45,7 +45,7 @@ const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: Con
 
 export default function OnboardingResult() {
   const router = useRouter();
-  const nickname = useOnboardingStore((s) => s.nickname);
+  const nickname = useOnboardingStore((s) => s.nickname) || '회원';
 
   return (
     <ScreenLayout style={styles.container}>

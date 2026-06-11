@@ -56,11 +56,12 @@ export default function OnboardingStep3() {
   if (regionsError) console.error('지역 조회 실패', regionsError);
 
   const seoulProvince = provinces.find((p) => p.name === SEOUL_LABEL);
+  const seoulProvinceId = seoulProvince?.id;
 
   const { data: seoulDistricts = [] } = useQuery({
-    queryKey: ['regions', seoulProvince?.id],
-    queryFn: () => getRegions(seoulProvince!.id),
-    enabled: !!seoulProvince && isSeoulExpanded,
+    queryKey: ['regions', seoulProvinceId],
+    queryFn: () => getRegions(seoulProvinceId!),
+    enabled: !!seoulProvinceId && isSeoulExpanded,
   });
 
   const provinceNames = provinces.map((p) => p.name);
@@ -153,20 +154,20 @@ export default function OnboardingStep3() {
     return undefined;
   };
 
-  const getChips = (): string[] => {
-    const chips: string[] = [];
+  const chips = useMemo(() => {
+    const result: string[] = [];
     if (isSeoulAllSelected) {
-      chips.push(SEOUL_LABEL);
+      result.push(SEOUL_LABEL);
     } else {
       districtNames.forEach((d) => {
-        if (selectedLocations.has(d)) chips.push(d);
+        if (selectedLocations.has(d)) result.push(d);
       });
     }
     nonSeoulProvinceNames.forEach((r) => {
-      if (selectedLocations.has(r)) chips.push(r);
+      if (selectedLocations.has(r)) result.push(r);
     });
-    return chips;
-  };
+    return result;
+  }, [isSeoulAllSelected, districtNames, selectedLocations, nonSeoulProvinceNames]);
 
   const removeChip = (label: string) => {
     if (label === SEOUL_LABEL) {
@@ -202,8 +203,6 @@ export default function OnboardingStep3() {
     });
     return ids;
   };
-
-  const chips = getChips();
 
   return (
     <ScreenLayout style={styles.container}>

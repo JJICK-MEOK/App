@@ -139,9 +139,13 @@ export default function SignupScreen() {
   });
 
   const verificationStatus: VerificationStatus =
-    isSending || isResending ? 'disabled' :
-    step === 'verify' ? 'resend' :
-    emailValid ? 'enabled' : 'disabled';
+    isSending || isResending
+      ? 'disabled'
+      : step === 'verify'
+        ? 'resend'
+        : emailValid
+          ? 'enabled'
+          : 'disabled';
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>

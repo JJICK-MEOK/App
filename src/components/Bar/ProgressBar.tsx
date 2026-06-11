@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function ProgressBar({ step, totalSteps = 4 }: Props) {
-  const progress = step / totalSteps;
+  const progress = Math.min(step / totalSteps, 1);
 
   return (
     <View style={styles.track}>

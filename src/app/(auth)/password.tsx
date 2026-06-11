@@ -81,7 +81,12 @@ export default function PasswordScreen() {
         </Typography>
 
         <View style={styles.fields}>
-          <TextField placeholder="••••••••" value={password} onChangeText={setPassword} secureText />
+          <TextField
+            placeholder="••••••••"
+            value={password}
+            onChangeText={setPassword}
+            secureText
+          />
           <TextField
             placeholder="비밀번호를 다시 입력해주세요"
             value={confirm}
