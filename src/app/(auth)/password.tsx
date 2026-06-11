@@ -30,6 +30,7 @@ export default function PasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [completed, setCompleted] = useState(false);
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -49,7 +50,8 @@ export default function PasswordScreen() {
       setToken(accessToken);
     },
     onSuccess: () => {
-      router.replace('/(auth)/profile-setup');
+      setCompleted(true);
+      router.push('/(auth)/profile-setup');
     },
     onError: (error: any) => {
       console.error('[password] signup error:', error?.response?.data ?? error);
@@ -116,7 +118,7 @@ export default function PasswordScreen() {
         ) : null}
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => signup()}
+          onPress={() => completed ? router.push('/(auth)/profile-setup') : signup()}
           variant="dark"
           disabled={!isComplete || isPending}
         />

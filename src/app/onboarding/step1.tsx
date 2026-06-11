@@ -64,15 +64,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   ctaBold: {
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 12,
-    fontWeight: '700',
     color: colors.text.primary,
   },
   ctaRegular: {
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 12,
-    fontWeight: '400',
     color: colors.text.primary,
   },
 });

@@ -133,6 +133,7 @@ export default function ProfileSetupScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         <View style={styles.section}>
           <Typography size="lg" weight="medium" style={styles.label}>
@@ -294,9 +295,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   agreeItemText: {
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 12,
-    fontWeight: '500',
     lineHeight: 20,
     color: colors.text.primary,
   },

@@ -1,4 +1,4 @@
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -9,12 +9,9 @@ import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
 import { KakaoWebView } from '@/src/components/KakaoWebView/KakaoWebView';
 import CarouselAuto from '@/src/components/Carousel/CarouselAuto';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
 export default function LoginScreen() {
   const router = useRouter();
   const { login: kakaoLogin, showWebView, onCode, onClose } = useKakaoLogin();
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />

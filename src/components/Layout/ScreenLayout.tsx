@@ -1,10 +1,8 @@
 import { ReactNode } from 'react';
 import {
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleProp,
-  TouchableWithoutFeedback,
   View,
   ViewStyle,
 } from 'react-native';
@@ -21,15 +19,13 @@ export function ScreenLayout({ children, withKeyboard = false, style }: Props) {
 
   if (withKeyboard) {
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <KeyboardAvoidingView
-          style={[{ flex: 1 }, style]}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={insets.top}
-        >
-          {children}
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      <KeyboardAvoidingView
+        style={[{ flex: 1 }, style]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={insets.top}
+      >
+        {children}
+      </KeyboardAvoidingView>
     );
   }
 

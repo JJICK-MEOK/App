@@ -10,13 +10,16 @@ import { queryClient } from '@/src/lib/queryClient';
 import { useAuthStore } from '@/src/store/authStore';
 import { theme } from '@/src/constants/theme';
 
-(Text as any).defaultProps = { style: { fontFamily: 'Pretendard', includeFontPadding: false } };
+(Text as any).defaultProps = { style: { fontFamily: 'Pretendard-Regular', includeFontPadding: false } };
 
 export default function AppLayout() {
   const initAuth = useAuthStore((s) => s.initAuth);
 
   const [fontsLoaded] = useFonts({
-    Pretendard: require('@/assets/fonts/PretendardVariable.ttf'),
+    'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.ttf'),
+    'Pretendard-Medium': require('@/assets/fonts/Pretendard-Medium.ttf'),
+    'Pretendard-SemiBold': require('@/assets/fonts/Pretendard-SemiBold.ttf'),
+    'Pretendard-Bold': require('@/assets/fonts/Pretendard-Bold.ttf'),
   });
 
   useEffect(() => {

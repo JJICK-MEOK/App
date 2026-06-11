@@ -12,6 +12,13 @@ type TypographyProps = TextProps & {
   color?: TextColor;
 };
 
+const fontFamilyMap: Record<FontWeight, string> = {
+  regular: 'Pretendard-Regular',
+  medium: 'Pretendard-Medium',
+  semiBold: 'Pretendard-SemiBold',
+  bold: 'Pretendard-Bold',
+};
+
 export const Typography = ({
   size = 'md',
   weight = 'regular',
@@ -24,8 +31,7 @@ export const Typography = ({
       allowFontScaling={false}
       style={[
         {
-          fontFamily: 'Pretendard',
-          fontWeight: typography.weight[weight],
+          fontFamily: fontFamilyMap[weight],
           fontSize: typography.size[size],
           color: colors.text[color],
           includeFontPadding: false,

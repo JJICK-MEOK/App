@@ -26,9 +26,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.neutral.white,
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 12,
-    fontWeight: '400',
     textAlign: 'center',
   },
 });
