@@ -21,19 +21,18 @@ const CATEGORIES = [
 
 export default function OnboardingStep4() {
   const router = useRouter();
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set());
-  const { setPreferenceTagIds } = useOnboardingStore();
+  const { setPreferenceTagIds, preferenceTagIds } = useOnboardingStore();
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set(preferenceTagIds));
 
   const {
     data: tags = [],
     isLoading,
-    error,
+    isError,
+    refetch,
   } = useQuery({
     queryKey: ['tags', 'PREFERENCE_TAG'],
     queryFn: () => getTags('PREFERENCE_TAG'),
   });
-
-  if (error) console.error('취향 태그 조회 실패', error);
 
   const toggleTag = (id: number) => {
     setSelectedTagIds((prev) => {
@@ -72,6 +71,13 @@ export default function OnboardingStep4() {
 
         {isLoading ? (
           <ActivityIndicator color={colors.text.secondary} />
+        ) : isError ? (
+          <View style={styles.errorContainer}>
+            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
+              <Typography size="md" weight="semiBold">다시 시도</Typography>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.sectionsContainer}>
             {CATEGORIES.map((category) => {
@@ -173,4 +179,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
+  errorContainer: { alignItems: 'center', gap: 12, paddingTop: 20 },
+  errorText: { color: colors.text.secondary },
+  retryButton: { paddingHorizontal: 20, paddingVertical: 8 },
 });

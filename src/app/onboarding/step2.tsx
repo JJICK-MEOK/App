@@ -1,4 +1,4 @@
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
@@ -15,20 +15,18 @@ import { useState } from 'react';
 
 export default function OnboardingStep2() {
   const router = useRouter();
-  const { setTopicTagIds } = useOnboardingStore();
-  const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(new Set());
+  const { setTopicTagIds, topicTagIds } = useOnboardingStore();
+  const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(new Set(topicTagIds));
 
   const {
     data: topics = [],
     isLoading,
-    error,
+    isError,
+    refetch,
   } = useQuery({
     queryKey: ['tags', 'TOPIC_CATEGORY'],
     queryFn: () => getTags('TOPIC_CATEGORY'),
   });
-
-  if (error) console.error('태그 조회 실패', error);
-  console.log('관심 주제 태그:', topics);
 
   const toggleTopic = (id: number) => {
     setSelectedTopicIds((prev) => {
@@ -58,6 +56,13 @@ export default function OnboardingStep2() {
 
         {isLoading ? (
           <ActivityIndicator color={colors.text.secondary} />
+        ) : isError ? (
+          <View style={styles.errorContainer}>
+            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
+              <Typography size="md" weight="semiBold">다시 시도</Typography>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.cardList}>
             {topics.map((topic) => (
@@ -116,4 +121,7 @@ const styles = StyleSheet.create({
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, paddingTop: 9, paddingBottom: 7 },
+  errorContainer: { alignItems: 'center', gap: 12, paddingTop: 20 },
+  errorText: { color: colors.text.secondary },
+  retryButton: { paddingHorizontal: 20, paddingVertical: 8 },
 });
