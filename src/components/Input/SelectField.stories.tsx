@@ -26,7 +26,7 @@ type Story = StoryObj<typeof SelectField>;
 export const Collapsed: Story = {};
 
 export const WithValue: Story = {
-  args: { value: '직장인이에요' },
+  args: { value: '대학생이에요' },
 };
 
 function InteractiveTemplate(args: React.ComponentProps<typeof SelectField>) {

@@ -5,10 +5,14 @@ const meta: Meta<typeof ContentCard> = {
   title: 'Card/ContentCard',
   component: ContentCard,
   args: {
-    title: '아무것도 몰라도 락스타가 될 수 있어!',
+    title: '201P 밴드\nROOKIES 프로젝트',
     subtitle: '201P Rookies 13기',
-    imageUri: 'https://picsum.photos/117',
-    tags: ['#서울 내', '#예술적', '#활기찬'],
+    imageUri: 'https://picsum.photos/105',
+    tags: [
+      { label: '#힐링', variant: 'mood' },
+      { label: '#단기', variant: 'duration' },
+      { label: '#소규모', variant: 'groupSize' },
+    ],
   },
 };
 
@@ -23,6 +27,12 @@ export const Pressable: Story = {
 
 export const ManyTags: Story = {
   args: {
-    tags: ['#서울 내', '#예술적', '#활기찬', '#소규모', '#주말'],
+    tags: [
+      { label: '#힐링', variant: 'mood' },
+      { label: '#단기', variant: 'duration' },
+      { label: '#소규모', variant: 'groupSize' },
+      { label: '#주말', variant: 'purpose' },
+      { label: '#실내', variant: 'intensity' },
+    ],
   },
 };

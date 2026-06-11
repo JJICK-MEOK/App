@@ -4,12 +4,12 @@ import { colors } from '@/src/constants/colors';
 
 export default function OnboardingLayout() {
   const segments = useSegments();
-  const isStep3 = segments.at(-1) === 'step3';
-  const edges: Edge[] = isStep3 ? [] : ['top'];
+  const isStep1 = segments.at(-1) === 'step1';
+  const edges: Edge[] = isStep1 ? [] : ['top'];
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: isStep3 ? 'transparent' : colors.neutral.white }}
+      style={{ flex: 1, backgroundColor: isStep1 ? 'transparent' : colors.neutral.white }}
       edges={edges}
     >
       <Stack screenOptions={{ headerShown: false }} />

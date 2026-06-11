@@ -6,7 +6,6 @@ const meta: Meta<typeof CategoryCard> = {
   component: CategoryCard,
   args: {
     categoryName: '운동 / 액티비티',
-    subscriberText: '12,500명이 구독했어요',
     imageUri: 'https://picsum.photos/70',
     onSubscribePress: () => {},
   },
@@ -16,9 +15,13 @@ export default meta;
 type Story = StoryObj<typeof CategoryCard>;
 
 export const Default: Story = {
-  args: { subscribed: false },
+  args: { subscribed: false, subscriberText: '12,500명이 구독했어요' },
 };
 
 export const Subscribed: Story = {
-  args: { subscribed: true },
+  args: { subscribed: true, subscriberText: '12,500명이 구독했어요' },
+};
+
+export const WithoutSubscriberText: Story = {
+  args: { subscribed: false },
 };

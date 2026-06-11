@@ -12,6 +12,9 @@ const config: StorybookConfig = {
   },
   viteFinal(config) {
     return mergeConfig(config, {
+      define: {
+        __DEV__: true,
+      },
       plugins: [svgr({ include: '**/*.svg' })],
       esbuild: {
         jsx: 'automatic',
@@ -24,7 +27,12 @@ const config: StorybookConfig = {
             __dirname,
             './mocks/codegenNativeComponent.ts',
           ),
-          'react-native': path.resolve(__dirname, '../node_modules/react-native-web'),
+          'react-native': path.resolve(__dirname, './mocks/react-native.ts'),
+          'expo-haptics': path.resolve(__dirname, './mocks/expo-haptics.ts'),
+          'react-native-safe-area-context': path.resolve(
+            __dirname,
+            './mocks/react-native-safe-area-context.tsx',
+          ),
         },
       },
     });

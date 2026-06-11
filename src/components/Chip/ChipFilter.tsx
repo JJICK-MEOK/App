@@ -11,7 +11,7 @@ type Props = {
 export default function ChipFilter({ label, onRemove }: Props) {
   return (
     <View style={styles.container}>
-      <Typography size="sm">{label}</Typography>
+      <Typography size="md">{label}</Typography>
       <TouchableOpacity
         onPress={onRemove}
         activeOpacity={0.7}
@@ -19,7 +19,7 @@ export default function ChipFilter({ label, onRemove }: Props) {
         accessibilityRole="button"
         accessibilityLabel={`${label} 삭제`}
       >
-        <CloseSmallSvg width={10} height={10} />
+        <CloseSmallSvg width={15} height={15} />
       </TouchableOpacity>
     </View>
   );
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 3,
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 200,

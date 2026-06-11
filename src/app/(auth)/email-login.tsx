@@ -59,7 +59,7 @@ export default function EmailLoginScreen() {
       setToken(accessToken);
 
       if (registrationStatus === 'NOT_STARTED') {
-        router.replace('/onboarding/step1');
+        router.replace('/(auth)/profile-setup');
       } else {
         router.replace('/(tabs)/home');
       }
@@ -84,7 +84,7 @@ export default function EmailLoginScreen() {
       <View style={styles.content}>
         <View style={styles.form}>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
+            <Typography size="lg" weight="medium">
               이메일
             </Typography>
             <TextField
@@ -99,7 +99,7 @@ export default function EmailLoginScreen() {
             />
           </View>
           <View style={styles.fieldGroup}>
-            <Typography size="lg" style={styles.label}>
+            <Typography size="lg" weight="medium">
               비밀번호
             </Typography>
             <TextField
@@ -113,30 +113,31 @@ export default function EmailLoginScreen() {
           </View>
         </View>
 
-        <CTAContainer style={styles.ctaArea}>
-          {loginError ? (
-            <Typography size="sm" color="error" style={styles.loginError}>
-              {loginError}
+        <View style={styles.signupSection}>
+          <Typography size="sm" color="secondary">
+            아직 계정이 없나요?
+          </Typography>
+          <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
+            <Typography size="sm" weight="medium" style={styles.signupLink}>
+              이메일로 회원가입
             </Typography>
-          ) : null}
-          <BottomCTA
-            label="로그인"
-            onPress={() => login()}
-            variant="dark"
-            disabled={!isFormValid || isPending}
-          />
-          <View style={styles.signupSection}>
-            <Typography size="sm" color="secondary">
-              아직 계정이 없나요?
-            </Typography>
-            <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
-              <Typography size="sm" weight="bold" style={styles.signupLink}>
-                이메일로 회원가입
-              </Typography>
-            </TouchableOpacity>
-          </View>
-        </CTAContainer>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <CTAContainer style={styles.cta}>
+        {loginError ? (
+          <Typography size="sm" color="error" style={styles.loginError}>
+            {loginError}
+          </Typography>
+        ) : null}
+        <BottomCTA
+          label="로그인"
+          onPress={() => login()}
+          variant="dark"
+          disabled={!isFormValid || isPending}
+        />
+      </CTAContainer>
     </ScreenLayout>
   );
 }
@@ -151,25 +152,23 @@ const styles = StyleSheet.create({
     paddingTop: 63,
   },
   form: {
-    gap: 32,
+    gap: 35,
   },
   fieldGroup: {
     gap: 9,
   },
-  label: {
-    lineHeight: 24,
-  },
-  ctaArea: {
-    paddingTop: 79,
-    gap: spacing.md,
-  },
   signupSection: {
     alignItems: 'center',
-    gap: 14,
-    paddingTop: spacing.sm,
+    gap: 4,
+    marginTop: 40,
   },
   signupLink: {
     textDecorationLine: 'underline',
+  },
+  cta: {
+    paddingHorizontal: spacing.xl,
+    paddingTop: 16,
+    gap: spacing.md,
   },
   loginError: {
     textAlign: 'center',

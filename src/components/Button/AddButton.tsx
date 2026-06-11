@@ -1,5 +1,6 @@
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import AddSvg from '@/assets/images/add.svg';
+import IconSuccess from '@/src/components/Icon/IconSuccess';
 import { colors } from '@/src/constants/colors';
 
 type Props = {
@@ -8,30 +9,28 @@ type Props = {
 };
 
 export default function AddButton({ selected = false, onPress }: Props) {
+  if (selected) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+        <IconSuccess size={45} />
+      </TouchableOpacity>
+    );
+  }
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      style={[styles.container, selected ? styles.selected : styles.default]}
-    >
-      <AddSvg width={30} height={30} />
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.default}>
+      <AddSvg width={29} height={29} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    padding: 9,
+  default: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  default: {
-    backgroundColor: colors.disabled,
-  },
-  selected: {
-    backgroundColor: colors.primary.sub,
+    backgroundColor: colors.border.light,
   },
 });

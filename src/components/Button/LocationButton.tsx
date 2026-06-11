@@ -1,8 +1,10 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { colors } from '@/src/constants/colors';
 import { Typography } from '@/src/components/Typography/Typography';
+import { typography } from '@/src/constants/typography';
 
 export type LocationPosition = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' | 'middle';
+type FontWeight = keyof typeof typography.weight;
 
 type LocationButtonProps = {
   label: string;
@@ -10,6 +12,7 @@ type LocationButtonProps = {
   selected?: boolean;
   selectedColor?: string;
   defaultBg?: string;
+  textWeight?: FontWeight;
   onPress: () => void;
 };
 
@@ -27,6 +30,7 @@ export const LocationButton = ({
   selected = false,
   selectedColor,
   defaultBg,
+  textWeight = 'semiBold',
   onPress,
 }: LocationButtonProps) => {
   const selectedBg = selectedColor ?? colors.primary.sub;
@@ -41,7 +45,7 @@ export const LocationButton = ({
       ]}
       onPress={onPress}
     >
-      <Typography size="md" style={styles.label}>
+      <Typography size="md" weight={textWeight} style={styles.label}>
         {label}
       </Typography>
     </Pressable>
