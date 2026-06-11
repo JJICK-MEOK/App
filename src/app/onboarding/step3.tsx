@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
@@ -47,13 +47,12 @@ export default function OnboardingStep3() {
   const {
     data: provinces = [],
     isLoading: isProvincesLoading,
-    error: regionsError,
+    isError: isRegionsError,
+    refetch: refetchRegions,
   } = useQuery({
     queryKey: ['regions'],
     queryFn: () => getRegions(),
   });
-
-  if (regionsError) console.error('지역 조회 실패', regionsError);
 
   const seoulProvince = provinces.find((p) => p.name === SEOUL_LABEL);
   const seoulProvinceId = seoulProvince?.id;
@@ -233,6 +232,13 @@ export default function OnboardingStep3() {
 
         {isProvincesLoading ? (
           <ActivityIndicator color={colors.text.secondary} />
+        ) : isRegionsError ? (
+          <View style={styles.errorContainer}>
+            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <TouchableOpacity onPress={() => refetchRegions()} style={styles.retryButton}>
+              <Typography size="md" weight="semiBold">다시 시도</Typography>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.grid}>
             {displayRows.map((row, rowIndex) => (
@@ -314,4 +320,7 @@ const styles = StyleSheet.create({
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, paddingTop: 9, paddingBottom: 7 },
+  errorContainer: { alignItems: 'center', gap: 12, paddingTop: 20 },
+  errorText: { color: colors.text.secondary },
+  retryButton: { paddingHorizontal: 20, paddingVertical: 8 },
 });

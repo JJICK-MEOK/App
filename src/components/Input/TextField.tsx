@@ -33,11 +33,11 @@ export const TextField = ({
     <View style={styles.wrapper}>
       <View style={[styles.inputRow, { borderColor, backgroundColor: bgColor }]}>
         <TextInput
+          {...props}
           style={[styles.input, { color: textColor }]}
           placeholderTextColor={disabled ? colors.disabled : colors.text.tertiary}
           secureTextEntry={secureText && !isPasswordVisible}
           editable={!disabled}
-          {...props}
         />
         {secureText && (
           <TouchableOpacity

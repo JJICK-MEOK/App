@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -7,15 +8,19 @@ import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import IconSuccess from '@/src/components/Icon/IconSuccess';
+import { postOnboarding } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 
 export default function OnboardingStep5() {
   const router = useRouter();
-  const nickname = useOnboardingStore((s) => s.nickname);
+  const { nickname, topicTagIds, regionIds, preferenceTagIds } = useOnboardingStore();
 
-  // TODO: API 완성되면 postOnboarding 연결
-  const completeOnboarding = () => router.push('/onboarding/result');
-  const isPending = false;
+  const { mutate, isPending } = useMutation({
+    mutationFn: postOnboarding,
+    onSuccess: () => router.replace('/onboarding/result'),
+  });
+
+  const completeOnboarding = () => mutate({ topicTagIds, regionIds, preferenceTagIds });
 
   return (
     <ScreenLayout style={styles.container}>

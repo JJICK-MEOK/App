@@ -15,7 +15,7 @@ import { theme } from '@/src/constants/theme';
 export default function AppLayout() {
   const initAuth = useAuthStore((s) => s.initAuth);
 
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontsError] = useFonts({
     'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.ttf'),
     'Pretendard-Medium': require('@/assets/fonts/Pretendard-Medium.ttf'),
     'Pretendard-SemiBold': require('@/assets/fonts/Pretendard-SemiBold.ttf'),
@@ -26,7 +26,7 @@ export default function AppLayout() {
     initAuth();
   }, [initAuth]);
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded && !fontsError) return null;
 
   return (
     <SafeAreaProvider>
