@@ -17,7 +17,7 @@ export default function OnboardingStep5() {
 
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
-    onSuccess: () => router.push('/onboarding/result'),
+    onSuccess: () => router.replace('/onboarding/result'),
   });
 
   const completeOnboarding = () => mutate({ topicTagIds, regionIds, preferenceTagIds });
