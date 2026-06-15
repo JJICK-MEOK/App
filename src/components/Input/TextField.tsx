@@ -20,40 +20,24 @@ export const TextField = ({
   secureText,
   rightElement,
   disabled,
-  onFocus,
-  onBlur,
   ...props
 }: TextFieldProps) => {
-  const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const hasError = !!errorMessage;
 
-  const borderColor = hasError
-    ? colors.text.error
-    : isFocused
-      ? colors.border.active
-      : colors.border.default;
-
-  const bgColor = disabled ? '#F5F5F5' : colors.neutral.white;
+  const bgColor = hasError ? '#F8E7E7' : colors.neutral.surface;
+  const borderColor = hasError ? colors.text.error : 'transparent';
   const textColor = disabled ? colors.disabled : colors.text.primary;
 
   return (
-    <View style={[styles.wrapper, hasError ? styles.wrapperError : styles.wrapperDefault]}>
+    <View style={styles.wrapper}>
       <View style={[styles.inputRow, { borderColor, backgroundColor: bgColor }]}>
         <TextInput
+          {...props}
           style={[styles.input, { color: textColor }]}
           placeholderTextColor={disabled ? colors.disabled : colors.text.tertiary}
           secureTextEntry={secureText && !isPasswordVisible}
           editable={!disabled}
-          onFocus={(e) => {
-            setIsFocused(true);
-            onFocus?.(e);
-          }}
-          onBlur={(e) => {
-            setIsFocused(false);
-            onBlur?.(e);
-          }}
-          {...props}
         />
         {secureText && (
           <TouchableOpacity
@@ -67,12 +51,12 @@ export const TextField = ({
         {!secureText && rightElement}
       </View>
       {hasError && (
-        <Typography size="xs" color="error">
+        <Typography size="sm" weight="medium" color="error">
           {errorMessage}
         </Typography>
       )}
       {!hasError && helperText && (
-        <Typography size="xs" color="secondary">
+        <Typography size="sm" weight="medium" color="tertiary">
           {helperText}
         </Typography>
       )}
@@ -83,21 +67,15 @@ export const TextField = ({
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
-  },
-  wrapperDefault: {
-    gap: 9,
-  },
-  wrapperError: {
     gap: 7,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 44,
+    height: 41,
     borderRadius: radius.sm,
     borderWidth: 1,
-    backgroundColor: colors.neutral.white,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     gap: 8,
   },
   input: {

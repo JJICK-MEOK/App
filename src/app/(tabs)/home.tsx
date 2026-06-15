@@ -239,15 +239,13 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#222',
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 18,
-    fontWeight: '700',
   },
   subtitle: {
     color: '#666',
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 10,
-    fontWeight: '400',
     marginTop: 7,
     marginBottom: 28,
   },
@@ -298,9 +296,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     color: '#222',
     textAlign: 'center',
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Regular',
     fontSize: 12,
-    fontWeight: '400',
   },
   recommendSection: {
     flexDirection: 'column',
@@ -356,8 +353,7 @@ const styles = StyleSheet.create({
   recommendTitle: {
     color: '#222',
     textAlign: 'center',
-    fontFamily: 'Pretendard',
+    fontFamily: 'Pretendard-Bold',
     fontSize: 20,
-    fontWeight: '700',
   },
 });

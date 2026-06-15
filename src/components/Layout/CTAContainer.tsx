@@ -14,7 +14,7 @@ export function CTAContainer({ children, style }: Props) {
 
   return (
     <View
-      style={[style, { paddingBottom: keyboardVisible ? 16 : Math.max(insets.bottom + 16, 45) }]}
+      style={[style, { paddingBottom: keyboardVisible ? 16 : Math.max(insets.bottom + 16, 50) }]}
     >
       {children}
     </View>

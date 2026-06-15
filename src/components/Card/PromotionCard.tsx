@@ -2,7 +2,6 @@ import { View, StyleSheet } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import DDay from '@/src/components/Field/DDay';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
-import ChipAD from '@/src/components/Chip/ChipAD';
 import { colors } from '@/src/constants/colors';
 
 type Props = {
@@ -23,11 +22,11 @@ export default function PromotionCard({ days, category, title, subtitle, showAD 
           </View>
           {showAD && (
             <View style={styles.adWrapper}>
-              <ChipAD />
+              <ChipBadge label="AD" variant="ad" />
             </View>
           )}
           <View style={!showAD ? { marginLeft: 11 } : undefined}>
-            <ChipBadge label={category} variant="promotion" />
+            <ChipBadge label={category} variant="categoryDark" />
           </View>
         </View>
         <Typography size="lg" weight="bold" style={styles.title}>

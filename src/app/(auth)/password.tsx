@@ -9,9 +9,9 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { TextField } from '@/src/components/Input/TextField';
 import { Typography } from '@/src/components/Typography/Typography';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { colors } from '@/src/constants/colors';
 import { radius, spacing } from '@/src/constants/spacing';
-import { typography } from '@/src/constants/typography';
 import { postLogin, postSignup } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
@@ -30,6 +30,7 @@ export default function PasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [completed, setCompleted] = useState(false);
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -49,7 +50,8 @@ export default function PasswordScreen() {
       setToken(accessToken);
     },
     onSuccess: () => {
-      router.replace('/(auth)/signup-complete');
+      setCompleted(true);
+      router.push('/(auth)/profile-setup');
     },
     onError: (error: any) => {
       console.error('[password] signup error:', error?.response?.data ?? error);
@@ -65,37 +67,37 @@ export default function PasswordScreen() {
   return (
     <ScreenLayout withKeyboard style={styles.container}>
       <ArrowLeftBar onPress={() => router.back()} title="비밀번호 만들기" />
+      <View style={styles.progressWrapper}>
+        <ProgressBar step={2} />
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.form}>
-          <View style={styles.fieldGroup}>
-            <Typography size="xl" weight="bold">
-              {'비밀번호를\n입력해 주세요'}
-            </Typography>
-            <TextField
-              placeholder="영문, 숫자, 특수문자 포함 8자 이상"
-              value={password}
-              onChangeText={setPassword}
-              secureText
-            />
-          </View>
-          <View style={styles.fieldGroup}>
-            <TextField
-              placeholder="비밀번호를 다시 입력해주세요"
-              value={confirm}
-              onChangeText={setConfirm}
-              secureText
-              errorMessage={confirmError}
-            />
-          </View>
+        <Typography size="lg" weight="medium" style={styles.title}>
+          {'비밀번호를\n입력해 주세요'}
+        </Typography>
+
+        <View style={styles.fields}>
+          <TextField
+            placeholder="••••••••"
+            value={password}
+            onChangeText={setPassword}
+            secureText
+          />
+          <TextField
+            placeholder="비밀번호를 다시 입력해주세요"
+            value={confirm}
+            onChangeText={setConfirm}
+            secureText
+            errorMessage={confirmError}
+          />
         </View>
 
         <View style={styles.conditionsBox}>
-          <Typography size="md" style={styles.conditionsTitle}>
+          <Typography size="sm" weight="medium" style={styles.conditionsTitle}>
             비밀번호 조건
           </Typography>
           {CONDITIONS.map((condition, i) => (
@@ -103,6 +105,7 @@ export default function PasswordScreen() {
               <Checkbox checked={conditionsMet[i]} readOnly size={24} />
               <Typography
                 size="sm"
+                weight="medium"
                 style={{ color: conditionsMet[i] ? colors.text.primary : colors.text.tertiary }}
               >
                 {condition.label}
@@ -120,7 +123,7 @@ export default function PasswordScreen() {
         ) : null}
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => signup()}
+          onPress={() => completed ? router.push('/(auth)/profile-setup') : signup()}
           variant="dark"
           disabled={!isComplete || isPending}
         />
@@ -133,23 +136,24 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.neutral.white,
   },
+  progressWrapper: {
+    paddingHorizontal: spacing.xl,
+  },
   scrollContent: {
     paddingHorizontal: spacing.xl,
-    paddingTop: 39,
+    paddingTop: 38,
     paddingBottom: 16,
   },
-  form: {
-    gap: 32,
+  title: {
+    lineHeight: 24,
+    marginBottom: 19,
   },
-  fieldGroup: {
-    gap: 15,
-  },
-  label: {
-    lineHeight: typography.lineHeight.relaxed,
+  fields: {
+    gap: 13,
   },
   conditionsBox: {
-    marginTop: 105,
-    backgroundColor: '#F5F5F5',
+    marginTop: 44,
+    backgroundColor: colors.neutral.surface,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,

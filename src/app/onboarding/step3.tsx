@@ -1,108 +1,326 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import ProgressBar from '@/src/components/Bar/ProgressBar';
+import ChipFilter from '@/src/components/Chip/ChipFilter';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
+import { LocationButton, LocationPosition } from '@/src/components/Button/LocationButton';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
+import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { getRegions } from '@/src/api/user';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
+
+const SEOUL_LABEL = '서울';
+const SEOUL_ALL_LABEL = '서울전체';
+const COLS = 4;
+
+const chunkRows = (items: string[]): string[][] => {
+  const rows: string[][] = [];
+  for (let i = 0; i < items.length; i += COLS) {
+    const row = items.slice(i, i + COLS);
+    while (row.length < COLS) row.push('');
+    rows.push(row);
+  }
+  return rows;
+};
+
+const getPosition = (rowIndex: number, colIndex: number, totalRows: number): LocationPosition => {
+  if (rowIndex === 0 && colIndex === 0) return 'topLeft';
+  if (rowIndex === 0 && colIndex === 3) return 'topRight';
+  if (rowIndex === totalRows - 1 && colIndex === 0) return 'bottomLeft';
+  if (rowIndex === totalRows - 1 && colIndex === 3) return 'bottomRight';
+  return 'middle';
+};
 
 export default function OnboardingStep3() {
   const router = useRouter();
+  const [isSeoulExpanded, setIsSeoulExpanded] = useState(false);
+  const [isSeoulAllSelected, setIsSeoulAllSelected] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
+
+  const { setRegionIds } = useOnboardingStore();
+
+  const {
+    data: provinces = [],
+    isLoading: isProvincesLoading,
+    isError: isRegionsError,
+    refetch: refetchRegions,
+  } = useQuery({
+    queryKey: ['regions'],
+    queryFn: () => getRegions(),
+  });
+
+  const seoulProvince = provinces.find((p) => p.name === SEOUL_LABEL);
+  const seoulProvinceId = seoulProvince?.id;
+
+  const { data: seoulDistricts = [] } = useQuery({
+    queryKey: ['regions', seoulProvinceId],
+    queryFn: () => getRegions(seoulProvinceId!),
+    enabled: !!seoulProvinceId && isSeoulExpanded,
+  });
+
+  const provinceNames = provinces.map((p) => p.name);
+  const districtNames = seoulDistricts.map((d) => d.name);
+  const nonSeoulProvinceNames = provinceNames.filter((n) => n !== SEOUL_LABEL);
+
+  const displayRows = useMemo(() => {
+    if (!isSeoulExpanded || seoulDistricts.length === 0) {
+      return chunkRows(provinceNames);
+    }
+    const normalRows = chunkRows(provinceNames);
+    const seoulRowIndex = Math.floor(provinceNames.indexOf(SEOUL_LABEL) / COLS);
+    const districtRows = chunkRows([SEOUL_ALL_LABEL, ...districtNames]);
+    return [
+      ...normalRows.slice(0, seoulRowIndex + 1),
+      ...districtRows,
+      ...normalRows.slice(seoulRowIndex + 1),
+    ];
+  }, [isSeoulExpanded, provinceNames, districtNames, seoulDistricts.length]);
+
+  const handlePress = (label: string) => {
+    if (!label) return;
+
+    if (label === SEOUL_LABEL) {
+      setIsSeoulExpanded((prev) => !prev);
+      return;
+    }
+
+    if (label === SEOUL_ALL_LABEL) {
+      if (isSeoulAllSelected) {
+        setIsSeoulAllSelected(false);
+      } else {
+        setIsSeoulAllSelected(true);
+        setSelectedLocations((prev) => {
+          const next = new Set(prev);
+          districtNames.forEach((d) => next.delete(d));
+          const nonSeoulSelected = nonSeoulProvinceNames.filter((r) => next.has(r));
+          if (nonSeoulSelected.length > 2) {
+            nonSeoulSelected.slice(2).forEach((r) => next.delete(r));
+          }
+          return next;
+        });
+      }
+      return;
+    }
+
+    if (districtNames.includes(label)) {
+      if (isSeoulAllSelected) return;
+      setSelectedLocations((prev) => {
+        const next = new Set(prev);
+        if (next.has(label)) {
+          next.delete(label);
+        } else if (next.size < 3) {
+          next.add(label);
+        }
+        return next;
+      });
+      return;
+    }
+
+    // 비서울 시/도
+    const limit = isSeoulAllSelected ? 2 : 3;
+    setSelectedLocations((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        const currentCount = isSeoulAllSelected
+          ? nonSeoulProvinceNames.filter((r) => next.has(r)).length
+          : next.size;
+        if (currentCount < limit) {
+          next.add(label);
+        }
+      }
+      return next;
+    });
+  };
+
+  const isSelected = (label: string) => {
+    if (label === SEOUL_LABEL) return isSeoulExpanded || isSeoulAllSelected;
+    if (label === SEOUL_ALL_LABEL) return isSeoulAllSelected;
+    if (districtNames.includes(label)) return isSeoulAllSelected || selectedLocations.has(label);
+    return selectedLocations.has(label);
+  };
+
+  const getDefaultBg = (label: string): string | undefined => {
+    if (districtNames.includes(label) || label === SEOUL_ALL_LABEL) {
+      return 'rgba(255, 242, 166, 0.7)';
+    }
+    return undefined;
+  };
+
+  const chips = useMemo(() => {
+    const result: string[] = [];
+    if (isSeoulAllSelected) {
+      result.push(SEOUL_LABEL);
+    } else {
+      districtNames.forEach((d) => {
+        if (selectedLocations.has(d)) result.push(d);
+      });
+    }
+    nonSeoulProvinceNames.forEach((r) => {
+      if (selectedLocations.has(r)) result.push(r);
+    });
+    return result;
+  }, [isSeoulAllSelected, districtNames, selectedLocations, nonSeoulProvinceNames]);
+
+  const removeChip = (label: string) => {
+    if (label === SEOUL_LABEL) {
+      setIsSeoulAllSelected(false);
+      return;
+    }
+    setSelectedLocations((prev) => {
+      const next = new Set(prev);
+      next.delete(label);
+      return next;
+    });
+  };
+
+  const nameToId = useMemo(() => {
+    const map: Record<string, number> = {};
+    provinces.forEach((p) => (map[p.name] = p.id));
+    seoulDistricts.forEach((d) => (map[d.name] = d.id));
+    if (seoulProvince) map[SEOUL_ALL_LABEL] = seoulProvince.id;
+    return map;
+  }, [provinces, seoulDistricts, seoulProvince]);
+
+  const getSelectedRegionIds = (): number[] => {
+    const ids: number[] = [];
+    if (isSeoulAllSelected && nameToId[SEOUL_ALL_LABEL]) {
+      ids.push(nameToId[SEOUL_ALL_LABEL]);
+    } else {
+      districtNames.forEach((d) => {
+        if (selectedLocations.has(d) && nameToId[d]) ids.push(nameToId[d]);
+      });
+    }
+    nonSeoulProvinceNames.forEach((r) => {
+      if (selectedLocations.has(r) && nameToId[r]) ids.push(nameToId[r]);
+    });
+    return ids;
+  };
 
   return (
-    <LinearGradient
-      colors={['#FFF7CC', '#FFF2A6']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.container}
-    >
-      <Stack.Screen options={{ gestureEnabled: false }} />
-      <View style={styles.content}>
-        <Typography size="xxxl" weight="bold" style={styles.title}>
-          {'내가 뭘 좋아하는지\n아직 잘 모르겠다면?'}
-        </Typography>
+    <ScreenLayout style={styles.container}>
+      <View style={styles.progressContainer}>
+        <ProgressBar step={2} />
       </View>
+      <ArrowLeftBar onPress={() => router.back()} />
 
-      <View style={styles.circleWrapper}>
-        <View style={styles.circleRow}>
-          <View style={styles.topicImage} />
-          <View style={styles.topicImage} />
-          <View style={styles.topicImage} />
-          <View style={styles.topicImage} />
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerBlock}>
+          <Typography size="xxxl" weight="semiBold">
+            {'주로 활동하는\n지역을 알려주세요'}
+          </Typography>
+          <Typography size="md" style={styles.subtitle}>
+            최대 3곳까지 설정할 수 있어요.
+          </Typography>
         </View>
-      </View>
+
+        <View style={styles.chipContainer}>
+          {chips.length > 0 && (
+            <View style={styles.chipRow}>
+              {chips.map((chip) => (
+                <ChipFilter key={chip} label={chip} onRemove={() => removeChip(chip)} />
+              ))}
+            </View>
+          )}
+        </View>
+
+        {isProvincesLoading ? (
+          <ActivityIndicator color={colors.text.secondary} />
+        ) : isRegionsError ? (
+          <View style={styles.errorContainer}>
+            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <TouchableOpacity onPress={() => refetchRegions()} style={styles.retryButton}>
+              <Typography size="md" weight="semiBold">다시 시도</Typography>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.grid}>
+            {displayRows.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.gridRow}>
+                {row.map((location, colIndex) =>
+                  location ? (
+                    <LocationButton
+                      key={`${rowIndex}-${colIndex}`}
+                      label={location}
+                      position={getPosition(rowIndex, colIndex, displayRows.length)}
+                      selected={isSelected(location)}
+                      defaultBg={getDefaultBg(location)}
+                      onPress={() => handlePress(location)}
+                    />
+                  ) : (
+                    <View key={`${rowIndex}-empty-${colIndex}`} style={styles.emptyCell} />
+                  ),
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
 
       <CTAContainer style={styles.cta}>
-        <Text style={styles.ctaSubText}>
-          <Text style={styles.ctaBold}>1분만에</Text>
-          <Text style={styles.ctaRegular}> 나에게 맞는 활동 찾기</Text>
-        </Text>
         <BottomCTA
-          label="추천받기"
-          onPress={() => router.push('/onboarding/step4')}
-          variant="white"
+          label="다음"
+          onPress={() => {
+            setRegionIds(getSelectedRegionIds());
+            router.push('/onboarding/step4');
+          }}
+          variant="dark"
+          disabled={chips.length === 0}
         />
       </CTAContainer>
-    </LinearGradient>
+    </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingBottom: 147,
-  },
-  title: {
-    color: colors.text.primary,
-    textAlign: 'center',
-    lineHeight: 32,
-  },
-  circleWrapper: {
-    width: '100%',
-    overflow: 'hidden',
-    alignItems: 'center',
-    marginBottom: 59,
-  },
-  circleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-  },
-  topicImage: {
-    width: 135,
-    height: 135,
-    borderRadius: 135,
-    borderWidth: 1,
-    borderColor: colors.border.default,
-    backgroundColor: '#D9D9D9',
-  },
-  cta: {
-    width: '100%',
-    paddingTop: 16,
+  container: { backgroundColor: colors.neutral.white },
+  scrollContent: {
     paddingHorizontal: 20,
-    flexDirection: 'column',
-    justifyContent: 'center',
+    paddingTop: 32,
+    paddingBottom: 99,
     alignItems: 'center',
-    gap: 10,
   },
-  ctaSubText: {
-    textAlign: 'center',
+  headerBlock: {
+    width: '100%',
+    gap: 13,
   },
-  ctaBold: {
-    fontFamily: 'Pretendard',
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.text.primary,
+  subtitle: {
+    color: colors.text.secondary,
+    lineHeight: 20,
   },
-  ctaRegular: {
-    fontFamily: 'Pretendard',
-    fontSize: 12,
-    fontWeight: '400',
-    color: colors.text.primary,
+  chipContainer: {
+    width: 332,
+    marginTop: 20,
+    marginBottom: 8,
   },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  grid: {
+    width: 332,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    overflow: 'hidden',
+  },
+  gridRow: {
+    flexDirection: 'row',
+  },
+  emptyCell: {
+    width: 83,
+    height: 57,
+  },
+  cta: { paddingHorizontal: 20, paddingTop: 16 },
+  progressContainer: { paddingHorizontal: 20, paddingTop: 9, paddingBottom: 7 },
+  errorContainer: { alignItems: 'center', gap: 12, paddingTop: 20 },
+  errorText: { color: colors.text.secondary },
+  retryButton: { paddingHorizontal: 20, paddingVertical: 8 },
 });

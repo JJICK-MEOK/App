@@ -21,7 +21,7 @@ export function ScreenLayout({ children, withKeyboard = false, style }: Props) {
 
   if (withKeyboard) {
     return (
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={[{ flex: 1 }, style]}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}

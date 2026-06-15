@@ -4,7 +4,8 @@ import type { LocationPosition } from '@/src/components/Button/LocationButton';
 
 const CELL_WIDTH = 83;
 const NUM_COLUMNS = 4;
-const DISTRICT_SELECTED_COLOR = 'rgba(255, 242, 166, 0.8)';
+const DISTRICT_BG = 'rgba(255, 242, 166, 0.7)';
+const DISTRICT_SELECTED_COLOR = 'rgba(255, 242, 166, 1)';
 
 type AccordionProps = {
   city: string;
@@ -37,7 +38,9 @@ export const Accordion = ({
               label={district}
               position="middle"
               selected={selectedDistricts.includes(district)}
+              defaultBg={DISTRICT_BG}
               selectedColor={DISTRICT_SELECTED_COLOR}
+              textWeight="regular"
               onPress={() => onDistrictToggle(district)}
             />
           ))}
