@@ -78,8 +78,8 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   image: {
-    width: 78.323,
-    height: 78.323,
+    width: 78,
+    height: 78,
     aspectRatio: 1,
     borderRadius: 4.895,
     borderWidth: 0.979,
