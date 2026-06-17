@@ -1,5 +1,5 @@
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
-import HeartUnselected from '@/assets/images/HeartUnselected.svg';
+import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
 import { colors } from '@/src/constants/colors';
 
@@ -12,11 +12,7 @@ export default function ButtonSaved({ saved = false, onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.container}>
       <View style={styles.iconWrapper}>
-        {saved ? (
-          <HeartSaved width={23} height={23} />
-        ) : (
-          <HeartUnselected width={28} height={28} />
-        )}
+        {saved ? <HeartSaved /> : <HeartDisabled />}
       </View>
     </TouchableOpacity>
   );
