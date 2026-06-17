@@ -32,7 +32,7 @@ export default function TopNav({ name }: Props) {
             /* router.push('/notifications') */
           }}
         >
-          <Bell width={28} height={28} />
+          <Bell width={26} height={26} />
         </TouchableOpacity>
       </View>
     </View>
