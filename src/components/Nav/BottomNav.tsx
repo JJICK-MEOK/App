@@ -72,7 +72,7 @@ export default function BottomNav({ activeTab, onTabChange }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 334,
+    width: '100%',
     height: 76,
     paddingTop: 8,
     paddingHorizontal: 10,
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   labelInactive: {
-    color: colors.disabled,
+    color: colors.text.tertiary,
     textAlign: 'center',
   },
 });

@@ -5,7 +5,7 @@ import { colors } from '@/src/constants/colors';
 import { radius } from '@/src/constants/spacing';
 import { Typography } from '@/src/components/Typography/Typography';
 
-type BottomCTAVariant = 'white' | 'primary' | 'dark';
+export type BottomCTAVariant = 'white' | 'primary' | 'dark';
 
 type BottomCTAProps = {
   label: string;

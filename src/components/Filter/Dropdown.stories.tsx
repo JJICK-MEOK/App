@@ -5,8 +5,8 @@ const meta: Meta<typeof Dropdown> = {
   title: 'Dropdown/Dropdown',
   component: Dropdown,
   args: {
-    options: ['Option 1', 'Option 2', 'Option 3'],
-    onSelect: () => {},
+    label: '전체',
+    onPress: () => {},
   },
 };
 
@@ -14,3 +14,9 @@ export default meta;
 type Story = StoryObj<typeof Dropdown>;
 
 export const Default: Story = {};
+
+export const Sort: Story = {
+  args: {
+    label: '추천순',
+  },
+};
