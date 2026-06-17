@@ -8,7 +8,7 @@ type Props = {
 export default function ZoomButton({ onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.container}>
-      <Search width={28} height={28} color="#FFF" />
+      <Search width={20} height={20} color="#FFF" />
     </TouchableOpacity>
   );
 }
