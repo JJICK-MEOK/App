@@ -24,7 +24,7 @@ export default function TopNav({ name }: Props) {
             /* router.push('/search') */
           }}
         >
-          <Search width={28} height={28} />
+          <Search width={28} height={28} color="#222222" />
         </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.7}
