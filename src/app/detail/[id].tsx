@@ -9,7 +9,6 @@ import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import DetailTab from '@/src/components/Tab/DetailTab';
 import BottomActionBar from '@/src/components/Layout/BottomActionBar';
 import ChipBadge, { type ChipBadgeVariant } from '@/src/components/Chip/ChipBadge';
-import DDay from '@/src/components/Field/DDay';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
@@ -64,7 +63,9 @@ export default function ActivityDetailPage() {
             <View style={styles.metaRow}>
               <ChipBadge label="프로그램" variant="category" />
               <View style={styles.statsRow}>
-                <DDay days={7} style={styles.dDay} />
+                <Typography size="sm" weight="semiBold" style={styles.DDay}>
+                  D-7
+                </Typography>
                 <View style={styles.statItem}>
                   <EyeOn width={14} height={14} />
                   <Typography size="sm" style={styles.statText}>
@@ -155,12 +156,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.white,
     paddingHorizontal: 20,
     paddingTop: 22,
-    paddingBottom: 17,
+    paddingBottom: 15,
+    marginBottom: 5,
   },
   zoomButtonPos: {
     position: 'absolute',
-    right: 9,
-    bottom: 8,
+    right: 10,
+    bottom: 9,
   },
   thumbnail: {
     width: 135,
@@ -187,8 +189,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  dDay: {
+  DDay: {
     color: colors.text.primary,
+    fontSize: 12,
   },
   statText: {
     color: colors.text.tertiary,
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
 
   infoContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 35,
     paddingBottom: 20,
     gap: 24,
   },
