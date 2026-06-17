@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   labelInactive: {
-    color: colors.disabled,
+    color: colors.text.tertiary,
     textAlign: 'center',
   },
 });
