@@ -13,7 +13,7 @@ export default function TopNav({ name }: Props) {
       <View style={styles.left}>
         {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
         <View style={styles.profile} />
-        <Typography size="xxl" weight="bold" style={styles.title}>
+        <Typography size="xxl" weight="semiBold" style={styles.title}>
           {name} 님
         </Typography>
       </View>
@@ -47,6 +47,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    backgroundColor: '#FFF',
   },
   left: {
     flexDirection: 'row',
@@ -64,11 +65,11 @@ const styles = StyleSheet.create({
   title: {
     color: '#222',
     textAlign: 'center',
-    letterSpacing: 1,
+    letterSpacing: 0.6,
   },
   icons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 8,
   },
 });
