@@ -6,7 +6,6 @@ import { colors } from '@/src/constants/colors';
 type Props = {
   category: string;
   title: string;
-
   showAD?: boolean;
 };
 

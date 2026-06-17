@@ -29,7 +29,11 @@ function getVariantStyles(variant: ChipBadgeVariant): { container: ViewStyle; te
       };
     case 'categoryDark':
       return {
-        container: { backgroundColor: colors.text.secondary, paddingVertical: 2, paddingHorizontal: 5 },
+        container: {
+          backgroundColor: colors.text.secondary,
+          paddingVertical: 2,
+          paddingHorizontal: 5,
+        },
         text: { color: colors.disabled, textAlign: 'center' },
       };
     case 'ad':
