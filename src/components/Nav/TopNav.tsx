@@ -41,7 +41,7 @@ export default function TopNav({ name }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    width: 375,
+    width: '100%',
     paddingHorizontal: 21,
     paddingVertical: 11,
     flexDirection: 'row',
