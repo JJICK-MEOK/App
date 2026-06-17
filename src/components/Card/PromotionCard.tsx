@@ -1,24 +1,24 @@
 import { View, StyleSheet } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
-import DDay from '@/src/components/Field/DDay';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import { colors } from '@/src/constants/colors';
 
 type Props = {
-  days: number;
   category: string;
   title: string;
-  subtitle: string;
+
   showAD?: boolean;
 };
 
-export default function PromotionCard({ days, category, title, subtitle, showAD = true }: Props) {
+export default function PromotionCard({ category, title, showAD = true }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.infoRow}>
           <View style={styles.ddayWrapper}>
-            <DDay days={days} style={{ lineHeight: 14 }} />
+            <Typography size="sm" weight="semiBold" style={styles.dday}>
+              D-7
+            </Typography>
           </View>
           {showAD && (
             <View style={styles.adWrapper}>
@@ -31,9 +31,6 @@ export default function PromotionCard({ days, category, title, subtitle, showAD 
         </View>
         <Typography size="lg" weight="bold" style={styles.title}>
           {title}
-        </Typography>
-        <Typography size="xs" style={styles.subtitle}>
-          {subtitle}
         </Typography>
       </View>
       {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
@@ -60,6 +57,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
+  },
+  dday: {
+    fontSize: 12,
+    color: '#FFF',
+    textAlign: 'center',
   },
   adWrapper: {
     marginLeft: 11,
