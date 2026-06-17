@@ -37,6 +37,8 @@ export default function TabsLayout() {
           const currentRoute = state.routes[state.index].name;
           const activeTab = ROUTE_TO_TAB[currentRoute] ?? 'home';
 
+          if (currentRoute === 'category') return null;
+
           return (
             <View style={styles.navWrapper}>
               <BottomNavigation
