@@ -1,7 +1,8 @@
 import { Tabs, useSegments } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
-import BottomNav, { TabKey } from '@/src/components/Nav/BottomNav';
+import { TabKey } from '@/src/components/Nav/BottomNav';
+import BottomNavigation from '@/src/components/Nav/BottomNavigation';
 import { colors } from '@/src/constants/colors';
 
 const ROUTE_TO_TAB: Record<string, TabKey> = {
@@ -38,9 +39,9 @@ export default function TabsLayout() {
 
           return (
             <View style={styles.navWrapper}>
-              <BottomNav
+              <BottomNavigation
                 activeTab={activeTab}
-                onTabChange={(tab) => navigation.navigate(TAB_TO_ROUTE[tab])}
+                onTabChange={(tab: TabKey) => navigation.navigate(TAB_TO_ROUTE[tab])}
               />
             </View>
           );
@@ -59,10 +60,9 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   navWrapper: {
     position: 'absolute',
-    bottom: 22,
+    bottom: 0,
     left: 0,
     right: 0,
-    alignItems: 'center',
     backgroundColor: 'transparent',
   },
 });
