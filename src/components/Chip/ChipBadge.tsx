@@ -25,18 +25,18 @@ function getVariantStyles(variant: ChipBadgeVariant): { container: ViewStyle; te
     case 'category':
       return {
         container: { backgroundColor: colors.neutral.surface, paddingVertical: 4 },
-        text: { color: colors.text.tertiary },
+        text: { color: colors.text.tertiary, textAlign: 'center' },
       };
     case 'categoryDark':
       return {
-        container: { backgroundColor: colors.text.secondary, paddingVertical: 2 },
-        text: { color: colors.disabled },
+        container: { backgroundColor: colors.text.secondary, paddingVertical: 2, paddingHorizontal: 5 },
+        text: { color: colors.disabled, textAlign: 'center' },
       };
     case 'ad':
     default:
       return {
         container: { borderWidth: 1, borderColor: colors.border.default, paddingVertical: 2 },
-        text: { color: colors.border.default },
+        text: { color: colors.border.default, textAlign: 'center' },
       };
   }
 }
