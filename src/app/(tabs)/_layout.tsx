@@ -1,5 +1,6 @@
 import { Tabs, useSegments } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { Edge, SafeAreaView } from 'react-native-safe-area-context';
 import { TabKey } from '@/src/components/Nav/BottomNav';
 import BottomNavigation from '@/src/components/Nav/BottomNavigation';
@@ -23,14 +24,16 @@ const TAB_TO_ROUTE: Record<TabKey, string> = {
 
 export default function TabsLayout() {
   const segments = useSegments();
-  const isHome = segments.at(-1) === 'home';
-  const edges: Edge[] = isHome ? [] : ['top'];
+  const currentTab = segments.at(-1);
+  const isHome = currentTab === 'home';
+  const isCustom = currentTab === 'custom';
+  const edges: Edge[] = isHome || isCustom ? [] : ['top'];
+
+  const bgColor = isHome ? 'transparent' : colors.neutral.white;
 
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: isHome ? 'transparent' : colors.neutral.white }}
-      edges={edges}
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgColor }} edges={edges}>
+      <StatusBar style={isCustom ? 'light' : 'dark'} />
       <Tabs
         screenOptions={{ headerShown: false }}
         tabBar={({ state, navigation }) => {
