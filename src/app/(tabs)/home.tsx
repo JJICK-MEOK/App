@@ -8,15 +8,14 @@ import Program from '@/assets/images/Program.svg';
 import OneDay from '@/assets/images/Oneday.svg';
 import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
-import ArrowRight from '@/assets/images/ArrowRight.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 
 const ICONS = [
-  { Svg: Program, label: '프로그램' },
-  { Svg: OneDay, label: '원데이' },
-  { Svg: Event, label: '행사·강연' },
-  { Svg: Club, label: '동아리' },
+  { Svg: Program, label: '프로그램', route: '/list/program' },
+  { Svg: OneDay, label: '원데이', route: '/list/oneday' },
+  { Svg: Event, label: '행사·강연', route: '/list/festival' },
+  { Svg: Club, label: '동아리', route: '/list/club' },
 ] as const;
 
 export default function HomeScreen() {
@@ -44,8 +43,13 @@ export default function HomeScreen() {
 
           <View style={styles.iconSection}>
             <View style={styles.iconRow}>
-              {ICONS.map(({ Svg, label }, i) => (
-                <TouchableOpacity key={i} style={styles.iconItem} activeOpacity={0.7}>
+              {ICONS.map(({ Svg, label, route }, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.iconItem}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(route)}
+                >
                   <View style={styles.iconContainer}>
                     <Svg width={44} height={45} style={{ flexShrink: 0 }} />
                   </View>
