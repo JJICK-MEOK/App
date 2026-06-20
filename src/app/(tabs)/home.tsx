@@ -11,11 +11,14 @@ import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 
+// TODO: 백엔드 연동 후 실제 유저 이름으로 교체
+const USER_NAME = '00';
+
 const ICONS = [
-  { Svg: Program, label: '프로그램', route: '/list/program' },
-  { Svg: OneDay, label: '원데이', route: '/list/oneday' },
-  { Svg: Event, label: '행사·강연', route: '/list/festival' },
-  { Svg: Club, label: '동아리', route: '/list/club' },
+  { Svg: Program, label: '프로그램', route: '/activity-categories/program' },
+  { Svg: OneDay, label: '원데이', route: '/activity-categories/oneday' },
+  { Svg: Event, label: '행사·강연', route: '/activity-categories/festival' },
+  { Svg: Club, label: '동아리', route: '/activity-categories/club' },
 ] as const;
 
 export default function HomeScreen() {
@@ -25,7 +28,7 @@ export default function HomeScreen() {
   return (
     <ScreenLayout style={{ backgroundColor: '#F8F6F6' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav name="00" />
+        <TopNav name={USER_NAME} />
       </View>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.main}>
@@ -61,7 +64,7 @@ export default function HomeScreen() {
 
           <View style={styles.contentSheet}>
             <View style={styles.recommendSection}>
-              <Text style={styles.sectionTitle}>00 님에게 추천해요!</Text>
+              <Text style={styles.sectionTitle}>{USER_NAME} 님에게 추천해요!</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
