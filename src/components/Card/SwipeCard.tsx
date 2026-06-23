@@ -9,7 +9,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import IconHeart from '@/src/components/Icon/IconHeart';
-import { colors } from '@/src/constants/colors';
+import ChipBadge from '@/src/components/Chip/ChipBadge';
 
 const SCREEN_WIDTH = Math.min(Dimensions.get('window').width, 430);
 export const CARD_WIDTH = SCREEN_WIDTH - 40;
@@ -17,12 +17,6 @@ export const CARD_HEIGHT = Math.round(CARD_WIDTH * (444 / 335));
 
 const BORDER_GRADIENT_COLORS = ['#28FFD9', '#FF5EAD', '#8B5CF6', '#28FFD9'] as const;
 const BORDER_DURATION = 8000;
-
-function cardBgColor(scale: number): string {
-  if (scale >= 1) return '#BEBEBE';
-  if (scale >= 0.9) return '#A9A9A9';
-  return '#848484';
-}
 
 export type TagType = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
 
@@ -41,10 +35,10 @@ export type Activity = {
 
 type Props = {
   activity: Activity;
-  /** Front=1.0, Middle=0.9, Back=0.81 */
-  scale?: number;
+  isFront?: boolean;
   saved?: boolean;
   onSave?: () => void;
+  onHeartPressIn?: () => void;
 };
 
 function AnimatedGradientBorder({
@@ -61,9 +55,11 @@ function AnimatedGradientBorder({
   children: React.ReactNode;
 }) {
   const angle = useSharedValue(0);
+  const borderOpacity = useSharedValue(0);
   const [webDeg, setWebDeg] = useState(0);
 
   useEffect(() => {
+    borderOpacity.value = withTiming(1, { duration: 350, easing: Easing.out(Easing.quad) });
     if (Platform.OS === 'web') {
       let rafId: number;
       let start: number | null = null;
@@ -80,12 +76,13 @@ function AnimatedGradientBorder({
       -1,
       false,
     );
-  }, [angle]);
+  }, [angle, borderOpacity]);
 
   const spinnerSize = Math.ceil(Math.sqrt(w * w + h * h)) + 10;
 
   const nativeStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${angle.value * 360}deg` }],
+    opacity: borderOpacity.value,
   }));
 
   const spinnerStyle =
@@ -125,11 +122,15 @@ function AnimatedGradientBorder({
   );
 }
 
-export default function SwipeCard({ activity, scale = 1, saved = false, onSave }: Props) {
-  const w = CARD_WIDTH * scale;
-  const h = CARD_HEIGHT * scale;
-  const br = 10 * scale;
-  const bg = cardBgColor(scale);
+export default function SwipeCard({ activity, isFront = false, saved = false, onSave, onHeartPressIn }: Props) {
+  const [isSaved, setIsSaved] = useState(saved);
+  const bg = '#BEBEBE';
+
+  const handleHeartPressIn = () => {
+    setIsSaved((prev) => !prev);
+    onSave?.();
+    onHeartPressIn?.();
+  };
 
   const inner = (
     <>
@@ -138,67 +139,54 @@ export default function SwipeCard({ activity, scale = 1, saved = false, onSave }
         locations={[0, 0.556, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={[styles.overlay, { height: h * 0.488 }]}
+        style={[styles.overlay, { height: CARD_HEIGHT * 0.488 }]}
       />
       <View
         style={[
           styles.content,
           {
-            top: h * 0.7154,
-            paddingHorizontal: 14 * scale,
-            gap: 12 * scale,
+            top: CARD_HEIGHT * 0.7154,
+            paddingHorizontal: 14,
+            gap: 12,
           },
         ]}
       >
-        <View style={{ gap: 5 * scale }}>
-          <Text style={[styles.semiBold, { fontSize: 12 * scale }]}>D-{activity.days}</Text>
-          <Text style={[styles.semiBold, { fontSize: 20 * scale }]} numberOfLines={2}>
+        <View style={{ gap: 5 }}>
+          <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
+          <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>
             {activity.title}
           </Text>
         </View>
         <View style={styles.bottomRow}>
-          <View style={[styles.tags, { gap: 5 * scale }]}>
+          <View style={[styles.tags, { gap: 5 }]}>
             {activity.tags.map((tag) => (
-              <View
+              <ChipBadge
                 key={`${tag.type}-${tag.label}`}
-                style={[
-                  styles.tagChip,
-                  {
-                    backgroundColor: colors.tag[tag.type].bg,
-                    paddingHorizontal: 8 * scale,
-                    paddingVertical: 4 * scale,
-                    borderRadius: 5 * scale,
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tagText,
-                    { fontSize: 12 * scale, color: colors.tag[tag.type].text },
-                  ]}
-                >
-                  #{tag.label}
-                </Text>
-              </View>
+                label={`#${tag.label}`}
+                variant={tag.type}
+                dark
+              />
             ))}
           </View>
-          <IconHeart saved={saved} size={29 * scale} onPress={onSave} />
+          <IconHeart saved={isSaved} size={29} onPressIn={handleHeartPressIn} />
         </View>
       </View>
     </>
   );
 
-  if (scale === 1) {
+  if (isFront) {
     return (
-      <AnimatedGradientBorder w={w} h={h} borderRadius={br} bgColor={bg}>
+      <AnimatedGradientBorder w={CARD_WIDTH} h={CARD_HEIGHT} borderRadius={10} bgColor={bg}>
         {inner}
       </AnimatedGradientBorder>
     );
   }
 
   return (
-    <View style={[styles.card, { width: w, height: h, borderRadius: br, backgroundColor: bg }]}>
-      {inner}
+    <View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT, borderRadius: 10, backgroundColor: bg }]}>
+      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: 8, overflow: 'hidden' }}>
+        {inner}
+      </View>
     </View>
   );
 }
@@ -232,11 +220,5 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     flex: 1,
     marginRight: 8,
-  },
-  tagChip: {
-    alignSelf: 'flex-start',
-  },
-  tagText: {
-    fontFamily: 'Pretendard-Medium',
   },
 });

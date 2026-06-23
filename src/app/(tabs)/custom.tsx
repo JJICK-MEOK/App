@@ -1,8 +1,10 @@
 import { View, Text, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import CardStack from '@/src/components/Card/CardStack';
 import { useActivities } from '@/src/hooks/useActivities';
+import type { Activity } from '@/src/components/Card/SwipeCard';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ELLIPSE_W = SCREEN_WIDTH * (614 / 375);
@@ -11,6 +13,11 @@ const ELLIPSE_H = SCREEN_WIDTH * (507 / 375);
 export default function CustomScreen() {
   const { activities, fetchMore, isLoading } = useActivities();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handlePressCard = (activity: Activity) => {
+    router.push(`/detail/${activity.id}`);
+  };
 
   return (
     <ScreenLayout style={[styles.screen, { paddingTop: insets.top }]}>
@@ -24,7 +31,11 @@ export default function CustomScreen() {
         {activities.length === 0 && isLoading ? (
           <ActivityIndicator color="#999" />
         ) : (
-          <CardStack activities={activities} onEndReached={fetchMore} />
+          <CardStack
+            activities={activities}
+            onEndReached={fetchMore}
+            onPressCard={handlePressCard}
+          />
         )}
       </View>
     </ScreenLayout>
@@ -59,6 +70,6 @@ const styles = StyleSheet.create({
   cardArea: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 46,
+    paddingTop: 82,
   },
 });

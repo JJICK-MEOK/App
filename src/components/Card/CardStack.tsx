@@ -1,143 +1,168 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withTiming,
   withSpring,
-  runOnJS,
   interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
 import type { Activity } from './SwipeCard';
 
-const STACK_HEIGHT = Math.round(CARD_HEIGHT * (477 / 444));
-const FRONT_TOP = Math.round(CARD_HEIGHT * (33 / 444));
-const MIDDLE_TOP = Math.round(CARD_HEIGHT * (15.65 / 444));
-
+const GAP = 7;
+const BACK_SCALE = 0.81;
+// 모든 카드가 CARD_WIDTH 물리 크기 → CSS transform scale 적용
+// CSS scale은 중심 기준 → 시각적 좌측 끝 = translateX + CARD_WIDTH*(1-BACK_SCALE)/2
+// 7px 갭을 위해: SLOT = CARD_WIDTH*(1+BACK_SCALE)/2 + GAP
+const SLOT = Math.round((CARD_WIDTH * (1 + BACK_SCALE)) / 2) + GAP;
 const SWIPE_THRESHOLD = CARD_WIDTH * 0.3;
 const VELOCITY_THRESHOLD = 800;
 
 type Props = {
   activities: Activity[];
+  onPressCard?: (activity: Activity) => void;
   onSwipe?: (activity: Activity, direction: 'left' | 'right') => void;
   onEndReached?: () => void;
 };
 
-function SwipableCard({
-  activity,
-  onSwipedOff,
-}: {
-  activity: Activity;
-  onSwipedOff: (direction: 'left' | 'right') => void;
-}) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
+export default function CardStack({ activities, onPressCard, onSwipe, onEndReached }: Props) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const panOffset = useSharedValue(0);
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const current = activities[currentIndex];
+  const prev = activities[currentIndex - 1];
+  const next = activities[currentIndex + 1];
+
+  const goLeft = useCallback(() => {
+    const newIndex = currentIndex + 1;
+    onSwipe?.(activities[currentIndex], 'left');
+    setCurrentIndex(newIndex);
+    if (activities.length - newIndex <= 3) onEndReached?.();
+  }, [activities, currentIndex, onSwipe, onEndReached]);
+
+  const goRight = useCallback(() => {
+    const newIndex = currentIndex - 1;
+    onSwipe?.(activities[currentIndex], 'right');
+    setCurrentIndex(newIndex);
+  }, [activities, currentIndex, onSwipe]);
+
+  useLayoutEffect(() => {
+    panOffset.value = 0;
+  }, [currentIndex, panOffset]);
+
+  const heartActiveRef = useRef(false);
+
+  const navigateToDetail = useCallback(() => {
+    const wasHeart = heartActiveRef.current;
+    heartActiveRef.current = false;
+    if (current && !wasHeart) onPressCard?.(current);
+  }, [onPressCard, current]);
+
+  const handleHeartPressIn = useCallback(() => {
+    heartActiveRef.current = true;
+  }, []);
+
+  const prevStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
+      { translateX: -SLOT + panOffset.value },
       {
-        rotate: `${interpolate(
-          translateX.value,
-          [-CARD_WIDTH, 0, CARD_WIDTH],
-          [-15, 0, 15],
-        )}deg`,
+        scale: interpolate(panOffset.value, [0, SLOT], [BACK_SCALE, 1], Extrapolation.CLAMP),
       },
     ],
   }));
 
-  const gesture = Gesture.Pan()
+  const currentStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: panOffset.value },
+      {
+        scale: interpolate(
+          panOffset.value,
+          [-SLOT, 0, SLOT],
+          [BACK_SCALE, 1, BACK_SCALE],
+          Extrapolation.CLAMP,
+        ),
+      },
+    ],
+  }));
+
+  const nextStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: SLOT + panOffset.value },
+      {
+        scale: interpolate(panOffset.value, [-SLOT, 0], [1, BACK_SCALE], Extrapolation.CLAMP),
+      },
+    ],
+  }));
+
+  const tap = Gesture.Tap().onEnd((_e, success) => {
+    if (success) scheduleOnRN(navigateToDetail);
+  });
+
+  const pan = Gesture.Pan()
+    .minDistance(5)
     .onUpdate((e) => {
-      translateX.value = e.translationX;
-      translateY.value = e.translationY * 0.5;
+      panOffset.value = e.translationX;
     })
     .onEnd((e) => {
-      const shouldSwipe =
-        Math.abs(e.translationX) > SWIPE_THRESHOLD ||
-        Math.abs(e.velocityX) > VELOCITY_THRESHOLD;
+      const shouldGoLeft =
+        e.translationX < -SWIPE_THRESHOLD || e.velocityX < -VELOCITY_THRESHOLD;
+      const shouldGoRight =
+        e.translationX > SWIPE_THRESHOLD || e.velocityX > VELOCITY_THRESHOLD;
 
-      if (shouldSwipe) {
-        const dir = e.translationX > 0 ? 'right' : 'left';
-        const targetX = dir === 'right' ? CARD_WIDTH * 2.5 : -CARD_WIDTH * 2.5;
-        translateX.value = withTiming(targetX, { duration: 300 }, () => {
-          runOnJS(onSwipedOff)(dir);
-        });
-        translateY.value = withTiming(translateY.value + 40, { duration: 300 });
+      if (shouldGoLeft && next) {
+        panOffset.value = withSpring(
+          -SLOT,
+          { velocity: e.velocityX, damping: 20, stiffness: 180, overshootClamping: true },
+          () => scheduleOnRN(goLeft),
+        );
+      } else if (shouldGoRight && prev) {
+        panOffset.value = withSpring(
+          SLOT,
+          { velocity: e.velocityX, damping: 20, stiffness: 180, overshootClamping: true },
+          () => scheduleOnRN(goRight),
+        );
       } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
+        panOffset.value = withSpring(0, { damping: 40, stiffness: 300 });
       }
     });
 
+  const gesture = Gesture.Exclusive(pan, tap);
+
+  if (!current) return null;
+
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View style={[styles.frontCard, animatedStyle]}>
-        <SwipeCard activity={activity} scale={1} />
-      </Animated.View>
+      <View style={styles.container}>
+        {prev && (
+          <Animated.View style={[styles.card, prevStyle]}>
+            <SwipeCard activity={prev} />
+          </Animated.View>
+        )}
+        {next && (
+          <Animated.View style={[styles.card, nextStyle]}>
+            <SwipeCard activity={next} />
+          </Animated.View>
+        )}
+        <Animated.View style={[styles.card, currentStyle]}>
+          <SwipeCard activity={current} isFront onHeartPressIn={handleHeartPressIn} />
+        </Animated.View>
+      </View>
     </GestureDetector>
-  );
-}
-
-export default function CardStack({ activities, onSwipe, onEndReached }: Props) {
-  const [startIndex, setStartIndex] = useState(0);
-
-  const handleSwipedOff = useCallback(
-    (direction: 'left' | 'right') => {
-      const nextIndex = startIndex + 1;
-      onSwipe?.(activities[startIndex], direction);
-      setStartIndex(nextIndex);
-      if (activities.length - nextIndex <= 3) {
-        onEndReached?.();
-      }
-    },
-    [activities, startIndex, onSwipe, onEndReached],
-  );
-
-  const front = activities[startIndex];
-  const middle = activities[startIndex + 1];
-  const back = activities[startIndex + 2];
-
-  if (!front) return null;
-
-  return (
-    <View style={styles.container}>
-      {back && (
-        <View style={styles.backCard}>
-          <SwipeCard activity={back} scale={0.81} />
-        </View>
-      )}
-      {middle && (
-        <View style={styles.middleCard}>
-          <SwipeCard activity={middle} scale={0.9} />
-        </View>
-      )}
-      <SwipableCard key={front.id} activity={front} onSwipedOff={handleSwipedOff} />
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     width: CARD_WIDTH,
-    height: STACK_HEIGHT,
+    height: CARD_HEIGHT,
     overflow: 'visible',
   },
-  backCard: {
+  card: {
     position: 'absolute',
     top: 0,
-    left: CARD_WIDTH * ((1 - 0.81) / 2),
-  },
-  middleCard: {
-    position: 'absolute',
-    top: MIDDLE_TOP,
-    left: CARD_WIDTH * ((1 - 0.9) / 2),
-  },
-  frontCard: {
-    position: 'absolute',
-    top: FRONT_TOP,
     left: 0,
   },
 });

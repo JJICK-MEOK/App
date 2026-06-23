@@ -11,7 +11,9 @@ import { queryClient } from '@/src/lib/queryClient';
 import { useAuthStore } from '@/src/store/authStore';
 import { theme } from '@/src/constants/theme';
 
-(Text as any).defaultProps = { style: { fontFamily: 'Pretendard-Regular', includeFontPadding: false } };
+(Text as any).defaultProps = {
+  style: { fontFamily: 'Pretendard-Regular', includeFontPadding: false },
+};
 
 export default function AppLayout() {
   const initAuth = useAuthStore((s) => s.initAuth);

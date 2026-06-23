@@ -23,31 +23,25 @@ const meta: Meta<typeof SwipeCard> = {
 export default meta;
 type Story = StoryObj<typeof SwipeCard>;
 
-/** Front (scale=1.0) — 애니메이션 그라디언트 테두리 포함 */
-export const Front: Story = {};
-
-/** Middle (scale=0.9) */
-export const Middle: Story = {
-  args: { scale: 0.9 },
+/** Front — 애니메이션 그라디언트 테두리, dark 태그 */
+export const Front: Story = {
+  args: { isFront: true },
 };
 
-/** Back (scale=0.81) */
-export const Back: Story = {
-  args: { scale: 0.81 },
-};
+/** Back — light 태그 */
+export const Back: Story = {};
 
 /** 찜 완료 상태 */
 export const Saved: Story = {
-  args: { saved: true },
+  args: { isFront: true, saved: true },
 };
 
-/** 피그마 3개 크기 비교 */
+/** front / back 비교 */
 export const AllSizes: Story = {
   render: () => (
     <View style={{ gap: 24, alignItems: 'flex-start' }}>
-      <SwipeCard activity={DUMMY} scale={1} />
-      <SwipeCard activity={DUMMY} scale={0.9} />
-      <SwipeCard activity={DUMMY} scale={0.81} />
+      <SwipeCard activity={DUMMY} isFront />
+      <SwipeCard activity={DUMMY} />
     </View>
   ),
 };

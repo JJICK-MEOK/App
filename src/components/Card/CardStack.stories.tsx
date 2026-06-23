@@ -59,14 +59,22 @@ const meta: Meta<typeof CardStack> = {
 export default meta;
 type Story = StoryObj<typeof CardStack>;
 
+/** 여러 카드 — 좌우 슬라이드로 탐색 */
 export const Default: Story = {
   args: {
     activities: ACTIVITIES,
   },
 };
 
-/** 카드 1개만 남은 상태 */
-export const SingleCard: Story = {
+/** 카드 2장 — 첫 카드에 이전 카드 없음, 오른쪽에 다음 카드만 */
+export const TwoCards: Story = {
+  args: {
+    activities: [ACTIVITIES[0], ACTIVITIES[1]],
+  },
+};
+
+/** 마지막 카드만 남은 상태 — 양쪽 모두 인접 카드 없음 */
+export const LastCard: Story = {
   args: {
     activities: [ACTIVITIES[0]],
   },
