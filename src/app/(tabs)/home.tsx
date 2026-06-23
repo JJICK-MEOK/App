@@ -5,7 +5,7 @@ import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import TopNav from '@/src/components/Nav/TopNav';
 import PersonalizedCTA from '@/src/components/Button/PersonalizedCTA';
 import Program from '@/assets/images/Program.svg';
-import OneDay from '@/assets/images/Oneday.svg';
+import OneDay from '@/assets/images/OneDay.svg';
 import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';

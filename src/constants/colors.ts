@@ -50,4 +50,11 @@ export const colors = {
     groupSize: { bg: 'rgba(61,106,255,0.1)', text: 'rgba(61,106,255,0.7)' },
     purpose: { bg: 'rgba(255,89,0,0.1)', text: 'rgba(255,89,0,0.7)' },
   },
+  tagDark: {
+    mood: { bg: 'rgba(255,110,138,0.15)', text: palette.pink500 },
+    intensity: { bg: 'rgba(146,115,255,0.15)', text: palette.purple500 },
+    duration: { bg: 'rgba(0,202,61,0.15)', text: palette.green500 },
+    groupSize: { bg: 'rgba(61,106,255,0.15)', text: palette.blue500 },
+    purpose: { bg: 'rgba(255,89,0,0.15)', text: palette.orange500 },
+  },
 } as const;
