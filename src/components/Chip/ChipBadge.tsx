@@ -8,14 +8,15 @@ export type ChipBadgeVariant = 'category' | 'categoryDark' | 'ad' | TagVariant;
 type Props = {
   label: string;
   variant: ChipBadgeVariant;
+  dark?: boolean;
   onPress?: () => void;
 };
 
 const TAG_VARIANTS: TagVariant[] = ['mood', 'intensity', 'duration', 'groupSize', 'purpose'];
 
-function getVariantStyles(variant: ChipBadgeVariant): { container: ViewStyle; text: TextStyle } {
+function getVariantStyles(variant: ChipBadgeVariant, dark?: boolean): { container: ViewStyle; text: TextStyle } {
   if (TAG_VARIANTS.includes(variant as TagVariant)) {
-    const tagColors = colors.tag[variant as TagVariant];
+    const tagColors = dark ? colors.tagDark[variant as TagVariant] : colors.tag[variant as TagVariant];
     return {
       container: { backgroundColor: tagColors.bg, paddingVertical: 4 },
       text: { color: tagColors.text },
@@ -45,8 +46,8 @@ function getVariantStyles(variant: ChipBadgeVariant): { container: ViewStyle; te
   }
 }
 
-export default function ChipBadge({ label, variant, onPress }: Props) {
-  const { container: variantContainer, text: variantText } = getVariantStyles(variant);
+export default function ChipBadge({ label, variant, dark, onPress }: Props) {
+  const { container: variantContainer, text: variantText } = getVariantStyles(variant, dark);
 
   const content = (
     <View style={[styles.container, variantContainer]}>

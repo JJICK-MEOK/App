@@ -1,11 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import Logo from '@/src/components/Logo/Logo';
-import { Typography } from '@/src/components/Typography/Typography';
-import { colors } from '@/src/constants/colors';
-import { typography } from '@/src/constants/typography';
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -18,34 +14,25 @@ export default function SplashScreen() {
   }, [router]);
 
   return (
-    <LinearGradient
-      colors={[colors.primary.main, colors.primary.sub, colors.primary.light]}
-      locations={[0, 0.5, 1]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
-      <View style={styles.content}>
-        <Typography size="lg" weight="semiBold" color="heading" style={styles.subtitle}>
-          나에게 맞는 활동을
-        </Typography>
-        <Logo width={240} height={249} />
+      <View style={styles.logoWrapper}>
+        <Logo variant="LOGO_4" width={202} height={202} />
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
   },
-  content: {
-    flex: 1,
+  logoWrapper: {
+    position: 'absolute',
+    top: 143,
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  subtitle: {
-    letterSpacing: typography.letterSpacing.wide,
-    marginBottom: 4,
   },
 });
