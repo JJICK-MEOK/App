@@ -30,7 +30,17 @@ type Props = {
 
 export default function CardStack({ activities, onPressCard, onSwipe, onEndReached }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const panOffset = useSharedValue(0);
+
+  const handleSave = useCallback((id: string) => {
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const current = activities[currentIndex];
   const prev = activities[currentIndex - 1];
@@ -138,16 +148,22 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
       <View style={styles.container}>
         {prev && (
           <Animated.View key={prev.id} style={[styles.card, prevStyle]}>
-            <SwipeCard activity={prev} />
+            <SwipeCard activity={prev} saved={savedIds.has(prev.id)} onSave={() => handleSave(prev.id)} />
           </Animated.View>
         )}
         {next && (
           <Animated.View key={next.id} style={[styles.card, nextStyle]}>
-            <SwipeCard activity={next} />
+            <SwipeCard activity={next} saved={savedIds.has(next.id)} onSave={() => handleSave(next.id)} />
           </Animated.View>
         )}
         <Animated.View key={current.id} style={[styles.card, currentStyle]}>
-          <SwipeCard activity={current} isFront onHeartPressIn={handleHeartPressIn} />
+          <SwipeCard
+            activity={current}
+            isFront
+            saved={savedIds.has(current.id)}
+            onSave={() => handleSave(current.id)}
+            onHeartPressIn={handleHeartPressIn}
+          />
         </Animated.View>
       </View>
     </GestureDetector>

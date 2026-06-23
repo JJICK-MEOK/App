@@ -112,15 +112,9 @@ function AnimatedGradientBorder({
 }
 
 export default function SwipeCard({ activity, isFront = false, saved = false, onSave, onHeartPressIn }: Props) {
-  const [isSaved, setIsSaved] = useState(saved);
   const bg = '#BEBEBE';
 
-  useEffect(() => {
-    setIsSaved(saved);
-  }, [saved]);
-
   const handleHeartPressIn = () => {
-    setIsSaved((prev) => !prev);
     onSave?.();
     onHeartPressIn?.();
   };
@@ -161,7 +155,7 @@ export default function SwipeCard({ activity, isFront = false, saved = false, on
               />
             ))}
           </View>
-          <IconHeart saved={isSaved} size={29} onPressIn={handleHeartPressIn} />
+          <IconHeart saved={saved} size={29} onPressIn={handleHeartPressIn} />
         </View>
       </View>
     </>
