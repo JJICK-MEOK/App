@@ -17,7 +17,7 @@ export const LinearGradient = ({ colors, start, end, style, children }: Props) =
       : 180;
   const gradient = `linear-gradient(${angle}deg, ${colors.join(', ')})`;
 
-  return <View style={[style, { background: gradient } as any]}>{children}</View>;
+  return <View style={[style, { backgroundImage: gradient } as any]}>{children}</View>;
 };
 
 export default LinearGradient;

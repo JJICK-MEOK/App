@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import CardStack from '@/src/components/Card/CardStack';
 import { useActivities } from '@/src/hooks/useActivities';
-import type { Activity } from '@/src/components/Card/SwipeCard';
+import { useOnboardingStore } from '@/src/store/onboardingStore';
+import type { Activity } from '@/src/types/activities';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ELLIPSE_W = SCREEN_WIDTH * (614 / 375);
@@ -14,6 +15,7 @@ export default function CustomScreen() {
   const { activities, fetchMore, isLoading } = useActivities();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const nickname = useOnboardingStore((s) => s.nickname);
 
   const handlePressCard = (activity: Activity) => {
     router.push(`/detail/${activity.id}`);
@@ -24,7 +26,7 @@ export default function CustomScreen() {
       <View style={styles.bgEllipse} />
 
       <View style={styles.bar}>
-        <Text style={styles.barText}>00 님을 위해 준비했어요!</Text>
+        <Text style={styles.barText}>{nickname} 님을 위해 준비했어요!</Text>
       </View>
 
       <View style={styles.cardArea}>

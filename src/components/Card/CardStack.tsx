@@ -137,16 +137,16 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
     <GestureDetector gesture={gesture}>
       <View style={styles.container}>
         {prev && (
-          <Animated.View style={[styles.card, prevStyle]}>
+          <Animated.View key={prev.id} style={[styles.card, prevStyle]}>
             <SwipeCard activity={prev} />
           </Animated.View>
         )}
         {next && (
-          <Animated.View style={[styles.card, nextStyle]}>
+          <Animated.View key={next.id} style={[styles.card, nextStyle]}>
             <SwipeCard activity={next} />
           </Animated.View>
         )}
-        <Animated.View style={[styles.card, currentStyle]}>
+        <Animated.View key={current.id} style={[styles.card, currentStyle]}>
           <SwipeCard activity={current} isFront onHeartPressIn={handleHeartPressIn} />
         </Animated.View>
       </View>

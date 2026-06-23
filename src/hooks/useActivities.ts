@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { getRecommendations } from '@/src/api/activities';
-import type { Activity } from '@/src/components/Card/SwipeCard';
+import type { Activity } from '@/src/types/activities';
 
 const MOCK_ACTIVITIES: Activity[] = [
   {
@@ -59,7 +59,7 @@ export function useActivities() {
     queryFn: ({ pageParam }) => getRecommendations({ cursor: pageParam as string | undefined }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: undefined as string | undefined,
-    initialData: { pages: [MOCK_PAGE], pageParams: [undefined] },
+    placeholderData: { pages: [MOCK_PAGE], pageParams: [undefined] },
   });
 
   const activities: Activity[] = query.data?.pages.flatMap((p) => p.items) ?? [];

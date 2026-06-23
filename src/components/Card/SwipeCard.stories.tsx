@@ -28,7 +28,7 @@ export const Front: Story = {
   args: { isFront: true },
 };
 
-/** Back — light 태그 */
+/** Back — dark 태그 (front와 동일한 스타일) */
 export const Back: Story = {};
 
 /** 찜 완료 상태 */

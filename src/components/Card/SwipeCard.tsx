@@ -10,6 +10,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import IconHeart from '@/src/components/Icon/IconHeart';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
+import type { Activity, Tag } from '@/src/types/activities';
+
+export type { Activity, Tag };
+export type { TagType } from '@/src/types/activities';
 
 const SCREEN_WIDTH = Math.min(Dimensions.get('window').width, 430);
 export const CARD_WIDTH = SCREEN_WIDTH - 40;
@@ -17,21 +21,6 @@ export const CARD_HEIGHT = Math.round(CARD_WIDTH * (444 / 335));
 
 const BORDER_GRADIENT_COLORS = ['#28FFD9', '#FF5EAD', '#8B5CF6', '#28FFD9'] as const;
 const BORDER_DURATION = 8000;
-
-export type TagType = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
-
-export type Tag = {
-  label: string;
-  type: TagType;
-};
-
-export type Activity = {
-  id: string;
-  title: string;
-  days: number;
-  tags: Tag[];
-  imageUrl?: string;
-};
 
 type Props = {
   activity: Activity;
@@ -125,6 +114,10 @@ function AnimatedGradientBorder({
 export default function SwipeCard({ activity, isFront = false, saved = false, onSave, onHeartPressIn }: Props) {
   const [isSaved, setIsSaved] = useState(saved);
   const bg = '#BEBEBE';
+
+  useEffect(() => {
+    setIsSaved(saved);
+  }, [saved]);
 
   const handleHeartPressIn = () => {
     setIsSaved((prev) => !prev);

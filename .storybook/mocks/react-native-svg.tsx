@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const Svg = ({ width, height, viewBox, fill, children }: any) => (
-  <svg width={width} height={height} viewBox={viewBox} fill={fill}>
+export const Svg = ({ width, height, viewBox, fill, children, ...props }: any) => (
+  <svg width={width} height={height} viewBox={viewBox} fill={fill} {...props}>
     {children}
   </svg>
 );

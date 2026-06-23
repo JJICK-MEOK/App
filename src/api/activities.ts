@@ -1,5 +1,5 @@
 import { api } from '@/src/lib/api';
-import type { Activity } from '@/src/components/Card/SwipeCard';
+import type { Activity } from '@/src/types/activities';
 
 interface RecommendationsResponse {
   items: Activity[];
