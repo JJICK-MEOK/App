@@ -59,7 +59,7 @@ export function useActivities() {
     queryFn: ({ pageParam }) => getRecommendations({ cursor: pageParam as string | undefined }),
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     initialPageParam: undefined as string | undefined,
-    placeholderData: { pages: [MOCK_PAGE], pageParams: [undefined] },
+    initialData: { pages: [MOCK_PAGE], pageParams: [undefined] },
   });
 
   const activities: Activity[] = query.data?.pages.flatMap((p) => p.items) ?? [];
