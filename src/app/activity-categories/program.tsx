@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -12,7 +13,8 @@ import { getTags } from '@/src/api/tags';
 
 const SORT_OPTIONS = ['추천순', '인기순', '마감순'];
 
-const MOCK_ACTIVITIES = Array.from({ length: 9 }, () => ({
+const MOCK_ACTIVITIES = Array.from({ length: 9 }, (_, i) => ({
+  id: i + 1,
   dday: 'D-11',
   title: '서울야외도서관 힙독클럽 2기 모집',
   tags: [
@@ -32,6 +34,50 @@ export default function ProgramListScreen() {
   const [selectedSort, setSelectedSort] = useState('추천순');
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
   const [categoryOptions, setCategoryOptions] = useState<string[]>(['전체']);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
 
   useEffect(() => {
     getTags('TOPIC_CATEGORY')
@@ -48,11 +94,23 @@ export default function ProgramListScreen() {
         <Dropdown label={selectedSort} onPress={() => setActiveSheet('sort')} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-        {MOCK_ACTIVITIES.map((activity, i) => (
-          <ActivityCard key={i} {...activity} />
-        ))}
-      </ScrollView>
+      <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
+        >
+          {MOCK_ACTIVITIES.map((activity, i) => (
+            <TouchableOpacity key={i} activeOpacity={0.7} onPress={() => router.push(`/detail/${activity.id}`)}>
+              <ActivityCard {...activity} />
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {activeSheet && (
         <>
@@ -90,6 +148,12 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 40,
     gap: 30,
+  },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: colors.neutral.white,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,

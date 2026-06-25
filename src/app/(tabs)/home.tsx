@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -42,6 +43,51 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [icons, setIcons] = useState<IconConfig[]>(DEFAULT_ICONS);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          // TODO: API 호출로 교체
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
 
   useEffect(() => {
     getTags('ACTIVITY_CATEGORY')
@@ -61,9 +107,18 @@ export default function HomeScreen() {
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav name={USER_NAME} />
+        <TopNav name={USER_NAME} onSearchPress={() => router.push('/search')} />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
+        >
         <View style={styles.main}>
           <View style={styles.bannerSection}>
             <View style={styles.banner}>
@@ -161,13 +216,20 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   topNavWrapper: {
+    backgroundColor: '#FFF',
+  },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#FFF',
   },
   scrollContent: {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { View, ScrollView, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, ScrollView, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import EyeOn from '@/assets/images/EyeOn.svg';
@@ -45,15 +46,65 @@ export default function ActivityDetailPage() {
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <ArrowLeftBar onPress={() => router.back()} />
 
+        <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
         >
           <View style={styles.card}>
             <View style={styles.thumbnail}>
@@ -127,6 +178,7 @@ export default function ActivityDetailPage() {
             </View>
           )}
         </ScrollView>
+        </View>
 
         <View style={styles.bottomBar}>
           <BottomActionBar
@@ -161,6 +213,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: BOTTOM_BAR_HEIGHT,
   },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: colors.neutral.white,
+  },
+
 
   card: {
     backgroundColor: colors.neutral.white,

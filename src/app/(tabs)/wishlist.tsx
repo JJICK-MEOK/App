@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Pressable, Modal, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
@@ -26,6 +27,50 @@ export default function ProgramListScreen() {
   const [selectedTab, setSelectedTab] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('담은순');
   const [showSortSheet, setShowSortSheet] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
 
   useEffect(() => {
     const ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
@@ -54,11 +99,16 @@ export default function ProgramListScreen() {
         gap={15}
         paddingHorizontal={26}
       />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={styles.scrollView}
-        contentContainerStyle={styles.listContent}
-      >
+      <View {...panResponder.panHandlers} style={styles.scrollView}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
+        >
         {MOCK_SAVED.length > 0 && (
           <View style={styles.filterRow}>
             <Dropdown label={selectedSort} onPress={() => setShowSortSheet(true)} />
@@ -83,7 +133,8 @@ export default function ProgramListScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </View>
 
       <Modal
         visible={showSortSheet}
@@ -120,6 +171,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 140,
+  },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: colors.neutral.white,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
