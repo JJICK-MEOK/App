@@ -27,6 +27,7 @@ export default function TabsLayout() {
   const currentTab = segments.at(-1);
   const isHome = currentTab === 'home';
   const isCustom = currentTab === 'custom';
+  const isWishlist = currentTab === 'wishlist';
   const edges: Edge[] = isHome || isCustom ? [] : ['top'];
 
   const bgColor = isHome ? 'transparent' : colors.neutral.white;
@@ -44,7 +45,7 @@ export default function TabsLayout() {
               <BottomNavigation
                 activeTab={activeTab}
                 onTabChange={(tab: TabKey) => navigation.navigate(TAB_TO_ROUTE[tab])}
-                transparent={isHome}
+                transparent={isHome || isWishlist}
               />
             </View>
           );
