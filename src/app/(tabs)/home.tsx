@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,20 +11,52 @@ import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
+import { getTags } from '@/src/api/tags';
 
 // TODO: 백엔드 연동 후 실제 유저 이름으로 교체
 const USER_NAME = '00';
 
-const ICONS = [
+type IconConfig = {
+  Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
+  label: string;
+  route: string;
+};
+
+const ICON_ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
+
+const ICON_CONFIG: Record<string, Omit<IconConfig, 'label'>> = {
+  '프로그램': { Svg: Program, route: '/activity-categories/program' },
+  '원데이': { Svg: OneDay, route: '/activity-categories/oneday' },
+  '행사·강연': { Svg: Event, route: '/activity-categories/festival' },
+  '동아리': { Svg: Club, route: '/activity-categories/club' },
+};
+
+const DEFAULT_ICONS: IconConfig[] = [
   { Svg: Program, label: '프로그램', route: '/activity-categories/program' },
   { Svg: OneDay, label: '원데이', route: '/activity-categories/oneday' },
   { Svg: Event, label: '행사·강연', route: '/activity-categories/festival' },
   { Svg: Club, label: '동아리', route: '/activity-categories/club' },
-] as const;
+];
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [icons, setIcons] = useState<IconConfig[]>(DEFAULT_ICONS);
+
+  useEffect(() => {
+    getTags('ACTIVITY_CATEGORY')
+      .then((tags) => {
+        const mapped = tags
+          .map((tag) => {
+            const config = ICON_CONFIG[tag.name];
+            return config ? { ...config, label: tag.name } : null;
+          })
+          .filter((item): item is IconConfig => item !== null)
+          .sort((a, b) => ICON_ORDER.indexOf(a.label) - ICON_ORDER.indexOf(b.label));
+        if (mapped.length > 0) setIcons(mapped);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
@@ -46,7 +79,7 @@ export default function HomeScreen() {
 
           <View style={styles.iconSection}>
             <View style={styles.iconRow}>
-              {ICONS.map(({ Svg, label, route }, i) => (
+              {icons.map(({ Svg, label, route }, i) => (
                 <TouchableOpacity
                   key={i}
                   style={styles.iconItem}
