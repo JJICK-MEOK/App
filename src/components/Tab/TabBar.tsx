@@ -6,15 +6,17 @@ type Props = {
   tabs: string[];
   selected: string;
   onSelect: (tab: string) => void;
+  gap?: number;
+  paddingHorizontal?: number;
 };
 
-export default function TabBar({ tabs, selected, onSelect }: Props) {
+export default function TabBar({ tabs, selected, onSelect, gap = 13, paddingHorizontal = 19 }: Props) {
   return (
     <View style={styles.container}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { gap, paddingHorizontal }]}
       >
         {tabs.map((tab) => {
           const isActive = tab === selected;
@@ -48,8 +50,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral.white,
   },
   scrollContent: {
-    paddingHorizontal: 19,
-    gap: 13,
     alignItems: 'flex-end',
   },
   tabItem: {
