@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { View, ScrollView, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
+import CloseLarge from '@/assets/images/CloseLarge.svg';
 import ZoomButton from '@/src/components/Button/ZoomButton';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import DetailTab from '@/src/components/Tab/DetailTab';
@@ -43,6 +44,7 @@ export default function ActivityDetailPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -56,7 +58,7 @@ export default function ActivityDetailPage() {
           <View style={styles.card}>
             <View style={styles.thumbnail}>
               <View style={styles.zoomButtonPos}>
-                <ZoomButton />
+                <ZoomButton onPress={() => setZoomed(true)} />
               </View>
             </View>
 
@@ -135,6 +137,14 @@ export default function ActivityDetailPage() {
           />
         </View>
       </View>
+      <Modal visible={zoomed} animationType="fade" statusBarTranslucent>
+        <View style={styles.zoomedOverlay}>
+          <TouchableOpacity style={styles.zoomedClose} onPress={() => setZoomed(false)}>
+            <CloseLarge width={30} height={30} color="#FFF" />
+          </TouchableOpacity>
+          <View style={styles.zoomedImage} />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -198,7 +208,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text.primary,
-    lineHeight: 30,
     marginBottom: 10,
   },
   date: {
@@ -263,5 +272,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+  },
+
+  zoomedOverlay: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomedClose: {
+    position: 'absolute',
+    top: 52,
+    left: 20,
+    zIndex: 10,
+  },
+  zoomedImage: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#D9D9D9',
   },
 });
