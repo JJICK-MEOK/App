@@ -4,9 +4,10 @@ import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   name: string;
+  onSearchPress?: () => void;
 };
 
-export default function TopNav({ name }: Props) {
+export default function TopNav({ name, onSearchPress }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -17,18 +18,7 @@ export default function TopNav({ name }: Props) {
         </Typography>
       </View>
       <View style={styles.icons}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            /* router.push('/search') */
-          }}
-        ></TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            /* router.push('/notifications') */
-          }}
-        >
+        <TouchableOpacity activeOpacity={0.7} onPress={onSearchPress}>
           <Search width={26} height={26} />
         </TouchableOpacity>
       </View>
