@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,20 +8,7 @@ import { Dropdown } from '@/src/components/Filter/Dropdown';
 import ActivityCard from '@/src/components/Card/ActivityCard';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { colors } from '@/src/constants/colors';
-
-const CATEGORY_OPTIONS = [
-  '전체',
-  '운동/액티비티',
-  '문화/예술',
-  '공예/만들기',
-  '요리/베이킹',
-  '사진/영상',
-  '책/글',
-  '여행/탐방',
-  '언어/해외',
-  '봉사활동',
-  '성장/커리어',
-];
+import { getTags } from '@/src/api/tags';
 
 const SORT_OPTIONS = ['추천순', '인기순', '마감순'];
 
@@ -44,6 +31,13 @@ export default function ProgramListScreen() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('추천순');
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(['전체']);
+
+  useEffect(() => {
+    getTags('TOPIC_CATEGORY')
+      .then((tags) => setCategoryOptions(['전체', ...tags.map((t) => t.name)]))
+      .catch(() => {});
+  }, []);
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white, paddingTop: insets.top }}>
@@ -66,7 +60,7 @@ export default function ProgramListScreen() {
           <View style={styles.sheetContainer}>
             <CategoryFilter
               title={activeSheet === 'category' ? '활동 분야 선택' : '정렬'}
-              options={activeSheet === 'category' ? CATEGORY_OPTIONS : SORT_OPTIONS}
+              options={activeSheet === 'category' ? categoryOptions : SORT_OPTIONS}
               selected={activeSheet === 'category' ? selectedCategory : selectedSort}
               optionGap={activeSheet === 'sort' ? 35 : 30}
               height={activeSheet === 'category' ? 428 : 322}

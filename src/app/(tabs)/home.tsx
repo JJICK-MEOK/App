@@ -26,7 +26,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   return (
-    <ScreenLayout style={{ backgroundColor: '#F8F6F6' }}>
+    <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
         <TopNav name={USER_NAME} />
       </View>
@@ -181,12 +181,11 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 30,
+    gap: 38,
   },
   iconItem: {
     alignItems: 'center',
     gap: 8,
-    width: 52,
   },
   iconContainer: {
     width: 52,
@@ -200,10 +199,11 @@ const styles = StyleSheet.create({
     color: '#222',
     textAlign: 'center',
     fontFamily: 'Pretendard-Medium',
-    fontSize: 12,
+    fontSize: 14,
   },
   contentSheet: {
     backgroundColor: '#FFF',
+    flexGrow: 1,
   },
   recommendSection: {
     gap: 17,
