@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import { useState, useRef } from 'react';
+import { View, ScrollView, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
+import CloseLarge from '@/assets/images/CloseLarge.svg';
 import ZoomButton from '@/src/components/Button/ZoomButton';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import DetailTab from '@/src/components/Tab/DetailTab';
@@ -43,20 +45,71 @@ export default function ActivityDetailPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <ArrowLeftBar onPress={() => router.back()} />
 
+        <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
         >
           <View style={styles.card}>
             <View style={styles.thumbnail}>
               <View style={styles.zoomButtonPos}>
-                <ZoomButton />
+                <ZoomButton onPress={() => setZoomed(true)} />
               </View>
             </View>
 
@@ -67,7 +120,7 @@ export default function ActivityDetailPage() {
                   D-7
                 </Typography>
                 <View style={styles.statItem}>
-                  <EyeOn width={14} height={14} />
+                  <EyeOn width={14} height={14} color="#CCCCCC" />
                   <Typography size="sm" style={styles.statText}>
                     240
                   </Typography>
@@ -125,6 +178,7 @@ export default function ActivityDetailPage() {
             </View>
           )}
         </ScrollView>
+        </View>
 
         <View style={styles.bottomBar}>
           <BottomActionBar
@@ -135,6 +189,14 @@ export default function ActivityDetailPage() {
           />
         </View>
       </View>
+      <Modal visible={zoomed} animationType="fade" statusBarTranslucent>
+        <View style={styles.zoomedOverlay}>
+          <TouchableOpacity style={styles.zoomedClose} onPress={() => setZoomed(false)}>
+            <CloseLarge width={30} height={30} color="#FFF" />
+          </TouchableOpacity>
+          <View style={styles.zoomedImage} />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -151,6 +213,13 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: BOTTOM_BAR_HEIGHT,
   },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: colors.neutral.white,
+  },
+
 
   card: {
     backgroundColor: colors.neutral.white,
@@ -198,7 +267,6 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text.primary,
-    lineHeight: 30,
     marginBottom: 10,
   },
   date: {
@@ -263,5 +331,23 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+  },
+
+  zoomedOverlay: {
+    flex: 1,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomedClose: {
+    position: 'absolute',
+    top: 52,
+    left: 20,
+    zIndex: 10,
+  },
+  zoomedImage: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: '#D9D9D9',
   },
 });

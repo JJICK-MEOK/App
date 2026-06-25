@@ -27,9 +27,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: colors.neutral.surface,
-    paddingHorizontal: 15,
     paddingVertical: 7,
+    paddingHorizontal: 15,
+    backgroundColor: colors.neutral.surface,
     borderRadius: 5,
   },
   label: {

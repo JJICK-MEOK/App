@@ -12,6 +12,6 @@ type Story = StoryObj<typeof Loading>;
 
 export const Default: Story = {};
 
-export const Small: Story = {
-  args: { size: 'small' },
+export const Hidden: Story = {
+  args: { visible: false },
 };

@@ -27,6 +27,9 @@ export default function TabsLayout() {
   const currentTab = segments.at(-1);
   const isHome = currentTab === 'home';
   const isCustom = currentTab === 'custom';
+  const isWishlist = currentTab === 'wishlist';
+  const isCategory = currentTab === 'category';
+  const isMypage = currentTab === 'mypage';
   const edges: Edge[] = isHome || isCustom ? [] : ['top'];
 
   const bgColor = isHome ? 'transparent' : colors.neutral.white;
@@ -39,14 +42,12 @@ export default function TabsLayout() {
         tabBar={({ state, navigation }) => {
           const currentRoute = state.routes[state.index].name;
           const activeTab = ROUTE_TO_TAB[currentRoute] ?? 'home';
-
-          if (currentRoute === 'category') return null;
-
           return (
             <View style={styles.navWrapper}>
               <BottomNavigation
                 activeTab={activeTab}
                 onTabChange={(tab: TabKey) => navigation.navigate(TAB_TO_ROUTE[tab])}
+                transparent={isHome || isWishlist || isCategory || isCustom || isMypage}
               />
             </View>
           );

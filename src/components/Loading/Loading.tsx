@@ -1,26 +1,66 @@
-import React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, Easing, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
-interface LoadingProps {
-  visible: boolean;
-  size?: 'small' | 'large';
-  color?: string;
-}
+const SIZE = 45;
+const STROKE_WIDTH = 10;
+const RADIUS = (SIZE - STROKE_WIDTH) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const ARC = CIRCUMFERENCE * (70 / 360);
 
-/**
- * Loading 컴포넌트
- * - visible: boolean으로 표시 여부 결정
- * - size, color props로 커스터마이징 가능
- *
- * @example
- * <Loading visible={true} />
- */
-export const Loading: React.FC<LoadingProps> = ({ visible, size = 'large', color = '#007AFF' }) => {
+type Props = {
+  visible?: boolean;
+};
+
+export const Loading = ({ visible = true }: Props) => {
+  const rotation = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.timing(rotation, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    if (visible) anim.start();
+    return () => anim.stop();
+  }, [visible]);
+
   if (!visible) return null;
 
+  const rotate = rotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
-    <View>
-      <ActivityIndicator size={size} color={color} />
+    <View style={{ width: SIZE, height: SIZE }}>
+      <Svg width={SIZE} height={SIZE} style={{ position: 'absolute' }}>
+        <Circle
+          cx={SIZE / 2}
+          cy={SIZE / 2}
+          r={RADIUS}
+          stroke="#F5F5F5"
+          strokeWidth={STROKE_WIDTH}
+          fill="none"
+        />
+      </Svg>
+      <Animated.View style={{ position: 'absolute', transform: [{ rotate }] }}>
+        <Svg width={SIZE} height={SIZE}>
+          <Circle
+            cx={SIZE / 2}
+            cy={SIZE / 2}
+            r={RADIUS}
+            stroke="#FFE066"
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+            strokeDasharray={`${ARC} ${CIRCUMFERENCE - ARC}`}
+            strokeLinecap="round"
+          />
+        </Svg>
+      </Animated.View>
     </View>
   );
 };

@@ -1,13 +1,13 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import Search from '@/assets/images/Search.svg';
-import Bell from '@/assets/images/Bell.svg';
 import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   name: string;
+  onSearchPress?: () => void;
 };
 
-export default function TopNav({ name }: Props) {
+export default function TopNav({ name, onSearchPress }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -18,21 +18,8 @@ export default function TopNav({ name }: Props) {
         </Typography>
       </View>
       <View style={styles.icons}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            /* router.push('/search') */
-          }}
-        >
-          <Search width={28} height={28} color="#222222" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            /* router.push('/notifications') */
-          }}
-        >
-          <Bell width={26} height={26} />
+        <TouchableOpacity activeOpacity={0.7} onPress={onSearchPress}>
+          <Search width={26} height={26} />
         </TouchableOpacity>
       </View>
     </View>

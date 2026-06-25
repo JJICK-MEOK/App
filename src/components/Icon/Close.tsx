@@ -19,7 +19,7 @@ export default function Close({ variant = 'md', onPress }: Props) {
       accessibilityLabel="닫기"
     >
       {variant === 'md' ? (
-        <CloseLargeSvg width={30} height={30} />
+        <CloseLargeSvg width={30} height={30} color="#222222" />
       ) : (
         <CloseSmallSvg width={10} height={10} />
       )}

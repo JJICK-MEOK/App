@@ -50,7 +50,7 @@ export default function ActivityCard({
       <View style={styles.rightSection}>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Eyes size={16} />
+            <Eyes size={14} color="#CCCCCC" />
             <Typography size="sm" weight="regular" style={styles.statText}>
               {viewCount}
             </Typography>

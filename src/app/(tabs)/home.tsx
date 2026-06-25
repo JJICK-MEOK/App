@@ -1,4 +1,6 @@
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -8,27 +10,115 @@ import Program from '@/assets/images/Program.svg';
 import OneDay from '@/assets/images/OneDay.svg';
 import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
-import ArrowRight from '@/assets/images/ArrowRight.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
+import { getTags } from '@/src/api/tags';
 
-const ICONS = [
-  { Svg: Program, label: '프로그램' },
-  { Svg: OneDay, label: '원데이' },
-  { Svg: Event, label: '행사·강연' },
-  { Svg: Club, label: '동아리' },
-] as const;
+// TODO: 백엔드 연동 후 실제 유저 이름으로 교체
+const USER_NAME = '00';
+
+type IconConfig = {
+  Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
+  label: string;
+  route: string;
+};
+
+const ICON_ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
+
+const ICON_CONFIG: Record<string, Omit<IconConfig, 'label'>> = {
+  '프로그램': { Svg: Program, route: '/activity-categories/program' },
+  '원데이': { Svg: OneDay, route: '/activity-categories/oneday' },
+  '행사·강연': { Svg: Event, route: '/activity-categories/festival' },
+  '동아리': { Svg: Club, route: '/activity-categories/club' },
+};
+
+const DEFAULT_ICONS: IconConfig[] = [
+  { Svg: Program, label: '프로그램', route: '/activity-categories/program' },
+  { Svg: OneDay, label: '원데이', route: '/activity-categories/oneday' },
+  { Svg: Event, label: '행사·강연', route: '/activity-categories/festival' },
+  { Svg: Club, label: '동아리', route: '/activity-categories/club' },
+];
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const [icons, setIcons] = useState<IconConfig[]>(DEFAULT_ICONS);
+  const [isPulling, setIsPulling] = useState(false);
+  const scrollYRef = useRef(0);
+  const isPullingRef = useRef(false);
+  const pullAnim = useRef(new Animated.Value(0)).current;
+
+  const PULL_THRESHOLD = 60;
+  const PULL_MAX = 80;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) {
+          const pull = Math.min(dy * 0.4, PULL_MAX);
+          pullAnim.setValue(pull);
+          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
+            isPullingRef.current = true;
+            setIsPulling(true);
+          }
+        }
+      },
+      onPanResponderRelease: (_, { dy }) => {
+        const pull = Math.min(dy * 0.4, PULL_MAX);
+        if (pull >= PULL_THRESHOLD) {
+          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
+          // TODO: API 호출로 교체
+          setTimeout(() => {
+            isPullingRef.current = false;
+            setIsPulling(false);
+            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+          }, 1500);
+        } else {
+          isPullingRef.current = false;
+          setIsPulling(false);
+          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        isPullingRef.current = false;
+        setIsPulling(false);
+        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    getTags('ACTIVITY_CATEGORY')
+      .then((tags) => {
+        const mapped = tags
+          .map((tag) => {
+            const config = ICON_CONFIG[tag.name];
+            return config ? { ...config, label: tag.name } : null;
+          })
+          .filter((item): item is IconConfig => item !== null)
+          .sort((a, b) => ICON_ORDER.indexOf(a.label) - ICON_ORDER.indexOf(b.label));
+        if (mapped.length > 0) setIcons(mapped);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
-    <ScreenLayout style={{ backgroundColor: '#F8F6F6' }}>
+    <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav name="00" />
+        <TopNav name={USER_NAME} onSearchPress={() => router.push('/search')} />
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
+          {isPulling && <Loading />}
+        </Animated.View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          scrollEventThrottle={16}
+        >
         <View style={styles.main}>
           <View style={styles.bannerSection}>
             <View style={styles.banner}>
@@ -44,8 +134,13 @@ export default function HomeScreen() {
 
           <View style={styles.iconSection}>
             <View style={styles.iconRow}>
-              {ICONS.map(({ Svg, label }, i) => (
-                <TouchableOpacity key={i} style={styles.iconItem} activeOpacity={0.7}>
+              {icons.map(({ Svg, label, route }, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.iconItem}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(route)}
+                >
                   <View style={styles.iconContainer}>
                     <Svg width={44} height={45} style={{ flexShrink: 0 }} />
                   </View>
@@ -57,7 +152,7 @@ export default function HomeScreen() {
 
           <View style={styles.contentSheet}>
             <View style={styles.recommendSection}>
-              <Text style={styles.sectionTitle}>00 님에게 추천해요!</Text>
+              <Text style={styles.sectionTitle}>{USER_NAME} 님에게 추천해요!</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -121,13 +216,20 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   topNavWrapper: {
+    backgroundColor: '#FFF',
+  },
+  pullArea: {
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: '#FFF',
   },
   scrollContent: {
@@ -174,12 +276,11 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 30,
+    gap: 38,
   },
   iconItem: {
     alignItems: 'center',
     gap: 8,
-    width: 52,
   },
   iconContainer: {
     width: 52,
@@ -193,10 +294,11 @@ const styles = StyleSheet.create({
     color: '#222',
     textAlign: 'center',
     fontFamily: 'Pretendard-Medium',
-    fontSize: 12,
+    fontSize: 14,
   },
   contentSheet: {
     backgroundColor: '#FFF',
+    flexGrow: 1,
   },
   recommendSection: {
     gap: 17,
