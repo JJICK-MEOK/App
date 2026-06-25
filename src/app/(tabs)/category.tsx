@@ -8,7 +8,7 @@ import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { colors } from '@/src/constants/colors';
 import { getTags } from '@/src/api/tags';
 import AppBar from '@/src/components/Bar/AppBar';
-import TabBar from '@/src/components/Tab/TabBar';
+import CategoryBar from '@/src/components/Bar/CategoryBar';
 
 const SORT_OPTIONS = ['추천순', '인기순', '마감순'];
 
@@ -51,10 +51,8 @@ export default function ProgramListScreen() {
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white }}>
       <AppBar name="00" />
+      <CategoryBar tabs={tabOptions} selected={selectedTab} onSelect={setSelectedTab} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.listContent}>
-        <View style={styles.fullWidth}>
-          <TabBar tabs={tabOptions} selected={selectedTab} onSelect={setSelectedTab} />
-        </View>
         <View style={[styles.filterRow, styles.fullWidth]}>
           <Dropdown label={selectedCategory} onPress={() => setActiveSheet('category')} />
           <Dropdown label={selectedSort} onPress={() => setActiveSheet('sort')} />

@@ -10,7 +10,13 @@ type Props = {
   paddingHorizontal?: number;
 };
 
-export default function TabBar({ tabs, selected, onSelect, gap = 13, paddingHorizontal = 19 }: Props) {
+export default function CategoryBar({
+  tabs,
+  selected,
+  onSelect,
+  gap = 13,
+  paddingHorizontal = 19,
+}: Props) {
   return (
     <View style={styles.container}>
       <ScrollView

@@ -6,7 +6,7 @@ import { Dropdown } from '@/src/components/Filter/Dropdown';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { colors } from '@/src/constants/colors';
 import { getTags } from '@/src/api/tags';
-import TabBar from '@/src/components/Tab/TabBar';
+import CategoryBar from '@/src/components/Bar/CategoryBar';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { Typography } from '@/src/components/Typography/Typography';
 import CardSaved from '@/src/components/Card/CardSaved';
@@ -47,18 +47,18 @@ export default function ProgramListScreen() {
           </Typography>
         </View>
       </View>
+      <CategoryBar
+        tabs={tabOptions}
+        selected={selectedTab}
+        onSelect={setSelectedTab}
+        gap={15}
+        paddingHorizontal={26}
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
         contentContainerStyle={styles.listContent}
       >
-        <TabBar
-          tabs={tabOptions}
-          selected={selectedTab}
-          onSelect={setSelectedTab}
-          gap={15}
-          paddingHorizontal={26}
-        />
         {MOCK_SAVED.length > 0 && (
           <View style={styles.filterRow}>
             <Dropdown label={selectedSort} onPress={() => setShowSortSheet(true)} />
