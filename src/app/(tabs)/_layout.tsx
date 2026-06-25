@@ -44,6 +44,7 @@ export default function TabsLayout() {
               <BottomNavigation
                 activeTab={activeTab}
                 onTabChange={(tab: TabKey) => navigation.navigate(TAB_TO_ROUTE[tab])}
+                transparent={isHome}
               />
             </View>
           );

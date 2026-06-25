@@ -69,7 +69,7 @@ export default function ActivityDetailPage() {
                   D-7
                 </Typography>
                 <View style={styles.statItem}>
-                  <EyeOn width={14} height={14} />
+                  <EyeOn width={14} height={14} color="#CCCCCC" />
                   <Typography size="sm" style={styles.statText}>
                     240
                   </Typography>
