@@ -153,7 +153,8 @@ export default function ProgramListScreen() {
 const styles = StyleSheet.create({
   filterRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    gap: 8,
     paddingHorizontal: 20,
     paddingVertical: 10,
   },

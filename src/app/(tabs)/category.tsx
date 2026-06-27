@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, Modal, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Modal,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -77,7 +86,7 @@ export default function ProgramListScreen() {
         setIsPulling(false);
         Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -105,7 +114,9 @@ export default function ProgramListScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
           scrollEventThrottle={16}
         >
           <View style={[styles.filterRow, styles.fullWidth]}>
@@ -114,7 +125,11 @@ export default function ProgramListScreen() {
           </View>
           <View style={styles.cards}>
             {MOCK_ACTIVITIES.map((activity, i) => (
-              <TouchableOpacity key={i} activeOpacity={0.7} onPress={() => router.push(`/detail/${activity.id}`)}>
+              <TouchableOpacity
+                key={i}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/detail/${activity.id}`)}
+              >
                 <ActivityCard {...activity} />
               </TouchableOpacity>
             ))}
@@ -155,17 +170,17 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    gap: 8,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 27,
+    marginTop: 20,
   },
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 140,
   },
   cards: {
-    paddingTop: 17,
+    paddingTop: 15,
     gap: 24,
   },
   pullArea: {
