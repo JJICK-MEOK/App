@@ -3,7 +3,7 @@ import { Animated, Easing, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 const SIZE = 45;
-const STROKE_WIDTH = 10;
+const STROKE_WIDTH = 4;
 const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const ARC = CIRCUMFERENCE * (70 / 360);
