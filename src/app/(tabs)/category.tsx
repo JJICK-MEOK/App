@@ -96,7 +96,7 @@ export default function ProgramListScreen() {
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white }}>
-      <AppBar name="00" />
+      <AppBar name="00" onSearchPress={() => router.push('/search')} />
       <CategoryBar tabs={tabOptions} selected={selectedTab} onSelect={setSelectedTab} />
       <View {...panResponder.panHandlers} style={{ flex: 1 }}>
         <Animated.View style={[styles.pullArea, { height: pullAnim }]}>

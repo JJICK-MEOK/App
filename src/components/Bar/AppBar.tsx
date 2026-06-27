@@ -13,10 +13,10 @@ export default function AppBar({ name, onSearchPress }: Props) {
     <View style={styles.container}>
       <View style={styles.row}>
         <View>
-          <Typography size="xl" weight="medium" style={styles.text}>
+          <Typography size="xxl" weight="semiBold" style={styles.text}>
             {name} 님
           </Typography>
-          <Typography size="xl" weight="medium" style={styles.text}>
+          <Typography size="xxl" weight="semiBold" style={styles.text}>
             어떤 활동에 끌리세요?
           </Typography>
         </View>

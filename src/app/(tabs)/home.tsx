@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,10 +34,10 @@ type IconConfig = {
 const ICON_ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
 
 const ICON_CONFIG: Record<string, Omit<IconConfig, 'label'>> = {
-  '프로그램': { Svg: Program, route: '/activity-categories/program' },
-  '원데이': { Svg: OneDay, route: '/activity-categories/oneday' },
+  프로그램: { Svg: Program, route: '/activity-categories/program' },
+  원데이: { Svg: OneDay, route: '/activity-categories/oneday' },
   '행사·강연': { Svg: Event, route: '/activity-categories/festival' },
-  '동아리': { Svg: Club, route: '/activity-categories/club' },
+  동아리: { Svg: Club, route: '/activity-categories/club' },
 };
 
 const DEFAULT_ICONS: IconConfig[] = [
@@ -86,7 +94,7 @@ export default function HomeScreen() {
         setIsPulling(false);
         Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -116,106 +124,110 @@ export default function HomeScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
           scrollEventThrottle={16}
         >
-        <View style={styles.main}>
-          <View style={styles.bannerSection}>
-            <View style={styles.banner}>
-              <Text style={styles.bannerTitle}>{'확신이 없어도 괜찮아요\n일단 찍먹 해보세요'}</Text>
-              <View style={styles.ctaWrapper}>
-                <PersonalizedCTA
-                  label="나만의 경험 탐색하기"
-                  onPress={() => router.push('/(tabs)/custom')}
-                />
+          <View style={styles.main}>
+            <View style={styles.bannerSection}>
+              <View style={styles.banner}>
+                <Text style={styles.bannerTitle}>
+                  {'확신이 없어도 괜찮아요\n일단 찍먹 해보세요'}
+                </Text>
+                <View style={styles.ctaWrapper}>
+                  <PersonalizedCTA
+                    label="나만의 경험 탐색하기"
+                    onPress={() => router.push('/(tabs)/custom')}
+                  />
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={styles.iconSection}>
-            <View style={styles.iconRow}>
-              {icons.map(({ Svg, label, route }, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.iconItem}
-                  activeOpacity={0.7}
-                  onPress={() => router.push(route)}
-                >
-                  <View style={styles.iconContainer}>
-                    <Svg width={44} height={45} style={{ flexShrink: 0 }} />
-                  </View>
-                  <Text style={styles.iconLabel}>{label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.contentSheet}>
-            <View style={styles.recommendSection}>
-              <Text style={styles.sectionTitle}>{USER_NAME} 님에게 추천해요!</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.cardsContainer}
-              >
-                {[0, 1, 2, 3, 4, 5].map((i) => (
+            <View style={styles.iconSection}>
+              <View style={styles.iconRow}>
+                {icons.map(({ Svg, label, route }, i) => (
                   <TouchableOpacity
                     key={i}
+                    style={styles.iconItem}
                     activeOpacity={0.7}
-                    onPress={() => router.push('/detail/123')}
+                    onPress={() => router.push(route)}
                   >
-                    <RecommendationCard
-                      category="프로그램"
-                      title={'후킹용/설명용\n프로그램 관련 멘트'}
-                      preferences={['#취향태그', '#취향태그']}
-                    />
+                    <View style={styles.iconContainer}>
+                      <Svg width={44} height={45} style={{ flexShrink: 0 }} />
+                    </View>
+                    <Text style={styles.iconLabel}>{label}</Text>
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </View>
             </View>
 
-            <View style={styles.popularSection}>
-              <View style={styles.popularRow}>
-                <Text style={styles.popularTitle}>인기! 마감 임박</Text>
+            <View style={styles.contentSheet}>
+              <View style={styles.recommendSection}>
+                <Text style={styles.sectionTitle}>{USER_NAME} 님에게 추천해요!</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.cardsContainer}
+                >
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <TouchableOpacity
+                      key={i}
+                      activeOpacity={0.7}
+                      onPress={() => router.push('/detail/123')}
+                    >
+                      <RecommendationCard
+                        category="프로그램"
+                        title={'후킹용/설명용\n프로그램 관련 멘트'}
+                        preferences={['#취향태그', '#취향태그']}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
-              <View style={styles.darkCard}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={{ alignSelf: 'stretch' }}
-                  onPress={() => router.push('/detail/123')}
-                >
-                  <PromotionCard
-                    category="프로그램"
-                    title="한국 광고 아카데미 한광아 11기 모집"
-                    showAD={true}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={{ alignSelf: 'stretch' }}
-                  onPress={() => router.push('/detail/123')}
-                >
-                  <PromotionCard
-                    category="프로그램"
-                    title="한국 광고 아카데미 한광아 11기 모집"
-                    showAD={false}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={{ alignSelf: 'stretch' }}
-                  onPress={() => router.push('/detail/123')}
-                >
-                  <PromotionCard
-                    category="프로그램"
-                    title="한국 광고 아카데미 한광아 11기 모집"
-                    showAD={false}
-                  />
-                </TouchableOpacity>
+
+              <View style={styles.popularSection}>
+                <View style={styles.popularRow}>
+                  <Text style={styles.popularTitle}>인기! 마감 임박</Text>
+                </View>
+                <View style={styles.darkCard}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{ alignSelf: 'stretch' }}
+                    onPress={() => router.push('/detail/123')}
+                  >
+                    <PromotionCard
+                      category="프로그램"
+                      title="한국 광고 아카데미 한광아 11기 모집"
+                      showAD={true}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{ alignSelf: 'stretch' }}
+                    onPress={() => router.push('/detail/123')}
+                  >
+                    <PromotionCard
+                      category="프로그램"
+                      title="한국 광고 아카데미 한광아 11기 모집"
+                      showAD={false}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{ alignSelf: 'stretch' }}
+                    onPress={() => router.push('/detail/123')}
+                  >
+                    <PromotionCard
+                      category="프로그램"
+                      title="한국 광고 아카데미 한광아 11기 모집"
+                      showAD={false}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </View>
-        </View>
         </ScrollView>
       </View>
     </ScreenLayout>

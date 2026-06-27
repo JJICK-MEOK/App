@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, Modal, Animated, PanResponder } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Modal,
+  Animated,
+  PanResponder,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -69,7 +77,7 @@ export default function ProgramListScreen() {
         setIsPulling(false);
         Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
       },
-    })
+    }),
   ).current;
 
   useEffect(() => {
@@ -106,33 +114,35 @@ export default function ProgramListScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
           scrollEventThrottle={16}
         >
-        {MOCK_SAVED.length > 0 && (
-          <View style={styles.filterRow}>
-            <Dropdown label={selectedSort} onPress={() => setShowSortSheet(true)} />
-          </View>
-        )}
-        {MOCK_SAVED.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Typography size="lg" weight="medium" color="tertiary" style={styles.emptyText}>
-              {'찜 한 활동이 없습니다.\n마음에 드는 활동에 하트를 눌러보세요.'}
-            </Typography>
-          </View>
-        ) : (
-          <View style={styles.grid}>
-            {Array.from({ length: Math.ceil(MOCK_SAVED.length / 2) }, (_, rowIndex) => (
-              <View key={rowIndex} style={styles.row}>
-                {MOCK_SAVED.slice(rowIndex * 2, rowIndex * 2 + 2).map((card, colIndex) => (
-                  <View key={colIndex} style={styles.gridItem}>
-                    <CardSaved {...card} />
-                  </View>
-                ))}
-              </View>
-            ))}
-          </View>
-        )}
+          {MOCK_SAVED.length > 0 && (
+            <View style={styles.filterRow}>
+              <Dropdown label={selectedSort} onPress={() => setShowSortSheet(true)} />
+            </View>
+          )}
+          {MOCK_SAVED.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Typography size="lg" weight="medium" color="tertiary" style={styles.emptyText}>
+                {'찜 한 활동이 없습니다.\n마음에 드는 활동에 하트를 눌러보세요.'}
+              </Typography>
+            </View>
+          ) : (
+            <View style={styles.grid}>
+              {Array.from({ length: Math.ceil(MOCK_SAVED.length / 2) }, (_, rowIndex) => (
+                <View key={rowIndex} style={styles.row}>
+                  {MOCK_SAVED.slice(rowIndex * 2, rowIndex * 2 + 2).map((card, colIndex) => (
+                    <View key={colIndex} style={styles.gridItem}>
+                      <CardSaved {...card} />
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </View>
 

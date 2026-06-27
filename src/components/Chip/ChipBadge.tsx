@@ -40,7 +40,7 @@ function getVariantStyles(variant: ChipBadgeVariant, dark?: boolean): { containe
     case 'ad':
     default:
       return {
-        container: { borderWidth: 1, borderColor: colors.border.default, paddingVertical: 2 },
+        container: { borderWidth: 1, borderColor: colors.border.default, paddingVertical: 1 },
         text: { color: colors.border.default, textAlign: 'center' },
       };
   }
