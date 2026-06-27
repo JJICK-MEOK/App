@@ -144,6 +144,7 @@ export default function HomeScreen() {
               </View>
             </View>
 
+            <View style={styles.divider} />
             <View style={styles.iconSection}>
               <View style={styles.iconRow}>
                 {icons.map(({ Svg, label, route }, i) => (
@@ -161,6 +162,7 @@ export default function HomeScreen() {
                 ))}
               </View>
             </View>
+            <View style={styles.divider} />
 
             <View style={styles.contentSheet}>
               <View style={styles.recommendSection}>
@@ -277,6 +279,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 107,
     left: 21,
+  },
+  divider: {
+    height: 5,
+    backgroundColor: '#F5F5F5',
+    alignSelf: 'stretch',
   },
   iconSection: {
     backgroundColor: '#FFF',
