@@ -6,12 +6,14 @@ import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
+import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
 import { KakaoWebView } from '@/src/components/KakaoWebView/KakaoWebView';
 import CarouselAuto from '@/src/components/Carousel/CarouselAuto';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login: kakaoLogin, showWebView, onCode, onClose } = useKakaoLogin();
+  const { login: googleLogin } = useGoogleLogin();
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
@@ -26,7 +28,7 @@ export default function LoginScreen() {
 
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
-        <SocialLoginButton provider="google" onPress={() => {}} />
+        <SocialLoginButton provider="google" onPress={googleLogin} />
         <SocialLoginButton provider="kakao" onPress={kakaoLogin} />
       </View>
 

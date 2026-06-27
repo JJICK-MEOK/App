@@ -1,57 +1,40 @@
-// import * as AuthSession from 'expo-auth-session';
-// import * as WebBrowser from 'expo-web-browser';
-// import { useRouter } from 'expo-router';
-// import { postGoogleLogin } from '@/src/api/auth';
-// import { tokenStorage } from '@/src/lib/secureStore';
-// import { useAuthStore } from '@/src/store/authStore';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
+import { postGoogleLogin } from '@/src/api/auth';
+import { tokenStorage } from '@/src/lib/secureStore';
+import { useAuthStore } from '@/src/store/authStore';
 
-// WebBrowser.maybeCompleteAuthSession();
+const GOOGLE_AUTH_URL = `${process.env.EXPO_PUBLIC_API_URL}/auth/google`;
+const GOOGLE_REDIRECT_URI = 'jjick-meok://auth/callback';
 
-// const discovery = {
-//   authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-//   tokenEndpoint: 'https://oauth2.googleapis.com/token',
-// };
+export const useGoogleLogin = () => {
+  const router = useRouter();
+  const { setToken } = useAuthStore();
 
-// export const useGoogleLogin = () => {
-//   const router = useRouter();
-//   const { setToken } = useAuthStore();
+  const login = async () => {
+    const result = await WebBrowser.openAuthSessionAsync(GOOGLE_AUTH_URL, GOOGLE_REDIRECT_URI);
+    if (result.type !== 'success') return;
 
-//   const redirectUri = AuthSession.makeRedirectUri({ scheme: 'jjick-meok' });
+    const { queryParams } = Linking.parse(result.url);
+    const token = queryParams?.token as string;
+    if (!token) return;
 
-//   const [request, , promptAsync] = AuthSession.useAuthRequest(
-//     {
-//       clientId: process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID!,
-//       redirectUri,
-//       scopes: ['openid', 'profile', 'email'],
-//       responseType: AuthSession.ResponseType.Code,
-//     },
-//     discovery,
-//   );
+    try {
+      const { accessToken, refreshToken, registrationStatus } = await postGoogleLogin(token);
+      await Promise.all([
+        tokenStorage.saveAccessToken(accessToken),
+        tokenStorage.saveRefreshToken(refreshToken),
+      ]);
+      setToken(accessToken);
 
-//   const login = async () => {
-//     try {
-//       const result = await promptAsync();
-//       if (result.type !== 'success') return;
+      router.replace(
+        registrationStatus === 'NOT_STARTED' ? '/(auth)/profile-setup' : '/(tabs)/home',
+      );
+    } catch (error: any) {
+      console.error('[useGoogleLogin] error:', error?.response?.data ?? error);
+    }
+  };
 
-//       const { code } = result.params;
-//       const { accessToken, refreshToken, registrationStatus } = await postGoogleLogin(code);
-
-//       await Promise.all([
-//         tokenStorage.saveAccessToken(accessToken),
-//         tokenStorage.saveRefreshToken(refreshToken),
-//       ]);
-//       setToken(accessToken);
-
-//       if (registrationStatus === 'NOT_STARTED') {
-//         router.replace('/onboarding/step1');
-//       } else {
-//         router.replace('/(tabs)/home');
-//       }
-//     } catch (error: any) {
-//       console.error('[useGoogleLogin] login error:', error?.response?.data ?? error);
-//       throw error;
-//     }
-//   };
-
-//   return { login, isReady: !!request };
-// };
+  return { login };
+};
