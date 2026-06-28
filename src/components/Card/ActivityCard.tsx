@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import Eyes from '@/src/components/Icon/Eyes';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
 
 type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
@@ -29,6 +31,8 @@ export default function ActivityCard({
   likeCount,
   thumbnailUrl,
 }: Props) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
@@ -63,10 +67,10 @@ export default function ActivityCard({
           </View>
         </View>
         <View style={styles.imageWrapper}>
-          {thumbnailUrl ? (
-            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+          {thumbnailUrl && !imageError ? (
+            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" onError={() => setImageError(true)} />
           ) : (
-            <View style={styles.imagePlaceholder} />
+            <DefaultActivity width={80} height={80} />
           )}
         </View>
       </View>

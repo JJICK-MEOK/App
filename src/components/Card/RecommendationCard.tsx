@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import { getTagVariant } from '@/src/utils/tagVariant';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 
 type Props = {
   category: string;
@@ -18,17 +20,20 @@ export default function RecommendationCard({
   deadline,
   thumbnailUrl,
 }: Props) {
+  const [imageError, setImageError] = useState(false);
   const displayTags = hashtags.slice(0, 2);
 
   return (
     <View style={styles.container}>
       <View style={styles.inner}>
         <View style={styles.upper}>
-          {thumbnailUrl ? (
-            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <View style={styles.image} />
-          )}
+          <View style={[styles.image, { overflow: 'hidden' }]}>
+            {thumbnailUrl && !imageError ? (
+              <Image source={{ uri: thumbnailUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" onError={() => setImageError(true)} />
+            ) : (
+              <DefaultActivity width={143} height={140} />
+            )}
+          </View>
           <View style={styles.infoRow}>
             <ChipBadge label={category} variant="category" />
             <Typography style={styles.dday}>D-{deadline}</Typography>
