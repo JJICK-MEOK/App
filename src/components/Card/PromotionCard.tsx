@@ -1,4 +1,4 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import { colors } from '@/src/constants/colors';
@@ -7,16 +7,24 @@ type Props = {
   category: string;
   title: string;
   showAD?: boolean;
+  deadline: number;
+  thumbnailUrl?: string;
 };
 
-export default function PromotionCard({ category, title, showAD = true }: Props) {
+export default function PromotionCard({
+  category,
+  title,
+  showAD = true,
+  deadline,
+  thumbnailUrl,
+}: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.infoRow}>
           <View style={styles.ddayWrapper}>
             <Typography size="sm" weight="semiBold" style={styles.dday}>
-              D-7
+              D-{deadline}
             </Typography>
           </View>
           {showAD && (
@@ -28,12 +36,15 @@ export default function PromotionCard({ category, title, showAD = true }: Props)
             <ChipBadge label={category} variant="categoryDark" />
           </View>
         </View>
-        <Typography size="lg" weight="bold" style={styles.title}>
+        <Typography size="lg" weight="bold" style={styles.title} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
           {title}
         </Typography>
       </View>
-      {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
-      <View style={styles.image} />
+      {thumbnailUrl ? (
+        <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+      ) : (
+        <View style={styles.image} />
+      )}
     </View>
   );
 }
@@ -71,11 +82,6 @@ const styles = StyleSheet.create({
     color: colors.neutral.white,
     alignSelf: 'stretch',
     marginTop: 6,
-  },
-  subtitle: {
-    color: '#888',
-    alignSelf: 'stretch',
-    marginTop: 3,
   },
   image: {
     width: 78,

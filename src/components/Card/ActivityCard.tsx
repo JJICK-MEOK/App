@@ -36,7 +36,7 @@ export default function ActivityCard({
           <Typography size="sm" weight="semiBold" style={styles.ddayText}>
             {dday}
           </Typography>
-          <Typography size="lg" weight="semiBold" style={styles.titleText}>
+          <Typography size="lg" weight="semiBold" style={styles.titleText} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
             {title}
           </Typography>
         </View>

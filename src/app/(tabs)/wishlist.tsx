@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,9 +7,11 @@ import {
   Modal,
   Animated,
   PanResponder,
+  TouchableOpacity,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
@@ -19,15 +21,23 @@ import CategoryBar from '@/src/components/Bar/CategoryBar';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { Typography } from '@/src/components/Typography/Typography';
 import CardSaved from '@/src/components/Card/CardSaved';
+import { getFavorites } from '@/src/api/favorites';
+import { getDetailData } from '@/src/api/pages';
+import type { DetailActivity } from '@/src/types/activities';
+import { getTagVariant } from '@/src/utils/tagVariant';
 
-const MOCK_SAVED = Array.from({ length: 6 }, () => ({
-  dday: 'D-12',
-  title: '제목(활동명) 제목',
-  tags: [
-    { label: '#취향태그', variant: 'mood' as const },
-    { label: '#취향태그', variant: 'intensity' as const },
-  ],
-}));
+const ACTIVITY_TYPE_LABEL: Record<string, string> = {
+  PROGRAM: '프로그램',
+  ONEDAY: '원데이',
+  ONE_DAY: '원데이',
+  EVENT: '행사·강연',
+  CLUB: '동아리',
+};
+
+const SORT_MAP: Record<string, 'saved' | 'deadline'> = {
+  '담은순': 'saved',
+  '마감순': 'deadline',
+};
 
 export default function ProgramListScreen() {
   const router = useRouter();
@@ -35,13 +45,45 @@ export default function ProgramListScreen() {
   const [selectedTab, setSelectedTab] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('담은순');
   const [showSortSheet, setShowSortSheet] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
+  const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
   const scrollYRef = useRef(0);
   const isPullingRef = useRef(false);
   const pullAnim = useRef(new Animated.Value(0)).current;
+  const [isPulling, setIsPulling] = useState(false);
 
   const PULL_THRESHOLD = 60;
   const PULL_MAX = 80;
+
+  const { data: activities = [], refetch, isFetching } = useQuery({
+    queryKey: ['favorites', SORT_MAP[selectedSort]],
+    queryFn: async () => {
+      const favorites = await getFavorites(SORT_MAP[selectedSort]);
+      const details = await Promise.all(
+        favorites.map((f) => getDetailData(f.activityId)),
+      );
+      return details;
+    },
+    staleTime: 0,
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedTab('전체');
+      setSelectedSort('담은순');
+      setRemovedIds(new Set());
+      refetch();
+    }, [refetch]),
+  );
+
+  const filteredActivities = activities.filter((activity: DetailActivity) => {
+    if (removedIds.has(activity.id)) return false;
+    if (selectedTab === '전체') return true;
+    return ACTIVITY_TYPE_LABEL[activity.activityType] === selectedTab;
+  });
+
+  const handleRemove = (activityId: number) => {
+    setRemovedIds((prev) => new Set(prev).add(activityId));
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -61,11 +103,12 @@ export default function ProgramListScreen() {
         const pull = Math.min(dy * 0.4, PULL_MAX);
         if (pull >= PULL_THRESHOLD) {
           Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          setTimeout(() => {
+          refetch().finally(() => {
             isPullingRef.current = false;
             setIsPulling(false);
+            setRemovedIds(new Set());
             Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          }, 1500);
+          });
         } else {
           isPullingRef.current = false;
           setIsPulling(false);
@@ -109,7 +152,7 @@ export default function ProgramListScreen() {
       />
       <View {...panResponder.panHandlers} style={styles.scrollView}>
         <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
-          {isPulling && <Loading />}
+          {(isPulling || isFetching) && <Loading />}
         </Animated.View>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -119,12 +162,12 @@ export default function ProgramListScreen() {
           }}
           scrollEventThrottle={16}
         >
-          {MOCK_SAVED.length > 0 && (
+          {filteredActivities.length > 0 && (
             <View style={styles.filterRow}>
               <Dropdown label={selectedSort} onPress={() => setShowSortSheet(true)} />
             </View>
           )}
-          {MOCK_SAVED.length === 0 ? (
+          {filteredActivities.length === 0 ? (
             <View style={styles.emptyState}>
               <Typography size="lg" weight="medium" color="tertiary" style={styles.emptyText}>
                 {'찜 한 활동이 없습니다.\n마음에 드는 활동에 하트를 눌러보세요.'}
@@ -132,15 +175,36 @@ export default function ProgramListScreen() {
             </View>
           ) : (
             <View style={styles.grid}>
-              {Array.from({ length: Math.ceil(MOCK_SAVED.length / 2) }, (_, rowIndex) => (
-                <View key={rowIndex} style={styles.row}>
-                  {MOCK_SAVED.slice(rowIndex * 2, rowIndex * 2 + 2).map((card, colIndex) => (
-                    <View key={colIndex} style={styles.gridItem}>
-                      <CardSaved {...card} />
-                    </View>
-                  ))}
-                </View>
-              ))}
+              {Array.from({ length: Math.ceil(filteredActivities.length / 2) }, (_, rowIndex) => {
+                const rowItems = filteredActivities.slice(rowIndex * 2, rowIndex * 2 + 2);
+                const isLastRow = rowIndex === Math.ceil(filteredActivities.length / 2) - 1;
+                const isOddTotal = filteredActivities.length % 2 !== 0;
+                return (
+                  <View key={rowIndex} style={styles.row}>
+                    {rowItems.map((activity) => (
+                      <TouchableOpacity
+                        key={activity.id}
+                        style={styles.gridItem}
+                        activeOpacity={0.9}
+                        onPress={() => router.push(`/detail/${activity.id}`)}
+                      >
+                        <CardSaved
+                          activityId={activity.id}
+                          dday={`D-${activity.deadline}`}
+                          title={activity.title}
+                          tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
+                            label: tag,
+                            variant: getTagVariant(tag, i),
+                          }))}
+                          imageSource={activity.thumbnailUrl ? { uri: activity.thumbnailUrl } : undefined}
+                          onRemove={handleRemove}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                    {isLastRow && isOddTotal && <View style={styles.gridItem} />}
+                  </View>
+                );
+              })}
             </View>
           )}
         </ScrollView>

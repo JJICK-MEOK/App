@@ -1,6 +1,6 @@
 import { api } from '@/src/lib/api';
 
-export type TagType = 'TOPIC_CATEGORY' | 'ACTIVITY_CATEGORY';
+export type TagType = 'TOPIC_CATEGORY' | 'PREFERENCE_TAG' | 'ACTIVITY_CATEGORY';
 
 export interface Tag {
   id: number;

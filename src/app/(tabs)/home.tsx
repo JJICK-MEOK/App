@@ -11,6 +11,7 @@ import {
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import TopNav from '@/src/components/Nav/TopNav';
 import PersonalizedCTA from '@/src/components/Button/PersonalizedCTA';
@@ -21,9 +22,7 @@ import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 import { getTags } from '@/src/api/tags';
-
-// TODO: 백엔드 연동 후 실제 유저 이름으로 교체
-const USER_NAME = '00';
+import { getHomeData } from '@/src/api/pages';
 
 type IconConfig = {
   Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
@@ -47,6 +46,14 @@ const DEFAULT_ICONS: IconConfig[] = [
   { Svg: Club, label: '동아리', route: '/activity-categories/club' },
 ];
 
+const ACTIVITY_TYPE_LABEL: Record<string, string> = {
+  PROGRAM: '프로그램',
+  ONEDAY: '원데이',
+  ONE_DAY: '원데이',
+  EVENT: '행사·강연',
+  CLUB: '동아리',
+};
+
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -58,6 +65,28 @@ export default function HomeScreen() {
 
   const PULL_THRESHOLD = 60;
   const PULL_MAX = 80;
+
+  const { data: homeData, refetch, isError, error } = useQuery({
+    queryKey: ['home'],
+    queryFn: getHomeData,
+  });
+
+  const nickname = homeData?.user.nickname ?? '';
+
+  const closingSoon = homeData?.closingSoonActivities ?? [];
+  const adCard = closingSoon.find((a) => a.isAd);
+  const nonAdCards = closingSoon.filter((a) => !a.isAd);
+  const displayCards = adCard ? [adCard, ...nonAdCards] : nonAdCards;
+
+  const isNetworkError = !!(error as any)?.message?.includes('Network Error');
+
+  const recommendErrorMessage = isNetworkError
+    ? '네트워크 연결을 확인해주세요'
+    : '추천 활동을 불러오지 못했어요. 다시 시도해주세요.';
+
+  const closingSoonErrorMessage = isNetworkError
+    ? '네트워크 연결을 확인해주세요'
+    : '인기활동을 불러오지 못했어요. 다시 시도해주세요';
 
   const panResponder = useRef(
     PanResponder.create({
@@ -77,12 +106,11 @@ export default function HomeScreen() {
         const pull = Math.min(dy * 0.4, PULL_MAX);
         if (pull >= PULL_THRESHOLD) {
           Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          // TODO: API 호출로 교체
-          setTimeout(() => {
+          refetch().finally(() => {
             isPullingRef.current = false;
             setIsPulling(false);
             Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          }, 1500);
+          });
         } else {
           isPullingRef.current = false;
           setIsPulling(false);
@@ -115,7 +143,7 @@ export default function HomeScreen() {
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav name={USER_NAME} onSearchPress={() => router.push('/search')} />
+        <TopNav name={nickname} onSearchPress={() => router.push('/search')} />
       </View>
       <View {...panResponder.panHandlers} style={{ flex: 1 }}>
         <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
@@ -166,68 +194,85 @@ export default function HomeScreen() {
 
             <View style={styles.contentSheet}>
               <View style={styles.recommendSection}>
-                <Text style={styles.sectionTitle}>{USER_NAME} 님에게 추천해요!</Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.cardsContainer}
-                >
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                <Text style={styles.sectionTitle}>{nickname} 님에게 추천해요!</Text>
+                {isError ? (
+                  <View style={styles.recommendErrorBox}>
+                    <Text style={styles.errorText}>{recommendErrorMessage}</Text>
                     <TouchableOpacity
-                      key={i}
+                      style={styles.retryButton}
+                      onPress={() => refetch()}
                       activeOpacity={0.7}
-                      onPress={() => router.push('/detail/123')}
                     >
-                      <RecommendationCard
-                        category="프로그램"
-                        title={'후킹용/설명용\n프로그램 관련 멘트'}
-                        preferences={['#취향태그', '#취향태그']}
-                      />
+                      <Text style={styles.retryText}>다시 시도</Text>
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                  </View>
+                ) : (homeData?.recommendedActivities ?? []).length === 0 ? (
+                  <View style={styles.recommendErrorBox}>
+                    <Text style={styles.errorText}>아직 추천할 활동이 부족해요.</Text>
+                  </View>
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.cardsContainer}
+                  >
+                    {(homeData?.recommendedActivities ?? []).map((activity) => (
+                      <TouchableOpacity
+                        key={activity.id}
+                        activeOpacity={0.7}
+                        onPress={() => router.push(`/detail/${activity.id}`)}
+                      >
+                        <RecommendationCard
+                          category={ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType}
+                          title={activity.title}
+                          hashtags={activity.hashtags}
+                          deadline={activity.deadline}
+                          thumbnailUrl={activity.thumbnailUrl}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
               </View>
 
-              <View style={styles.popularSection}>
-                <View style={styles.popularRow}>
-                  <Text style={styles.popularTitle}>인기! 마감 임박</Text>
+              {(isError || displayCards.length > 0) && (
+                <View style={styles.popularSection}>
+                  <View style={styles.popularRow}>
+                    <Text style={styles.popularTitle}>인기! 마감 임박</Text>
+                  </View>
+                  {isError ? (
+                    <View style={styles.errorBox}>
+                      <Text style={styles.errorText}>{closingSoonErrorMessage}</Text>
+                      <TouchableOpacity
+                        style={styles.retryButton}
+                        onPress={() => refetch()}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.retryText}>다시 시도</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.darkCard}>
+                      {displayCards.map((activity) => (
+                        <TouchableOpacity
+                          key={activity.id}
+                          activeOpacity={0.7}
+                          style={{ alignSelf: 'stretch' }}
+                          onPress={() => router.push(`/detail/${activity.id}`)}
+                        >
+                          <PromotionCard
+                            category={ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType}
+                            title={activity.title}
+                            showAD={activity.isAd}
+                            deadline={activity.deadline}
+                            thumbnailUrl={activity.thumbnailUrl}
+                          />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
-                <View style={styles.darkCard}>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={{ alignSelf: 'stretch' }}
-                    onPress={() => router.push('/detail/123')}
-                  >
-                    <PromotionCard
-                      category="프로그램"
-                      title="한국 광고 아카데미 한광아 11기 모집"
-                      showAD={true}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={{ alignSelf: 'stretch' }}
-                    onPress={() => router.push('/detail/123')}
-                  >
-                    <PromotionCard
-                      category="프로그램"
-                      title="한국 광고 아카데미 한광아 11기 모집"
-                      showAD={false}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={{ alignSelf: 'stretch' }}
-                    onPress={() => router.push('/detail/123')}
-                  >
-                    <PromotionCard
-                      category="프로그램"
-                      title="한국 광고 아카데미 한광아 11기 모집"
-                      showAD={false}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
+              )}
             </View>
           </View>
         </ScrollView>
@@ -352,6 +397,43 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-Bold',
     fontSize: 20,
     marginLeft: 20,
+  },
+  recommendErrorBox: {
+    marginHorizontal: 20,
+    borderRadius: 14,
+    backgroundColor: '#222',
+    paddingVertical: 36,
+    paddingHorizontal: 28,
+    alignItems: 'center',
+    gap: 16,
+  },
+  errorBox: {
+    marginHorizontal: 20,
+    marginBottom: 40,
+    borderRadius: 14,
+    backgroundColor: '#222',
+    paddingVertical: 36,
+    paddingHorizontal: 28,
+    alignItems: 'center',
+    gap: 16,
+  },
+  errorText: {
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFF',
+  },
+  retryText: {
+    color: '#FFF',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
   },
   darkCard: {
     paddingTop: 28,

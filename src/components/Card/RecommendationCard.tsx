@@ -1,30 +1,45 @@
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
+import { getTagVariant } from '@/src/utils/tagVariant';
 
 type Props = {
   category: string;
   title: string;
-  preferences: [string, string];
+  hashtags: string[];
+  deadline: number;
+  thumbnailUrl?: string;
 };
 
-export default function RecommendationCard({ category, title, preferences }: Props) {
+export default function RecommendationCard({
+  category,
+  title,
+  hashtags,
+  deadline,
+  thumbnailUrl,
+}: Props) {
+  const displayTags = hashtags.slice(0, 2);
+
   return (
     <View style={styles.container}>
       <View style={styles.inner}>
         <View style={styles.upper}>
-          {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
-          <View style={styles.image} />
+          {thumbnailUrl ? (
+            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
+          ) : (
+            <View style={styles.image} />
+          )}
           <View style={styles.infoRow}>
             <ChipBadge label={category} variant="category" />
-            <Typography style={styles.dday}>D-7</Typography>
+            <Typography style={styles.dday}>D-{deadline}</Typography>
           </View>
         </View>
-        <Typography style={styles.title}>{title}</Typography>
+        <Typography style={styles.title} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">{title}</Typography>
       </View>
       <View style={styles.preferences}>
-        <ChipBadge label={preferences[0]} variant="mood" />
-        <ChipBadge label={preferences[1]} variant="mood" />
+        {displayTags.map((tag, i) => (
+          <ChipBadge key={i} label={tag} variant={getTagVariant(tag, i)} />
+        ))}
       </View>
     </View>
   );

@@ -12,7 +12,7 @@ export async function getRecommendations({
   cursor?: string;
 }): Promise<RecommendationsResponse> {
   const { data } = await api.get('/activities/recommendations', {
-    params: cursor ? { cursor } : {},
+    params: { cursor },
   });
   return data.data;
 }

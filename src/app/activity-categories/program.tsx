@@ -1,39 +1,52 @@
-import { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Pressable, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { useState, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
 import ActivityCard from '@/src/components/Card/ActivityCard';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { colors } from '@/src/constants/colors';
-import { getTags } from '@/src/api/tags';
+import { getCategoryPageData } from '@/src/api/pages';
+import type { HomeActivity } from '@/src/types/activities';
+import { getTagVariant } from '@/src/utils/tagVariant';
 
-const SORT_OPTIONS = ['추천순', '인기순', '마감순'];
-
-const MOCK_ACTIVITIES = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  dday: 'D-11',
-  title: '서울야외도서관 힙독클럽 2기 모집',
-  tags: [
-    { label: '#취향태그', variant: 'mood' as const },
-    { label: '#취향태그', variant: 'intensity' as const },
-  ],
-  viewCount: 240,
-  likeCount: 70,
-}));
+function toCardProps(activity: HomeActivity) {
+  const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
+  const tags = (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
+    label,
+    variant: getTagVariant(label, i),
+  }));
+  return {
+    dday,
+    title: activity.title,
+    tags,
+    viewCount: activity.viewCount,
+    likeCount: activity.likeCount,
+    imageSource: activity.thumbnailUrl ? { uri: activity.thumbnailUrl } : undefined,
+  };
+}
 
 type SheetType = 'category' | 'sort' | null;
 
 export default function ProgramListScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-  const [selectedSort, setSelectedSort] = useState('추천순');
+  const [selectedCategoryValue, setSelectedCategoryValue] = useState('');
+  const [selectedSortValue, setSelectedSortValue] = useState('');
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
-  const [categoryOptions, setCategoryOptions] = useState<string[]>(['전체']);
   const [isPulling, setIsPulling] = useState(false);
   const scrollYRef = useRef(0);
   const isPullingRef = useRef(false);
@@ -41,6 +54,42 @@ export default function ProgramListScreen() {
 
   const PULL_THRESHOLD = 60;
   const PULL_MAX = 80;
+
+  const { data, refetch, isError, error } = useQuery({
+    queryKey: ['category', 'PROGRAM', selectedCategoryValue, selectedSortValue],
+    queryFn: () =>
+      getCategoryPageData({
+        type: 'PROGRAM',
+        category: selectedCategoryValue || undefined,
+        sort: selectedSortValue || undefined,
+      }),
+  });
+
+  const categoryOptions = data?.categoryOptions ?? [];
+  const sortOptions = data?.sortOptions ?? [];
+  const activities = data?.activities ?? [];
+
+  const selectedCategoryLabel =
+    categoryOptions.find((o) => o.value === selectedCategoryValue)?.label ?? '전체';
+  const selectedSortLabel =
+    sortOptions.find((o) => o.value === selectedSortValue)?.label ?? '추천순';
+
+  const errorMessage = (() => {
+    if (isError) {
+      const err = error as any;
+      if (err?.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+      if (err?.message?.includes('Network Error') || err?.code === 'ERR_NETWORK')
+        return '네트워크 연결을 확인해주세요.';
+      return '활동 목록을 불러오지 못했어요. 다시 시도해주세요.';
+    }
+    if (data && activities.length === 0) {
+      if ((data.categoryOptions ?? []).length === 0) return '선택한 카테고리를 불러오지 못했어요.';
+      return '조건에 맞는 활동이 없어요.';
+    }
+    return null;
+  })();
+
+  const isRetriable = isError && (error as any)?.response?.status !== 401;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -60,11 +109,11 @@ export default function ProgramListScreen() {
         const pull = Math.min(dy * 0.4, PULL_MAX);
         if (pull >= PULL_THRESHOLD) {
           Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          setTimeout(() => {
+          refetch().finally(() => {
             isPullingRef.current = false;
             setIsPulling(false);
             Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          }, 1500);
+          });
         } else {
           isPullingRef.current = false;
           setIsPulling(false);
@@ -76,22 +125,23 @@ export default function ProgramListScreen() {
         setIsPulling(false);
         Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
       },
-    })
+    }),
   ).current;
 
-  useEffect(() => {
-    getTags('TOPIC_CATEGORY')
-      .then((tags) => setCategoryOptions(['전체', ...tags.map((t) => t.name)]))
-      .catch(() => {});
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedCategoryValue('');
+      setSelectedSortValue('');
+    }, []),
+  );
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white, paddingTop: insets.top }}>
       <ArrowLeftBar onPress={() => router.back()} title="프로그램" />
 
       <View style={styles.filterRow}>
-        <Dropdown label={selectedCategory} onPress={() => setActiveSheet('category')} />
-        <Dropdown label={selectedSort} onPress={() => setActiveSheet('sort')} />
+        <Dropdown label={selectedCategoryLabel} onPress={() => setActiveSheet('category')} />
+        <Dropdown label={selectedSortLabel} onPress={() => setActiveSheet('sort')} />
       </View>
 
       <View {...panResponder.panHandlers} style={{ flex: 1 }}>
@@ -101,14 +151,31 @@ export default function ProgramListScreen() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
           scrollEventThrottle={16}
         >
-          {MOCK_ACTIVITIES.map((activity, i) => (
-            <TouchableOpacity key={i} activeOpacity={0.7} onPress={() => router.push(`/detail/${activity.id}`)}>
-              <ActivityCard {...activity} />
-            </TouchableOpacity>
-          ))}
+          {errorMessage ? (
+            <View style={styles.messageBox}>
+              <Text style={styles.messageText}>{errorMessage}</Text>
+              {isRetriable && (
+                <TouchableOpacity style={styles.retryButton} onPress={() => refetch()} activeOpacity={0.7}>
+                  <Text style={styles.retryText}>다시 시도</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            activities.map((activity) => (
+              <TouchableOpacity
+                key={activity.id}
+                activeOpacity={0.7}
+                onPress={() => router.push(`/detail/${activity.id}`)}
+              >
+                <ActivityCard {...toCardProps(activity)} />
+              </TouchableOpacity>
+            ))
+          )}
         </ScrollView>
       </View>
 
@@ -118,13 +185,22 @@ export default function ProgramListScreen() {
           <View style={styles.sheetContainer}>
             <CategoryFilter
               title={activeSheet === 'category' ? '활동 분야 선택' : '정렬'}
-              options={activeSheet === 'category' ? categoryOptions : SORT_OPTIONS}
-              selected={activeSheet === 'category' ? selectedCategory : selectedSort}
+              options={
+                activeSheet === 'category'
+                  ? categoryOptions.map((o) => o.label)
+                  : sortOptions.map((o) => o.label)
+              }
+              selected={activeSheet === 'category' ? selectedCategoryLabel : selectedSortLabel}
               optionGap={activeSheet === 'sort' ? 35 : 30}
               height={activeSheet === 'category' ? 428 : 322}
-              onSelect={(item) => {
-                if (activeSheet === 'category') setSelectedCategory(item);
-                else setSelectedSort(item);
+              onSelect={(label) => {
+                if (activeSheet === 'category') {
+                  const opt = categoryOptions.find((o) => o.label === label);
+                  setSelectedCategoryValue(opt?.value ?? '');
+                } else {
+                  const opt = sortOptions.find((o) => o.label === label);
+                  setSelectedSortValue(opt?.value ?? '');
+                }
                 setActiveSheet(null);
               }}
               onClose={() => setActiveSheet(null)}
@@ -165,5 +241,29 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  messageBox: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  messageText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  retryText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
   },
 });

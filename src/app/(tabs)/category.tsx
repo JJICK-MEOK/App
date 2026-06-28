@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,7 +10,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
 import ActivityCard from '@/src/components/Card/ActivityCard';
@@ -36,7 +36,7 @@ const MOCK_ACTIVITIES = Array.from({ length: 9 }, (_, i) => ({
 
 type SheetType = 'category' | 'sort' | null;
 
-export default function ProgramListScreen() {
+export default function CategoryScreen() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('추천순');
@@ -102,6 +102,14 @@ export default function ProgramListScreen() {
       .then((tags) => setTabOptions(['전체', ...tags.map((t) => t.name)]))
       .catch(() => {});
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedCategory('전체');
+      setSelectedSort('추천순');
+      setSelectedTab('전체');
+    }, []),
+  );
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white }}>

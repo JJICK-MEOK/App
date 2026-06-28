@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -61,11 +61,17 @@ const MOCK_ACTIVITIES = [
 export default function SearchScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const results = useMemo(() => {
     if (!searchText.trim()) return null;
     return MOCK_ACTIVITIES.filter((a) => a.title.includes(searchText.trim()));
   }, [searchText]);
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+    setErrorMessage(null);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutral.white }} edges={['top']}>
@@ -75,11 +81,22 @@ export default function SearchScreen() {
             <ArrowLeft width={10} height={18.5} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <SearchBar value={searchText} onChangeText={setSearchText} />
+            <SearchBar value={searchText} onChangeText={handleSearch} />
           </View>
         </View>
 
-        {results !== null &&
+        {errorMessage ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => setErrorMessage(null)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.retryText}>다시 시도</Text>
+            </TouchableOpacity>
+          </View>
+        ) : results !== null &&
           (results.length === 0 ? (
             <View style={styles.emptyState}>
               <Typography size="lg" weight="medium" style={styles.emptyText}>
@@ -138,5 +155,28 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: colors.text.tertiary,
+  },
+  errorBox: {
+    paddingTop: 60,
+    alignItems: 'center' as const,
+    gap: 16,
+  },
+  errorText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    textAlign: 'center' as const,
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  retryText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
   },
 });
