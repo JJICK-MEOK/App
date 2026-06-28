@@ -4,6 +4,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
 import HeartUnselected from '@/assets/images/HeartUnselected.svg';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
 import { deleteFavorite } from '@/src/api/favorites';
 
@@ -26,6 +27,8 @@ type Props = {
 
 export default function CardSaved({ activityId, dday, title, tags, initialSaved = true, thumbnailUrl, onRemove }: Props) {
   const [saved, setSaved] = useState(initialSaved);
+  const [imageError, setImageError] = useState(false);
+  const [imgWidth, setImgWidth] = useState(0);
 
   const handleHeartPress = async () => {
     if (saved) {
@@ -44,9 +47,16 @@ export default function CardSaved({ activityId, dday, title, tags, initialSaved 
   return (
     <View style={styles.container}>
       <View style={styles.imageArea}>
-        {thumbnailUrl && (
-          <Image source={{ uri: thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        )}
+        <View
+          style={StyleSheet.absoluteFill}
+          onLayout={(e) => setImgWidth(e.nativeEvent.layout.width)}
+        >
+          {thumbnailUrl && !imageError ? (
+            <Image source={{ uri: thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" onError={() => setImageError(true)} />
+          ) : (
+            <DefaultActivity width={imgWidth} height={150} />
+          )}
+        </View>
         <TouchableOpacity onPress={handleHeartPress} activeOpacity={0.7} style={styles.heartContainer}>
           {saved ? (
             <HeartSaved width={23} height={20} />
