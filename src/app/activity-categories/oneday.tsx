@@ -35,7 +35,7 @@ function toCardProps(activity: HomeActivity) {
     tags,
     viewCount: activity.viewCount,
     likeCount: activity.likeCount,
-    imageSource: activity.thumbnailUrl ? { uri: activity.thumbnailUrl } : undefined,
+    thumbnailUrl: activity.thumbnailUrl,
   };
 }
 

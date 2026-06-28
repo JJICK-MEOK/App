@@ -196,7 +196,7 @@ export default function ProgramListScreen() {
                             label: tag,
                             variant: getTagVariant(tag, i),
                           }))}
-                          imageSource={activity.thumbnailUrl ? { uri: activity.thumbnailUrl } : undefined}
+                          thumbnailUrl={activity.thumbnailUrl}
                           onRemove={handleRemove}
                         />
                       </TouchableOpacity>

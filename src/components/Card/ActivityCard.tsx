@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import Eyes from '@/src/components/Icon/Eyes';
@@ -18,7 +18,7 @@ type Props = {
   tags: Tag[];
   viewCount: number;
   likeCount: number;
-  imageSource?: ImageSourcePropType;
+  thumbnailUrl?: string;
 };
 
 export default function ActivityCard({
@@ -27,7 +27,7 @@ export default function ActivityCard({
   tags,
   viewCount,
   likeCount,
-  imageSource,
+  thumbnailUrl,
 }: Props) {
   return (
     <View style={styles.container}>
@@ -63,8 +63,8 @@ export default function ActivityCard({
           </View>
         </View>
         <View style={styles.imageWrapper}>
-          {imageSource ? (
-            <Image source={imageSource} style={styles.image} resizeMode="cover" />
+          {thumbnailUrl ? (
+            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" />
           ) : (
             <View style={styles.imagePlaceholder} />
           )}

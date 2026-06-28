@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, Image, ImageSourcePropType, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
@@ -20,11 +20,11 @@ type Props = {
   title: string;
   tags: Tag[];
   initialSaved?: boolean;
-  imageSource?: ImageSourcePropType;
+  thumbnailUrl?: string;
   onRemove?: (activityId: number) => void;
 };
 
-export default function CardSaved({ activityId, dday, title, tags, initialSaved = true, imageSource, onRemove }: Props) {
+export default function CardSaved({ activityId, dday, title, tags, initialSaved = true, thumbnailUrl, onRemove }: Props) {
   const [saved, setSaved] = useState(initialSaved);
 
   const handleHeartPress = async () => {
@@ -44,8 +44,8 @@ export default function CardSaved({ activityId, dday, title, tags, initialSaved 
   return (
     <View style={styles.container}>
       <View style={styles.imageArea}>
-        {imageSource && (
-          <Image source={imageSource} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        {thumbnailUrl && (
+          <Image source={{ uri: thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         )}
         <TouchableOpacity onPress={handleHeartPress} activeOpacity={0.7} style={styles.heartContainer}>
           {saved ? (
