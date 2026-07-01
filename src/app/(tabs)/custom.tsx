@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   bar: {
     height: 60,
     paddingHorizontal: 22,
-    paddingVertical: 10,
+    paddingVertical: 17,
     justifyContent: 'center',
   },
   barText: {
@@ -70,6 +70,6 @@ const styles = StyleSheet.create({
   cardArea: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 82,
+    paddingTop: 52,
   },
 });

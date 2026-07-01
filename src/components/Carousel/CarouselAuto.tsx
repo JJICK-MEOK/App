@@ -1,43 +1,45 @@
 import { useEffect, useRef } from 'react';
-import { View, Image, Animated, StyleSheet, Easing } from 'react-native';
+import { View, Animated, StyleSheet, Easing } from 'react-native';
+import { SvgProps } from 'react-native-svg';
 
 const ITEM_SIZE = 136;
 const GAP = 9;
-const SET_WIDTH = (ITEM_SIZE + GAP) * 6;
 
 type Props = {
-  images?: string[];
+  images?: React.ComponentType<SvgProps>[];
   duration?: number;
 };
 
 export default function CarouselAuto({ images = [], duration = 10000 }: Props) {
+  const setWidth = (ITEM_SIZE + GAP) * images.length;
   const translateX = useRef(new Animated.Value(0)).current;
-
-  const normalized =
-    images.length === 0
-      ? Array(6).fill(null)
-      : Array.from({ length: 6 }, (_, i) => images[i % images.length] ?? null);
-  const looped = [...normalized, ...normalized];
+  const looped = [...images, ...images, ...images];
 
   useEffect(() => {
-    const animation = Animated.loop(
+    if (images.length === 0) return;
+
+    const animate = () => {
+      translateX.setValue(0);
       Animated.timing(translateX, {
-        toValue: -SET_WIDTH,
+        toValue: -setWidth,
         duration,
         easing: Easing.linear,
         useNativeDriver: true,
-      }),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [duration]);
+      }).start(({ finished }) => {
+        if (finished) animate();
+      });
+    };
+
+    animate();
+    return () => translateX.stopAnimation();
+  }, [duration, setWidth]);
 
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.strip, { transform: [{ translateX }] }]}>
-        {looped.map((uri, index) => (
+        {looped.map((SvgImage, index) => (
           <View key={index} style={styles.imageWrapper}>
-            {uri ? <Image source={{ uri }} style={styles.image} /> : null}
+            {SvgImage ? <SvgImage width={ITEM_SIZE} height={ITEM_SIZE} /> : null}
           </View>
         ))}
       </Animated.View>

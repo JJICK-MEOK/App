@@ -155,31 +155,36 @@ export default function SignupScreen() {
       </View>
 
       <View style={styles.content}>
-        <Typography size="lg" weight="medium" style={styles.title}>
-          {'이메일을\n입력해 주세요'}
+        <Typography size="xxl" weight="semiBold" style={styles.title}>
+          이메일을 입력해 주세요
         </Typography>
 
         <View style={styles.fields}>
-          <TextField
-            placeholder="user@example.com"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setServerError('');
-            }}
-            onBlur={() => setEmailTouched(true)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            editable={step === 'email'}
-            errorMessage={emailError}
-            rightElement={
-              <VerificationButton
-                status={verificationStatus}
-                onPress={step === 'email' ? () => sendCode() : () => resendCode()}
-              />
-            }
-          />
+          <View style={styles.fieldGroup}>
+            <Typography size="lg" weight="medium">
+              이메일
+            </Typography>
+            <TextField
+              placeholder="user@example.com"
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setServerError('');
+              }}
+              onBlur={() => setEmailTouched(true)}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={step === 'email'}
+              errorMessage={emailError}
+              rightElement={
+                <VerificationButton
+                  status={verificationStatus}
+                  onPress={step === 'email' ? () => sendCode() : () => resendCode()}
+                />
+              }
+            />
+          </View>
 
           {step === 'verify' && (
             <TextField
@@ -220,11 +225,13 @@ const styles = StyleSheet.create({
     paddingTop: 38,
   },
   title: {
-    lineHeight: 24,
-    marginBottom: 15,
+    marginBottom: 30,
   },
   fields: {
     gap: 13,
+  },
+  fieldGroup: {
+    gap: 12,
   },
   progressWrapper: {
     paddingHorizontal: spacing.xl,

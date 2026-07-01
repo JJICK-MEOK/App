@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 41,
+    height: 45,
     borderRadius: radius.sm,
     borderWidth: 1,
     paddingHorizontal: 15,

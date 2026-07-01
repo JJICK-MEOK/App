@@ -148,7 +148,7 @@ export default function OnboardingStep3() {
 
   const getDefaultBg = (label: string): string | undefined => {
     if (districtNames.includes(label) || label === SEOUL_ALL_LABEL) {
-      return 'rgba(255, 242, 166, 0.7)';
+      return 'rgba(255, 242, 166, 0.45)';
     }
     return undefined;
   };
@@ -234,9 +234,14 @@ export default function OnboardingStep3() {
           <ActivityIndicator color={colors.text.secondary} />
         ) : isRegionsError ? (
           <View style={styles.errorContainer}>
-            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <Typography size="md" style={styles.errorText}>
+              데이터를 불러오지 못했어요.
+            </Typography>
+
             <TouchableOpacity onPress={() => refetchRegions()} style={styles.retryButton}>
-              <Typography size="md" weight="semiBold">다시 시도</Typography>
+              <Typography size="md" weight="semiBold">
+                다시 시도
+              </Typography>
             </TouchableOpacity>
           </View>
         ) : (
@@ -296,13 +301,13 @@ const styles = StyleSheet.create({
   },
   chipContainer: {
     width: 332,
-    marginTop: 20,
-    marginBottom: 8,
+    height: 71,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 4,
+    paddingTop: 30,
   },
   grid: {
     width: 332,
