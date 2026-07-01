@@ -125,7 +125,7 @@ export default function ProfileSetupScreen() {
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      {canGoBack && <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" />}
+      <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" showBack={canGoBack} />
       <View style={styles.progressWrapper}>
         <ProgressBar step={3} />
       </View>

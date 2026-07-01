@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -20,6 +20,7 @@ const CONDITIONS = [
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const { email } = useLocalSearchParams<{ email: string }>();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -42,13 +43,13 @@ export default function ResetPasswordScreen() {
       : undefined;
 
   const handleComplete = () => {
-    // TODO: call reset password API with email and password
+    // TODO: call reset password API with { email, password }
     router.replace('/(auth)/login');
   };
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 찾기" />
+      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 재설정" />
       <View style={styles.progressWrapper}>
         <ProgressBar step={2} />
       </View>
