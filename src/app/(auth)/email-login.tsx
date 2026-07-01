@@ -110,6 +110,15 @@ export default function EmailLoginScreen() {
               secureText
               errorMessage={passwordError}
             />
+            <TouchableOpacity
+              onPress={() => router.push('/(auth)/find-password')}
+              activeOpacity={0.7}
+              style={styles.forgotPassword}
+            >
+              <Typography size="sm" weight="medium" style={styles.forgotPasswordText}>
+                비밀번호 찾기
+              </Typography>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -118,7 +127,7 @@ export default function EmailLoginScreen() {
             아직 계정이 없나요?
           </Typography>
           <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
-            <Typography size="sm" weight="medium" style={styles.signupLink}>
+            <Typography size="md" weight="semiBold" style={styles.signupLink}>
               이메일로 회원가입
             </Typography>
           </TouchableOpacity>
@@ -163,6 +172,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   signupLink: {
+    textDecorationLine: 'underline',
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+  },
+  forgotPasswordText: {
     textDecorationLine: 'underline',
   },
   cta: {

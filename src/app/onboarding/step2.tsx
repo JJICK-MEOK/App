@@ -58,9 +58,13 @@ export default function OnboardingStep2() {
           <ActivityIndicator color={colors.text.secondary} />
         ) : isError ? (
           <View style={styles.errorContainer}>
-            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <Typography size="md" style={styles.errorText}>
+              데이터를 불러오지 못했어요.
+            </Typography>
             <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
-              <Typography size="md" weight="semiBold">다시 시도</Typography>
+              <Typography size="md" weight="semiBold">
+                다시 시도
+              </Typography>
             </TouchableOpacity>
           </View>
         ) : (
@@ -100,7 +104,7 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 16,
     alignItems: 'flex-start',
-    gap: 72,
+    gap: 44,
   },
   headerBlock: {
     width: '100%',

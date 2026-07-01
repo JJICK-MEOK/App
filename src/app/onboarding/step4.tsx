@@ -15,6 +15,7 @@ import { useOnboardingStore } from '@/src/store/onboardingStore';
 const CATEGORIES = [
   { label: '선호하는 분위기', names: ['편안한', '힐링', '활기찬', '감성적', '창의적', '트렌디'] },
   { label: '나에게 맞는 텐션', names: ['입문', '가볍게', '몰입', '도전'] },
+  { label: '참여 목적', names: ['휴식', '취미', '배움', '성장'] },
   { label: '가능한 참여 기간', names: ['단기', '한달', '6개월', '1년이상'] },
   { label: '편하게 느끼는 인원', names: ['소규모', '대규모'] },
 ];
@@ -73,17 +74,19 @@ export default function OnboardingStep4() {
           <ActivityIndicator color={colors.text.secondary} />
         ) : isError ? (
           <View style={styles.errorContainer}>
-            <Typography size="md" style={styles.errorText}>데이터를 불러오지 못했어요.</Typography>
+            <Typography size="md" style={styles.errorText}>
+              데이터를 불러오지 못했어요.
+            </Typography>
             <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
-              <Typography size="md" weight="semiBold">다시 시도</Typography>
+              <Typography size="md" weight="semiBold">
+                다시 시도
+              </Typography>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.sectionsContainer}>
             {CATEGORIES.map((category) => {
-              const categoryTags = category.names
-                .map((name) => tagsByName[name])
-                .filter(Boolean);
+              const categoryTags = category.names.map((name) => tagsByName[name]).filter(Boolean);
               if (categoryTags.length === 0) return null;
               return (
                 <View key={category.label} style={styles.section}>

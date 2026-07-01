@@ -35,7 +35,7 @@ function formatTime(seconds: number): string {
 
 type Step = 'email' | 'verify';
 
-export default function SignupScreen() {
+export default function FindPasswordScreen() {
   const router = useRouter();
 
   const [step, setStep] = useState<Step>('email');
@@ -94,8 +94,8 @@ export default function SignupScreen() {
     },
     onError: (error: any) => {
       const errorCode = error?.response?.data?.code;
-      if (errorCode === 'EMAIL_ALREADY_EXISTS' || errorCode === 'COMMON_409') {
-        setServerError('이미 가입되어 있는 이메일이에요.');
+      if (errorCode === 'USER_NOT_FOUND') {
+        setServerError('가입되지 않은 이메일이에요.');
       } else {
         setServerError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
       }
@@ -122,7 +122,7 @@ export default function SignupScreen() {
   const { mutate: verifyCode, isPending: isVerifying } = useMutation({
     mutationFn: () => postEmailVerifyCode(email, code),
     onSuccess: () => {
-      router.push({ pathname: '/(auth)/password', params: { email } });
+      router.push({ pathname: '/(auth)/reset-password', params: { email } });
     },
     onError: (error: any) => {
       const errorCode = error?.response?.data?.code;
@@ -130,8 +130,6 @@ export default function SignupScreen() {
         setCodeError('인증번호가 올바르지 않습니다.');
       } else if (errorCode === 'EMAIL_CODE_EXPIRED') {
         setCodeError('유효시간이 만료되었습니다. 다시 시도해주세요.');
-      } else if (errorCode === 'EMAIL_ALREADY_EXISTS') {
-        setCodeError('이미 가입된 이메일입니다.');
       } else {
         setCodeError('인증에 실패했습니다. 다시 시도해주세요.');
       }
@@ -149,42 +147,37 @@ export default function SignupScreen() {
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      <ArrowLeftBar onPress={() => router.back()} title="이메일로 회원가입" />
+      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 찾기" />
       <View style={styles.progressWrapper}>
         <ProgressBar step={1} />
       </View>
 
       <View style={styles.content}>
         <Typography size="xxl" weight="semiBold" style={styles.title}>
-          이메일을 입력해 주세요
+          가입한 이메일을 입력해 주세요
         </Typography>
 
         <View style={styles.fields}>
-          <View style={styles.fieldGroup}>
-            <Typography size="lg" weight="medium">
-              이메일
-            </Typography>
-            <TextField
-              placeholder="user@example.com"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                setServerError('');
-              }}
-              onBlur={() => setEmailTouched(true)}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              editable={step === 'email'}
-              errorMessage={emailError}
-              rightElement={
-                <VerificationButton
-                  status={verificationStatus}
-                  onPress={step === 'email' ? () => sendCode() : () => resendCode()}
-                />
-              }
-            />
-          </View>
+          <TextField
+            placeholder="user@example.com"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              setServerError('');
+            }}
+            onBlur={() => setEmailTouched(true)}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={step === 'email'}
+            errorMessage={emailError}
+            rightElement={
+              <VerificationButton
+                status={verificationStatus}
+                onPress={step === 'email' ? () => sendCode() : () => resendCode()}
+              />
+            }
+          />
 
           {step === 'verify' && (
             <TextField
@@ -225,13 +218,10 @@ const styles = StyleSheet.create({
     paddingTop: 38,
   },
   title: {
-    marginBottom: 30,
+    marginBottom: 34,
   },
   fields: {
     gap: 13,
-  },
-  fieldGroup: {
-    gap: 12,
   },
   progressWrapper: {
     paddingHorizontal: spacing.xl,
