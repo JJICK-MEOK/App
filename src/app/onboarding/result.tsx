@@ -22,7 +22,7 @@ const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: Con
       ],
     },
     {
-      title: '201P 밴드\nROOKIES 프로젝트',
+      title: 'ROOKIES 프로젝트',
       subtitle: '201P Rookies 13기',
       imageUri: '',
       tags: [
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 52,
     paddingBottom: 16,
-    gap: 32,
+    gap: 47,
   },
   headerBlock: {
     gap: 10,

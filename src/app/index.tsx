@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 143,
     left: 0,
-    right: 0,
+    right: 10,
     alignItems: 'center',
   },
 });

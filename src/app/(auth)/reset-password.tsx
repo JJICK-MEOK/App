@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -11,9 +10,6 @@ import { Typography } from '@/src/components/Typography/Typography';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
-import { postLogin, postSignup } from '@/src/api/auth';
-import { tokenStorage } from '@/src/lib/secureStore';
-import { useAuthStore } from '@/src/store/authStore';
 
 const CONDITIONS = [
   { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
@@ -22,15 +18,13 @@ const CONDITIONS = [
   { key: 'special', label: '특수문자 포함', check: (pw: string) => /[^a-zA-Z0-9]/.test(pw) },
 ] as const;
 
-export default function PasswordScreen() {
+export default function ResetPasswordScreen() {
   const router = useRouter();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { setToken } = useAuthStore();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
-  const [signupError, setSignupError] = useState('');
-  const [completed, setCompleted] = useState(false);
+  const [confirmTouched, setConfirmTouched] = useState(false);
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -42,56 +36,39 @@ export default function PasswordScreen() {
     passwordTouched && password.length > 0 && !allMet
       ? failedLabels.join(', ') + '이 필요해요.'
       : undefined;
-  const confirmError =
-    confirm.length > 0 && !passwordsMatch ? '비밀번호가 일치하지 않아요.' : undefined;
 
-  const { mutate: signup, isPending } = useMutation({
-    mutationFn: async () => {
-      await postSignup(email ?? '', password);
-      const { accessToken, refreshToken } = await postLogin(email ?? '', password);
-      await Promise.all([
-        tokenStorage.saveAccessToken(accessToken),
-        tokenStorage.saveRefreshToken(refreshToken),
-      ]);
-      setToken(accessToken);
-    },
-    onSuccess: () => {
-      setCompleted(true);
-      router.push('/(auth)/profile-setup');
-    },
-    onError: (error: any) => {
-      console.error('[password] signup error:', error?.response?.data ?? error);
-      const code = error?.response?.data?.code;
-      if (code === 'EMAIL_ALREADY_EXISTS') {
-        setSignupError('이미 가입된 이메일입니다.');
-      } else {
-        setSignupError('회원가입에 실패했습니다. 다시 시도해주세요.');
-      }
-    },
-  });
+  const confirmError =
+    confirmTouched && confirm.length > 0 && !passwordsMatch
+      ? '비밀번호가 일치하지 않아요.'
+      : undefined;
+
+  const handleComplete = () => {
+    // TODO: call reset password API with { email, password }
+    router.replace('/(auth)/login');
+  };
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 만들기" />
+      <ArrowLeftBar onPress={() => router.back()} title="비밀번호 재설정" />
       <View style={styles.progressWrapper}>
         <ProgressBar step={2} />
       </View>
 
       <View style={styles.content}>
         <Typography size="xxl" weight="semiBold" style={styles.title}>
-          비밀번호를 입력해주세요
+          새로운 비밀번호를 입력해주세요
         </Typography>
 
         <View style={styles.fields}>
-          <View style={styles.passwordFieldGroup}>
-            <Typography size="lg" weight="medium" style={styles.label}>
-              비밀번호
+          <View style={styles.fieldGroup}>
+            <Typography size="lg" weight="medium">
+              새 비밀번호
             </Typography>
-            <Typography size="sm" weight="medium" color="tertiary" style={styles.hint}>
+            <Typography size="sm" weight="medium" color="tertiary">
               영문・숫자・특수기호 8자 이상
             </Typography>
             <TextField
-              placeholder="비밀번호를 입력해주세요."
+              placeholder="••••••••"
               value={password}
               onChangeText={setPassword}
               onBlur={() => setPasswordTouched(true)}
@@ -100,14 +77,15 @@ export default function PasswordScreen() {
             />
           </View>
 
-          <View style={styles.confirmFieldGroup}>
-            <Typography size="lg" weight="medium" style={styles.label}>
-              비밀번호 확인
+          <View style={styles.fieldGroup}>
+            <Typography size="lg" weight="medium">
+              새 비밀번호 확인
             </Typography>
             <TextField
               placeholder="비밀번호를 다시 입력해주세요"
               value={confirm}
               onChangeText={setConfirm}
+              onBlur={() => setConfirmTouched(true)}
               secureText
               errorMessage={confirmError}
             />
@@ -116,16 +94,11 @@ export default function PasswordScreen() {
       </View>
 
       <CTAContainer style={styles.cta}>
-        {signupError ? (
-          <Typography size="sm" color="error" style={styles.errorText}>
-            {signupError}
-          </Typography>
-        ) : null}
         <BottomCTA
-          label="회원가입 완료"
-          onPress={() => (completed ? router.push('/(auth)/profile-setup') : signup())}
+          label="완료"
+          onPress={handleComplete}
           variant="dark"
-          disabled={!isComplete || isPending}
+          disabled={!isComplete}
         />
       </CTAContainer>
     </ScreenLayout>
@@ -145,29 +118,16 @@ const styles = StyleSheet.create({
     paddingTop: 38,
   },
   title: {
-    marginBottom: 30,
+    marginBottom: 40,
   },
   fields: {
-    gap: 40,
+    gap: 35,
   },
-  passwordFieldGroup: {
-    gap: 0,
-  },
-  confirmFieldGroup: {
-    gap: 15,
-  },
-  label: {
-    marginBottom: 9,
-  },
-  hint: {
-    marginBottom: 13,
+  fieldGroup: {
+    gap: 6,
   },
   cta: {
     paddingHorizontal: spacing.xl,
     paddingTop: 16,
-    gap: spacing.sm,
-  },
-  errorText: {
-    textAlign: 'center',
   },
 });

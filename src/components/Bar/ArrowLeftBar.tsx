@@ -6,14 +6,17 @@ import { Typography } from '@/src/components/Typography/Typography';
 type Props = {
   onPress: () => void;
   title?: string;
+  showBack?: boolean;
 };
 
-export default function ArrowLeftBar({ onPress, title }: Props) {
+export default function ArrowLeftBar({ onPress, title, showBack = true }: Props) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={12}>
-        <ArrowLeftSvg width={10} height={18.5} />
-      </TouchableOpacity>
+      {showBack && (
+        <TouchableOpacity onPress={onPress} activeOpacity={0.7} hitSlop={12}>
+          <ArrowLeftSvg width={10} height={18.5} />
+        </TouchableOpacity>
+      )}
       {title && (
         <View style={styles.titleWrapper} pointerEvents="none">
           <Typography size="xl" weight="bold" style={styles.title}>

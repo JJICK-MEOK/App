@@ -6,12 +6,17 @@ import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
-import { KakaoWebView } from '@/src/components/KakaoWebView/KakaoWebView';
+import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
 import CarouselAuto from '@/src/components/Carousel/CarouselAuto';
+import Ellipse37 from '@/assets/images/Ellipse 37.svg';
+import Ellipse38 from '@/assets/images/Ellipse 38.svg';
+import Ellipse39 from '@/assets/images/Ellipse 39.svg';
+import Ellipse40 from '@/assets/images/Ellipse 40.svg';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login: kakaoLogin, showWebView, onCode, onClose } = useKakaoLogin();
+  const { login: kakaoLogin } = useKakaoLogin();
+  const { login: googleLogin } = useGoogleLogin();
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
@@ -21,12 +26,12 @@ export default function LoginScreen() {
       </Typography>
 
       <View style={styles.carousel}>
-        <CarouselAuto images={[]} />
+        <CarouselAuto images={[Ellipse37, Ellipse38, Ellipse39, Ellipse40]} />
       </View>
 
       <View style={styles.socialButtons}>
         <SocialLoginButton provider="naver" onPress={() => {}} />
-        <SocialLoginButton provider="google" onPress={() => {}} />
+        <SocialLoginButton provider="google" onPress={googleLogin} />
         <SocialLoginButton provider="kakao" onPress={kakaoLogin} />
       </View>
 
@@ -46,7 +51,7 @@ export default function LoginScreen() {
         />
       </CTAContainer>
 
-      <KakaoWebView visible={showWebView} onCode={onCode} onClose={onClose} />
+
     </View>
   );
 }

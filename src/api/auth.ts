@@ -36,15 +36,11 @@ export const postLogin = async (email: string, password: string): Promise<LoginR
   return data.data;
 };
 
-export const postGoogleLogin = async (code: string): Promise<LoginResponse> => {
-  const { data } = await api.post('/auth/google/login', { code });
+export const postHandoff = async (handoffToken: string): Promise<LoginResponse> => {
+  const { data } = await api.post('/auth/handoff', { handoffToken });
   return data.data;
 };
 
-export const postKakaoLogin = async (code: string): Promise<LoginResponse> => {
-  const { data } = await api.post('/auth/kakao/login', { code });
-  return data.data;
-};
 
 interface SignupResponse {
   userId: number;
