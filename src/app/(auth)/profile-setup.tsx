@@ -38,6 +38,7 @@ const STATUS_MAP = {
 
 export default function ProfileSetupScreen() {
   const router = useRouter();
+  const canGoBack = router.canGoBack();
   const saveNickname = useOnboardingStore((s) => s.setNickname);
 
   const [nickname, setNickname] = useState('');
@@ -124,7 +125,7 @@ export default function ProfileSetupScreen() {
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
-      <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" />
+      {canGoBack && <ArrowLeftBar onPress={() => router.back()} title="프로필 설정" />}
       <View style={styles.progressWrapper}>
         <ProgressBar step={3} />
       </View>

@@ -1,35 +1,40 @@
-import { useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import { postKakaoLogin } from '@/src/api/auth';
+import { postHandoff } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
+
+const KAKAO_AUTH_URL = `${process.env.EXPO_PUBLIC_API_URL}/oauth/kakao/login`;
+const KAKAO_REDIRECT_URI = 'jjikmeok://oauth/kakao';
 
 export const useKakaoLogin = () => {
   const router = useRouter();
   const { setToken } = useAuthStore();
-  const [showWebView, setShowWebView] = useState(false);
 
-  const login = () => setShowWebView(true);
+  const login = async () => {
+    const result = await WebBrowser.openAuthSessionAsync(KAKAO_AUTH_URL, KAKAO_REDIRECT_URI);
+    if (result.type !== 'success') return;
 
-  const handleCode = async (code: string) => {
-    setShowWebView(false);
+    const { queryParams } = Linking.parse(result.url);
+    const handoffToken = queryParams?.handoffToken as string;
+    if (!handoffToken) return;
+
     try {
-      const { accessToken, refreshToken, registrationStatus } = await postKakaoLogin(code);
+      const { accessToken, refreshToken, registrationStatus } = await postHandoff(handoffToken);
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
 
-      if (registrationStatus === 'NOT_STARTED') {
-        router.replace('/(auth)/profile-setup');
-      } else {
-        router.replace('/(tabs)/home');
-      }
+      router.replace(
+        registrationStatus === 'NOT_STARTED' ? '/(auth)/profile-setup' : '/(tabs)/home',
+      );
     } catch (error: any) {
-      console.error('[useKakaoLogin] login error:', error?.response?.data ?? error);
+      console.error('[useKakaoLogin] error:', error?.response?.data ?? error);
     }
   };
 
-  return { login, showWebView, onCode: handleCode, onClose: () => setShowWebView(false) };
+  return { login };
 };
