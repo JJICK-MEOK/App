@@ -25,7 +25,7 @@ export default function TopNav({ name, profileImageUrl, onSearchPress }: Props) 
           <View style={styles.profile} />
         )}
         <Typography size="xxl" weight="semiBold" style={styles.title}>
-          {name ? `${name} 님` : '환영합니다!'}
+          {`${name} 님`}
         </Typography>
       </View>
       <View style={styles.icons}>

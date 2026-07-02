@@ -59,7 +59,9 @@ export default function BottomNav({ activeTab, onTabChange }: Props) {
             onPress={() => onTabChange(key)}
             activeOpacity={0.7}
           >
-            <IconComponent width={28} height={28} />
+            <View style={key === 'personalize' && styles.personalizeIconOffset}>
+              <IconComponent width={28} height={28} />
+            </View>
             <Typography size="xs" style={isActive ? styles.labelActive : styles.labelInactive}>
               {label}
             </Typography>
@@ -100,5 +102,8 @@ const styles = StyleSheet.create({
   labelInactive: {
     color: colors.text.tertiary,
     textAlign: 'center',
+  },
+  personalizeIconOffset: {
+    marginLeft: 2.5,
   },
 });
