@@ -11,19 +11,31 @@ export type ContentCardTag = {
 type ContentCardProps = {
   title: string;
   subtitle: string;
-  imageUri: string;
+  imageUri?: string;
   tags: ContentCardTag[];
   onPress?: () => void;
+  renderFallback?: () => React.ReactNode;
 };
 
-export const ContentCard = ({ title, subtitle, imageUri, tags, onPress }: ContentCardProps) => {
+export const ContentCard = ({
+  title,
+  subtitle,
+  imageUri,
+  tags,
+  onPress,
+  renderFallback,
+}: ContentCardProps) => {
   return (
     <Pressable
       style={({ pressed }) => [styles.container, pressed && onPress && styles.pressed]}
       onPress={onPress}
       disabled={!onPress}
     >
-      <Image source={{ uri: imageUri }} style={styles.image} />
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} style={styles.image} />
+      ) : (
+        <View style={styles.image}>{renderFallback?.()}</View>
+      )}
 
       <View style={styles.info}>
         <View style={styles.titleArea}>

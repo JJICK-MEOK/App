@@ -100,6 +100,21 @@ export type CategoryPageData = {
   activities: HomeActivity[];
 };
 
+export type CustomPageData = {
+  nickname: string;
+  tasteProfile: {
+    title: string;
+    subtitle: string | null;
+    hashtags: string[];
+  };
+  recommended: {
+    key: string;
+    title: string;
+    subtitle: string | null;
+    activities: HomeActivity[];
+  };
+};
+
 export type DetailActivity = {
   id: number;
   regionId: number;
