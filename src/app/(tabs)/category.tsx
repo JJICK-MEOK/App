@@ -93,7 +93,7 @@ export default function CategoryScreen() {
   const typeOptions = data?.typeOptions ?? [];
   const categoryOptions = data?.categoryOptions ?? [];
   const sortOptions = data?.sortOptions ?? [];
-  const activities = data?.activities ?? [];
+  const activities = (data?.activities ?? []).filter((a) => a.deadline >= 0);
 
   const selectedTypeLabel = typeOptions.find((o) => o.value === selectedTypeValue)?.label ?? '전체';
   const selectedCategoryLabel =

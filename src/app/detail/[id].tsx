@@ -73,6 +73,7 @@ export default function ActivityDetailPage() {
 
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
@@ -128,13 +129,12 @@ export default function ActivityDetailPage() {
   );
 
   const handleSavePress = () => {
+    if (!data || isSaving) return;
     const nextSaved = !saved;
     setSaved(nextSaved);
-    if (nextSaved) {
-      addFavorite(activityId).catch(() => setSaved(!nextSaved));
-    } else {
-      deleteFavorite(activityId).catch(() => setSaved(!nextSaved));
-    }
+    setIsSaving(true);
+    const request = nextSaved ? addFavorite(activityId) : deleteFavorite(activityId);
+    request.catch(() => setSaved(!nextSaved)).finally(() => setIsSaving(false));
   };
 
   const infoRows = data

@@ -22,6 +22,7 @@ export default function RecommendationCard({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const displayTags = hashtags.slice(0, 2);
+  const ddayLabel = deadline <= 0 ? 'D-day' : `D-${deadline}`;
 
   return (
     <View style={styles.container}>
@@ -36,7 +37,7 @@ export default function RecommendationCard({
           </View>
           <View style={styles.infoRow}>
             <ChipBadge label={category} variant="category" />
-            <Typography style={styles.dday}>D-{deadline}</Typography>
+            <Typography style={styles.dday}>{ddayLabel}</Typography>
           </View>
         </View>
         <Typography style={styles.title} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">{title}</Typography>

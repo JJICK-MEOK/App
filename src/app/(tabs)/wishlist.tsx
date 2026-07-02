@@ -79,9 +79,13 @@ export default function ProgramListScreen() {
     queryFn: async () => {
       const favorites = await getFavorites(SORT_MAP[selectedSort]);
       const results = await Promise.allSettled(favorites.map((f) => getDetailData(f.activityId)));
-      return results
+      const details = results
         .filter((r): r is PromiseFulfilledResult<DetailActivity> => r.status === 'fulfilled')
         .map((r) => r.value);
+      if (favorites.length > 0 && details.length === 0) {
+        throw new Error('찜한 활동 상세 정보를 불러오지 못했어요.');
+      }
+      return details;
     },
     staleTime: 0,
   });
@@ -94,7 +98,9 @@ export default function ProgramListScreen() {
 
   const tabOptions = useMemo(() => {
     if (!tagsData) return ['전체'];
-    return ['전체', ...tagsData.map((t) => t.name)];
+    const availableNames = new Set(tagsData.map((t) => t.name));
+    const ordered = Object.values(ACTIVITY_TYPE_LABEL).filter((name) => availableNames.has(name));
+    return ['전체', ...ordered];
   }, [tagsData]);
 
   useFocusEffect(
@@ -108,6 +114,7 @@ export default function ProgramListScreen() {
 
   const filteredActivities = activities.filter((activity: DetailActivity) => {
     if (removedIds.has(activity.id)) return false;
+    if (activity.deadline < 0) return false;
     if (selectedTab === '전체') return true;
     return ACTIVITY_TYPE_LABEL[activity.activityType] === selectedTab;
   });
@@ -193,7 +200,7 @@ export default function ProgramListScreen() {
                         >
                           <CardSaved
                             activityId={activity.id}
-                            dday={`D-${activity.deadline}`}
+                            dday={activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`}
                             title={activity.title}
                             tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
                               label: tag,

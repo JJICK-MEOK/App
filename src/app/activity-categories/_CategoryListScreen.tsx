@@ -61,6 +61,7 @@ export default function CategoryListScreen({ type, title }: Props) {
   const [isPulling, setIsPulling] = useState(false);
   const scrollYRef = useRef(0);
   const isPullingRef = useRef(false);
+  const isRefreshingRef = useRef(false);
   const pullAnim = useRef(new Animated.Value(0)).current;
 
   const { data, refetch, isError, isLoading, error } = useQuery({
@@ -75,7 +76,7 @@ export default function CategoryListScreen({ type, title }: Props) {
 
   const categoryOptions = data?.categoryOptions ?? [];
   const sortOptions = data?.sortOptions ?? [];
-  const activities = data?.activities ?? [];
+  const activities = (data?.activities ?? []).filter((a) => a.deadline >= 0);
 
   const selectedCategoryLabel =
     categoryOptions.find((o) => o.value === selectedCategoryValue)?.label ?? '전체';
@@ -115,9 +116,11 @@ export default function CategoryListScreen({ type, title }: Props) {
       },
       onPanResponderRelease: (_, { dy }) => {
         const pull = Math.min(dy * 0.4, PULL_MAX);
-        if (pull >= PULL_THRESHOLD) {
+        if (pull >= PULL_THRESHOLD && !isRefreshingRef.current) {
+          isRefreshingRef.current = true;
           Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
           refetch().finally(() => {
+            isRefreshingRef.current = false;
             isPullingRef.current = false;
             setIsPulling(false);
             Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();

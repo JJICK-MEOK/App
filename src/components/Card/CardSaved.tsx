@@ -6,7 +6,7 @@ import HeartSaved from '@/assets/images/HeartSaved.svg';
 import HeartUnselected from '@/assets/images/HeartUnselected.svg';
 import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
-import { deleteFavorite } from '@/src/api/favorites';
+import { addFavorite, deleteFavorite } from '@/src/api/favorites';
 
 type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
 
@@ -40,7 +40,12 @@ export default function CardSaved({ activityId, dday, title, tags, initialSaved 
         // 실패 시 상태 유지
       }
     } else {
-      setSaved(true);
+      try {
+        await addFavorite(activityId);
+        setSaved(true);
+      } catch {
+        // 실패 시 상태 유지
+      }
     }
   };
 

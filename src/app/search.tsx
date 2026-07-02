@@ -17,10 +17,12 @@ import { getTagVariant } from '@/src/utils/tagVariant';
 
 const SEARCH_DEBOUNCE_MS = 400;
 
+function getDaysLeft(activity: ActivitySummary) {
+  return Math.ceil((new Date(activity.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
 function toCardProps(activity: ActivitySummary) {
-  const daysLeft = Math.ceil(
-    (new Date(activity.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const daysLeft = getDaysLeft(activity);
   const dday = daysLeft <= 0 ? 'D-day' : `D-${daysLeft}`;
   const tags = activity.tags.slice(0, 2).map((label, i) => ({
     label,
@@ -56,6 +58,8 @@ export default function SearchScreen() {
     queryKey: ['activities', 'search', debouncedKeyword],
     queryFn: () => searchActivities(debouncedKeyword),
     enabled: !!debouncedKeyword,
+    retry: (failureCount, error) =>
+      (error as AxiosError)?.response?.status !== 401 && failureCount < 1,
   });
 
   const errorMessage = (() => {
@@ -64,10 +68,12 @@ export default function SearchScreen() {
     if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
     if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
       return '네트워크 연결을 확인해주세요.';
-    return '검색 화면으로 이동하지 못했어요. 다시 시도해주세요.';
+    return '검색 결과를 불러오지 못했어요. 다시 시도해주세요.';
   })();
 
   const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
+
+  const visibleResults = (results ?? []).filter((item) => getDaysLeft(item) >= 0);
 
   const handleSearch = (text: string) => {
     setSearchText(text);
@@ -104,7 +110,7 @@ export default function SearchScreen() {
           </View>
         ) : (
           results !== undefined &&
-          (results.length === 0 ? (
+          (visibleResults.length === 0 ? (
             <View style={styles.emptyState}>
               <Typography size="lg" weight="medium" style={styles.emptyText}>
                 {`'${searchText}'에 대한 검색 결과가 없습니다.`}
@@ -119,7 +125,7 @@ export default function SearchScreen() {
                 {`'${searchText}'에 대한 검색 결과`}
               </Typography>
               <View style={styles.cards}>
-                {results.map((item) => (
+                {visibleResults.map((item) => (
                   <TouchableOpacity
                     key={item.id}
                     activeOpacity={0.7}

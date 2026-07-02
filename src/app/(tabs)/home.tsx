@@ -82,7 +82,6 @@ export default function HomeScreen() {
     queryKey: ['home'],
     queryFn: () => getHomeData(6),
   });
-  refetchRef.current = refetch;
 
   const { data: tagsData } = useQuery({
     queryKey: ['tags', 'ACTIVITY_CATEGORY'],
@@ -91,26 +90,49 @@ export default function HomeScreen() {
 
   const icons = useMemo(() => {
     if (!tagsData || tagsData.length === 0) return DEFAULT_ICONS;
-    const mapped = tagsData
-      .map((tag) => ICON_CONFIG[tag.name] ?? null)
-      .filter((item): item is IconConfig => item !== null);
+    const availableNames = new Set(tagsData.map((tag) => tag.name));
+    const mapped = Object.keys(ICON_CONFIG)
+      .filter((name) => availableNames.has(name))
+      .map((name) => ICON_CONFIG[name]);
     return mapped.length > 0 ? mapped : DEFAULT_ICONS;
   }, [tagsData]);
 
   const nickname = homeData?.user.nickname ?? '';
 
-  const recommended = (homeData?.recommendedActivities ?? []).slice(0, 6);
+  const recommendedRaw = (homeData?.recommendedActivities ?? []).filter((a) => a.deadline >= 0);
+  const closingSoonRaw = (homeData?.closingSoonActivities ?? []).filter((a) => a.deadline >= 0);
+  const needsRecommendedFill = recommendedRaw.length < 6;
+  const needsClosingSoonFill = closingSoonRaw.length < 3;
 
-  const shouldLoadGeneralActivities = !isLoading && !isError && recommended.length === 0;
-  const { data: generalCategoryData, isLoading: isGeneralLoading } = useQuery({
+  const shouldLoadGeneralActivities =
+    !isLoading && !isError && (needsRecommendedFill || needsClosingSoonFill);
+  const {
+    data: generalCategoryData,
+    isLoading: isGeneralLoading,
+    isError: isGeneralError,
+    error: generalError,
+    refetch: refetchGeneral,
+  } = useQuery({
     queryKey: ['category', '', '', ''],
     queryFn: () => getCategoryPageData({}),
     enabled: shouldLoadGeneralActivities,
   });
-  const generalActivities = (generalCategoryData?.activities ?? []).slice(0, 6);
-  const recommendedOrGeneral = recommended.length > 0 ? recommended : generalActivities;
 
-  const closingSoon = (homeData?.closingSoonActivities ?? []).filter((a) => a.deadline >= 0);
+  const usedIds = new Set([...recommendedRaw, ...closingSoonRaw].map((a) => a.id));
+  const fillerPool = (generalCategoryData?.activities ?? []).filter(
+    (a) => a.deadline >= 0 && !usedIds.has(a.id),
+  );
+  const recommendedFill = fillerPool.slice(0, Math.max(0, 6 - recommendedRaw.length));
+  const recommended = [...recommendedRaw, ...recommendedFill];
+  const closingSoonFill = fillerPool
+    .slice(recommendedFill.length)
+    .slice(0, Math.max(0, 3 - closingSoonRaw.length));
+  const closingSoon = [...closingSoonRaw, ...closingSoonFill];
+
+  refetchRef.current = shouldLoadGeneralActivities
+    ? () => Promise.all([refetch(), refetchGeneral()])
+    : refetch;
+
   const adCard = closingSoon.find((a) => a.isAd);
   const nonAdCards = closingSoon.filter((a) => !a.isAd);
   const displayCards = (adCard ? [adCard, ...nonAdCards] : nonAdCards).slice(0, 3);
@@ -123,6 +145,16 @@ export default function HomeScreen() {
     : isNetworkError
       ? '네트워크 연결을 확인해주세요.'
       : '홈 화면을 불러오지 못했어요. 다시 시도해주세요.';
+
+  const isGeneralNetworkError = axios.isAxiosError(generalError) && !generalError.response;
+  const isGeneralSessionExpired =
+    axios.isAxiosError(generalError) && generalError.response?.status === 401;
+
+  const generalErrorMessage = isGeneralSessionExpired
+    ? '로그인 시간이 만료되었어요. 다시 로그인해주세요.'
+    : isGeneralNetworkError
+      ? '네트워크 연결을 확인해주세요.'
+      : '활동 목록을 불러오지 못했어요. 다시 시도해주세요.';
 
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
@@ -184,9 +216,7 @@ export default function HomeScreen() {
 
             <View style={styles.contentSheet}>
               <View style={styles.recommendSection}>
-                <Text style={styles.sectionTitle}>
-                  {`${nickname} 님에게 추천해요!`}
-                </Text>
+                <Text style={styles.sectionTitle}>{`${nickname} 님에게 추천해요!`}</Text>
                 {isError ? (
                   <View style={styles.recommendErrorBox}>
                     <Text style={styles.errorText}>{homeErrorMessage}</Text>
@@ -204,11 +234,24 @@ export default function HomeScreen() {
                   <View style={styles.recommendErrorBox}>
                     <Loading />
                   </View>
-                ) : shouldLoadGeneralActivities && isGeneralLoading ? (
+                ) : recommended.length === 0 && needsRecommendedFill && isGeneralLoading ? (
                   <View style={styles.recommendErrorBox}>
                     <Loading />
                   </View>
-                ) : recommendedOrGeneral.length === 0 ? (
+                ) : recommended.length === 0 && needsRecommendedFill && isGeneralError ? (
+                  <View style={styles.recommendErrorBox}>
+                    <Text style={styles.errorText}>{generalErrorMessage}</Text>
+                    {!isGeneralSessionExpired && (
+                      <TouchableOpacity
+                        style={styles.retryButton}
+                        onPress={() => refetchGeneral()}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.retryText}>다시 시도</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : recommended.length === 0 ? (
                   <View style={styles.recommendErrorBox}>
                     <Text style={styles.errorText}>아직 추천할 활동이 부족해요.</Text>
                   </View>
@@ -218,7 +261,7 @@ export default function HomeScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.cardsContainer}
                   >
-                    {recommendedOrGeneral.map((activity) => (
+                    {recommended.map((activity) => (
                       <TouchableOpacity
                         key={activity.id}
                         activeOpacity={0.7}

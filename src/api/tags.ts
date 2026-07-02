@@ -9,6 +9,6 @@ export interface Tag {
 }
 
 export async function getTags(type: TagType): Promise<Tag[]> {
-  const { data } = await api.get('/tags', { params: { type } });
+  const { data } = await api.get('/tags', { params: { tagType: type } });
   return data.data;
 }

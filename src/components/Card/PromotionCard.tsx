@@ -21,6 +21,7 @@ export default function PromotionCard({
   thumbnailUrl,
 }: Props) {
   const [imageError, setImageError] = useState(false);
+  const ddayLabel = deadline <= 0 ? 'D-day' : `D-${deadline}`;
 
   return (
     <View style={styles.container}>
@@ -28,7 +29,7 @@ export default function PromotionCard({
         <View style={styles.infoRow}>
           <View style={styles.ddayWrapper}>
             <Typography size="sm" weight="semiBold" style={styles.dday}>
-              D-{deadline}
+              {ddayLabel}
             </Typography>
           </View>
           {showAD && (
