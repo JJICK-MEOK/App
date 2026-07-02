@@ -1,6 +1,6 @@
 import { api } from '@/src/lib/api';
 
-export type TagType = 'TOPIC_CATEGORY' | 'ACTIVITY_CATEGORY';
+export type TagType = 'TOPIC_CATEGORY' | 'PREFERENCE_TAG' | 'ACTIVITY_CATEGORY';
 
 export interface Tag {
   id: number;
@@ -9,6 +9,6 @@ export interface Tag {
 }
 
 export async function getTags(type: TagType): Promise<Tag[]> {
-  const { data } = await api.get('/tags', { params: { type } });
+  const { data } = await api.get('/tags', { params: { tagType: type } });
   return data.data;
 }

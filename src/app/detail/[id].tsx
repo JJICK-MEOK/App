@@ -1,8 +1,19 @@
-import { useState, useRef } from 'react';
-import { View, ScrollView, StyleSheet, Modal, TouchableOpacity, Animated, PanResponder } from 'react-native';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  PanResponder,
+  Image,
+  Linking,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import CloseLarge from '@/assets/images/CloseLarge.svg';
@@ -10,86 +21,142 @@ import ZoomButton from '@/src/components/Button/ZoomButton';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import DetailTab from '@/src/components/Tab/DetailTab';
 import BottomActionBar from '@/src/components/Layout/BottomActionBar';
-import ChipBadge, { type ChipBadgeVariant } from '@/src/components/Chip/ChipBadge';
+import ChipBadge from '@/src/components/Chip/ChipBadge';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-
-const TAG_CHIPS: { label: string; variant: ChipBadgeVariant }[] = [
-  { label: '#취향태그', variant: 'MOOD' },
-  { label: '#힐링', variant: 'SIZE' },
-  { label: '#힐링태그', variant: 'DURATION' },
-];
+import { getDetailData } from '@/src/api/pages';
+import { addFavorite, deleteFavorite } from '@/src/api/favorites';
+import { getTagVariant } from '@/src/utils/tagVariant';
 
 const TABS = [
   { key: 'info', label: '정보' },
   { key: 'review', label: '후기' },
 ];
 
-const INFO_ROWS = [
-  { label: '주최기간', value: '서울야외도서관 / 서울도서관' },
-  { label: '모집기간', value: '2026.04.01 10:00 - 마감종료' },
-  { label: '활동날짜(기간)', value: '2026년 4월 23일(목)부터 2026년 12월 31(목)' },
-  { label: '대상', value: '만 14세 이상, 독서에 관심 있는 사람' },
-  { label: '금액', value: '무료' },
-  {
-    label: '설명',
-    value:
-      '힙독클럽은 혼자 읽는 즐거움과 함께 읽는 재미를 경험할 수 있는 서울야외도서관의 온·오프라인 독서 커뮤니티입니다. 온라인 독서 활동부터 필사, 낭독, 저자 강연, 야외 독서프로그램까지 다양한 방식으로 책을 가볍고 꾸준하게 즐길 수 있습니다.',
-  },
-  { label: '문의안내 (문의처)', value: '힙독클럽 문의처 / 070-5143-5663' },
-];
+const ACTIVITY_TYPE_LABEL: Record<string, string> = {
+  PROGRAM: '프로그램',
+  ONE_DAY: '원데이',
+  EVENT: '행사·강연',
+  CLUB: '동아리',
+};
 
 const BOTTOM_BAR_HEIGHT = 114;
+const PULL_THRESHOLD = 60;
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+function formatDate(isoString: string) {
+  const d = new Date(isoString);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}.${m}.${day}.`;
+}
+
+function formatActivityDate(isoString: string) {
+  const d = new Date(isoString);
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const weekday = WEEKDAYS[d.getDay()];
+  return `${y}년 ${m}월 ${day}일(${weekday})`;
+}
+
+function formatPrice(price: number) {
+  return price === 0 ? '무료' : `${price.toLocaleString()}원`;
+}
 
 export default function ActivityDetailPage() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const activityId = Number(id);
+
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [zoomed, setZoomed] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
-  const isPullingRef = useRef(false);
-  const pullAnim = useRef(new Animated.Value(0)).current;
-
-  const PULL_THRESHOLD = 60;
-  const PULL_MAX = 80;
+  const isRefreshingRef = useRef(false);
+  const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
         scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
-      onPanResponderMove: (_, { dy }) => {
-        if (dy > 0) {
-          const pull = Math.min(dy * 0.4, PULL_MAX);
-          pullAnim.setValue(pull);
-          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
-            isPullingRef.current = true;
-            setIsPulling(true);
-          }
-        }
-      },
       onPanResponderRelease: (_, { dy }) => {
-        const pull = Math.min(dy * 0.4, PULL_MAX);
-        if (pull >= PULL_THRESHOLD) {
-          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          setTimeout(() => {
-            isPullingRef.current = false;
-            setIsPulling(false);
-            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          }, 1500);
-        } else {
-          isPullingRef.current = false;
-          setIsPulling(false);
-          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        if (dy * 0.4 >= PULL_THRESHOLD && !isRefreshingRef.current) {
+          isRefreshingRef.current = true;
+          setIsRefreshing(true);
+          refetchRef.current().finally(() => {
+            isRefreshingRef.current = false;
+            setIsRefreshing(false);
+          });
         }
       },
-      onPanResponderTerminate: () => {
-        isPullingRef.current = false;
-        setIsPulling(false);
-        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-      },
-    })
+      onPanResponderTerminate: () => {},
+    }),
   ).current;
+
+  const { data, refetch, isLoading, isError, error } = useQuery({
+    queryKey: ['detail', activityId],
+    queryFn: () => getDetailData(activityId),
+    enabled: !!activityId,
+  });
+  refetchRef.current = refetch;
+
+  const errorMessage = (() => {
+    if (!isError) return null;
+    const err = error as AxiosError;
+    if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+    if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
+      return '네트워크 연결을 확인해주세요.';
+    return '활동 정보를 불러오지 못했어요. 다시 시도해주세요.';
+  })();
+
+  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
+
+  useEffect(() => {
+    if (data?.liked !== undefined) {
+      setSaved(data.liked);
+    }
+  }, [data?.liked]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
+
+  const handleSavePress = () => {
+    if (!data || isSaving) return;
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    setIsSaving(true);
+    const request = nextSaved ? addFavorite(activityId) : deleteFavorite(activityId);
+    request.catch(() => setSaved(!nextSaved)).finally(() => setIsSaving(false));
+  };
+
+  const infoRows = data
+    ? [
+        { label: '주최기관', value: data.organizer },
+        {
+          label: '모집기간',
+          value: `${formatDate(data.recruitStartAt)} ~ ${formatDate(data.recruitEndAt)}`,
+        },
+        {
+          label: '활동날짜(기간)',
+          value:
+            data.activityType === 'ONE_DAY'
+              ? formatActivityDate(data.startAt)
+              : `${formatActivityDate(data.startAt)}부터 ${formatActivityDate(data.endAt)}`,
+        },
+        { label: '대상', value: data.target },
+        { label: '금액', value: formatPrice(data.price) },
+        { label: '설명', value: data.description },
+        { label: '문의안내', value: data.contactInfo },
+      ].filter((row) => row.value)
+    : [];
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -97,95 +164,169 @@ export default function ActivityDetailPage() {
         <ArrowLeftBar onPress={() => router.back()} />
 
         <View {...panResponder.panHandlers} style={{ flex: 1 }}>
-        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
-          {isPulling && <Loading />}
-        </Animated.View>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
-          scrollEventThrottle={16}
-        >
-          <View style={styles.card}>
-            <View style={styles.thumbnail}>
-              <View style={styles.zoomButtonPos}>
-                <ZoomButton onPress={() => setZoomed(true)} />
-              </View>
-            </View>
-
-            <View style={styles.metaRow}>
-              <ChipBadge label="프로그램" variant="category" />
-              <View style={styles.statsRow}>
-                <Typography size="sm" weight="semiBold" style={styles.DDay}>
-                  D-7
-                </Typography>
-                <View style={styles.statItem}>
-                  <EyeOn width={14} height={14} color="#CCCCCC" />
-                  <Typography size="sm" style={styles.statText}>
-                    240
-                  </Typography>
-                </View>
-                <View style={styles.statItem}>
-                  <HeartDisabled width={14} height={14} />
-                  <Typography size="sm" style={styles.statText}>
-                    70
-                  </Typography>
-                </View>
-              </View>
-            </View>
-
-            <Typography size="xxl" weight="semiBold" style={styles.title}>
-              {'서울야외도서관\n힙독클럽 2기 모집'}
-            </Typography>
-
-            <Typography size="sm" weight="medium" style={styles.date}>
-              2026.04.23. ~ 2026.12.31.
-            </Typography>
-
-            <View style={styles.tagsRow}>
-              {TAG_CHIPS.map((tag) => (
-                <ChipBadge key={tag.label} label={tag.label} variant={tag.variant} />
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.tabWrapper}>
-            <DetailTab tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
-          </View>
-
-          {activeTab === 'info' && (
-            <View style={styles.infoContent}>
-              <View style={styles.posterSection}>
-                <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
-                  {'<힙독클럽 2기>'}
-                </Typography>
-                <View style={styles.posterPlaceholder} />
-              </View>
-
-              {INFO_ROWS.map((row) => (
-                <View key={row.label} style={styles.infoRow}>
-                  <View style={styles.infoLabelRow}>
-                    <View style={styles.infoAccent} />
-                    <Typography size="md" weight="semiBold" color="tertiary">
-                      {row.label}
-                    </Typography>
-                  </View>
-                  <Typography size="md" style={styles.infoValue}>
-                    {`• ${row.value}`}
-                  </Typography>
-                </View>
-              ))}
+          {isRefreshing && (
+            <View style={styles.loadingArea}>
+              <Loading />
             </View>
           )}
-        </ScrollView>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            onScroll={(e) => {
+              scrollYRef.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
+          >
+            {isLoading ? (
+              <View style={styles.messageBox}>
+                <Loading />
+              </View>
+            ) : errorMessage ? (
+              <View style={styles.messageBox}>
+                <Typography
+                  size="sm"
+                  weight="medium"
+                  color="secondary"
+                  style={{ textAlign: 'center' }}
+                >
+                  {errorMessage}
+                </Typography>
+                {isRetriable && (
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => refetch()}
+                    activeOpacity={0.7}
+                  >
+                    <Typography size="sm" weight="medium" color="secondary">
+                      다시 시도
+                    </Typography>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <>
+                <View style={styles.card}>
+                  <View style={styles.thumbnail}>
+                    {data?.thumbnailUrl ? (
+                      <Image
+                        source={{ uri: data.thumbnailUrl }}
+                        style={StyleSheet.absoluteFill}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                    <View style={styles.zoomButtonPos}>
+                      <ZoomButton onPress={() => setZoomed(true)} />
+                    </View>
+                  </View>
+
+                  <View style={styles.metaRow}>
+                    <ChipBadge
+                      label={
+                        ACTIVITY_TYPE_LABEL[data?.activityType ?? ''] ?? data?.activityType ?? ''
+                      }
+                      variant="category"
+                    />
+                    <View style={styles.statsRow}>
+                      <Typography size="sm" weight="semiBold" style={styles.DDay}>
+                        {data?.deadline != null
+                          ? data.deadline <= 0
+                            ? 'D-day'
+                            : `D-${data.deadline}`
+                          : '-'}
+                      </Typography>
+                      <View style={styles.statItem}>
+                        <EyeOn width={14} height={14} color="#CCCCCC" />
+                        <Typography size="sm" style={styles.statText}>
+                          {data?.viewCount ?? 0}
+                        </Typography>
+                      </View>
+                      <View style={styles.statItem}>
+                        <HeartDisabled width={14} height={14} />
+                        <Typography size="sm" style={styles.statText}>
+                          {data?.likeCount ?? 0}
+                        </Typography>
+                      </View>
+                    </View>
+                  </View>
+
+                  <Typography size="xxl" weight="semiBold" style={styles.title}>
+                    {data?.title ?? ''}
+                  </Typography>
+
+                  <Typography size="sm" weight="medium" style={styles.date}>
+                    {data
+                      ? data.activityType === 'ONE_DAY'
+                        ? formatDate(data.startAt)
+                        : `${formatDate(data.startAt)} ~ ${formatDate(data.endAt)}`
+                      : ''}
+                  </Typography>
+
+                  <View style={styles.tagsRow}>
+                    {(data?.hashtags ?? []).map((tag, i) => (
+                      <ChipBadge key={tag} label={tag} variant={getTagVariant(tag, i)} />
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.tabWrapper}>
+                  <DetailTab tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
+                </View>
+
+                {activeTab === 'info' && (
+                  <View style={styles.infoContent}>
+                    <View style={styles.posterSection}>
+                      <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
+                        {`<${data?.title ?? ''}>`}
+                      </Typography>
+                      <View style={styles.posterPlaceholder}>
+                        {data?.thumbnailUrl ? (
+                          <Image
+                            source={{ uri: data.thumbnailUrl }}
+                            style={StyleSheet.absoluteFill}
+                            resizeMode="cover"
+                          />
+                        ) : null}
+                      </View>
+                    </View>
+
+                    {infoRows.map((row) => (
+                      <View key={row.label} style={styles.infoRow}>
+                        <View style={styles.infoLabelRow}>
+                          <View style={styles.infoAccent} />
+                          <Typography size="md" weight="semiBold" color="tertiary">
+                            {row.label}
+                          </Typography>
+                        </View>
+                        <View style={styles.infoValueRow}>
+                          <Typography size="md" style={styles.infoValueBullet}>
+                            {'• '}
+                          </Typography>
+                          <Typography
+                            size="md"
+                            style={styles.infoValueText}
+                            lineBreakStrategyIOS="hangul-word"
+                            android_hyphenationFrequency="none"
+                          >
+                            {row.value}
+                          </Typography>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </ScrollView>
         </View>
 
         <View style={styles.bottomBar}>
           <BottomActionBar
             saved={saved}
-            onSavePress={() => setSaved((v) => !v)}
+            onSavePress={handleSavePress}
             label="바로 지원하기"
-            onPress={() => {}}
+            onPress={() => {
+              if (data?.sourceUrl) Linking.openURL(data.sourceUrl).catch(() => {});
+            }}
           />
         </View>
       </View>
@@ -194,7 +335,15 @@ export default function ActivityDetailPage() {
           <TouchableOpacity style={styles.zoomedClose} onPress={() => setZoomed(false)}>
             <CloseLarge width={30} height={30} color="#FFF" />
           </TouchableOpacity>
-          <View style={styles.zoomedImage} />
+          {data?.thumbnailUrl ? (
+            <Image
+              source={{ uri: data.thumbnailUrl }}
+              style={styles.zoomedImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.zoomedImage} />
+          )}
         </View>
       </Modal>
     </SafeAreaView>
@@ -213,14 +362,24 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: BOTTOM_BAR_HEIGHT,
   },
-  pullArea: {
-    overflow: 'hidden',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+  loadingArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
     backgroundColor: colors.neutral.white,
   },
-
-
+  messageBox: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
   card: {
     backgroundColor: colors.neutral.white,
     paddingHorizontal: 20,
@@ -241,6 +400,7 @@ const styles = StyleSheet.create({
     borderColor: '#DDD',
     backgroundColor: '#D9D9D9',
     marginBottom: 21,
+    overflow: 'hidden',
   },
   metaRow: {
     flexDirection: 'row',
@@ -278,11 +438,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 5,
   },
-
   tabWrapper: {
     backgroundColor: colors.neutral.white,
   },
-
   infoContent: {
     paddingHorizontal: 20,
     paddingTop: 35,
@@ -300,6 +458,7 @@ const styles = StyleSheet.create({
     aspectRatio: 335 / 473.786,
     borderRadius: 10,
     backgroundColor: '#D9D9D9',
+    overflow: 'hidden',
   },
   infoRow: {
     gap: 11,
@@ -315,24 +474,25 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     backgroundColor: colors.primary.main,
   },
-  infoValue: {
-    color: colors.text.primary,
+  infoValueRow: {
+    flexDirection: 'row',
     paddingLeft: 8,
+  },
+  infoValueBullet: {
+    color: colors.text.primary,
     lineHeight: 22,
   },
-
-  reviewContent: {
-    paddingVertical: 60,
-    alignItems: 'center',
+  infoValueText: {
+    flex: 1,
+    color: colors.text.primary,
+    lineHeight: 22,
   },
-
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
   },
-
   zoomedOverlay: {
     flex: 1,
     backgroundColor: '#000',

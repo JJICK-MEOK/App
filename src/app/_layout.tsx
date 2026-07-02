@@ -1,6 +1,6 @@
 import { Text } from 'react-native';
-import { Stack } from 'expo-router';
-import { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,7 +15,11 @@ import { theme } from '@/src/constants/theme';
 };
 
 export default function AppLayout() {
+  const router = useRouter();
+  const segments = useSegments();
   const initAuth = useAuthStore((s) => s.initAuth);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const [fontsLoaded, fontsError] = useFonts({
     'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.ttf'),
@@ -25,10 +29,18 @@ export default function AppLayout() {
   });
 
   useEffect(() => {
-    initAuth();
+    initAuth().finally(() => setIsInitialized(true));
   }, [initAuth]);
 
-  if (!fontsLoaded && !fontsError) return null;
+  useEffect(() => {
+    if (!isInitialized || (!fontsLoaded && !fontsError)) return;
+    const inAuthGroup = segments[0] === '(auth)';
+    if (!accessToken && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    }
+  }, [isInitialized, accessToken, segments, fontsLoaded, fontsError]);
+
+  if ((!fontsLoaded && !fontsError) || !isInitialized) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

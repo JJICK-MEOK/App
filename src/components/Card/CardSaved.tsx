@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { View, StyleSheet, Image, ImageSourcePropType, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
 import HeartUnselected from '@/assets/images/HeartUnselected.svg';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
+import { addFavorite, deleteFavorite } from '@/src/api/favorites';
 
 type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
@@ -14,23 +16,53 @@ type Tag = {
 };
 
 type Props = {
+  activityId: number;
   dday: string;
   title: string;
   tags: Tag[];
   initialSaved?: boolean;
-  imageSource?: ImageSourcePropType;
+  thumbnailUrl?: string;
+  onRemove?: (activityId: number) => void;
 };
 
-export default function CardSaved({ dday, title, tags, initialSaved = true, imageSource }: Props) {
+export default function CardSaved({ activityId, dday, title, tags, initialSaved = true, thumbnailUrl, onRemove }: Props) {
   const [saved, setSaved] = useState(initialSaved);
+  const [imageError, setImageError] = useState(false);
+  const [imgWidth, setImgWidth] = useState(0);
+
+  const handleHeartPress = async () => {
+    if (saved) {
+      try {
+        await deleteFavorite(activityId);
+        setSaved(false);
+        onRemove?.(activityId);
+      } catch {
+        // 실패 시 상태 유지
+      }
+    } else {
+      try {
+        await addFavorite(activityId);
+        setSaved(true);
+      } catch {
+        // 실패 시 상태 유지
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.imageArea}>
-        {imageSource && (
-          <Image source={imageSource} style={StyleSheet.absoluteFill} resizeMode="cover" />
-        )}
-        <TouchableOpacity onPress={() => setSaved((v) => !v)} activeOpacity={0.7} style={styles.heartContainer}>
+        <View
+          style={StyleSheet.absoluteFill}
+          onLayout={(e) => setImgWidth(e.nativeEvent.layout.width)}
+        >
+          {thumbnailUrl && !imageError ? (
+            <Image source={{ uri: thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" onError={() => setImageError(true)} />
+          ) : (
+            <DefaultActivity width={imgWidth} height={150} />
+          )}
+        </View>
+        <TouchableOpacity onPress={handleHeartPress} activeOpacity={0.7} style={styles.heartContainer}>
           {saved ? (
             <HeartSaved width={23} height={20} />
           ) : (
@@ -40,10 +72,10 @@ export default function CardSaved({ dday, title, tags, initialSaved = true, imag
       </View>
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Typography size="lg" weight="semiBold" style={styles.title} numberOfLines={2}>
+          <Typography size="lg" weight="semiBold" style={styles.title} numberOfLines={2} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
             {title}
           </Typography>
-          <Typography size="sm" weight="semiBold" style={styles.dday}>
+          <Typography size="sm" weight="semiBold" style={styles.dday} numberOfLines={1}>
             {dday}
           </Typography>
         </View>
@@ -85,7 +117,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
   },
   dday: {
-    width: 27,
+    flexShrink: 0,
     color: colors.text.primary,
     textAlign: 'right',
   },

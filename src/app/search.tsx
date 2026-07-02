@@ -1,71 +1,83 @@
-import { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+import { Loading } from '@/src/components/Loading/Loading';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import SearchBar from '@/src/components/Input/SearchBar';
 import ActivityCard from '@/src/components/Card/ActivityCard';
 import { Typography } from '@/src/components/Typography/Typography';
 import ArrowLeft from '@/assets/images/ArrowLeft.svg';
 import { colors } from '@/src/constants/colors';
+import { searchActivities } from '@/src/api/activities';
+import type { ActivitySummary } from '@/src/types/activities';
+import { getTagVariant } from '@/src/utils/tagVariant';
 
-const MOCK_ACTIVITIES = [
-  {
-    id: 1,
-    dday: 'D-11',
-    title: '서울 야외 도서관 힙독 클럽 2기 모집',
-    tags: [
-      { label: '#취향태그', variant: 'MOOD' as const },
-      { label: '#취향태그', variant: 'INTENSITY' as const },
-    ],
-    viewCount: 240,
-    likeCount: 70,
-  },
-  {
-    id: 2,
-    dday: 'D-5',
-    title: '홍대 드로잉 클래스 3기 모집',
-    tags: [{ label: '#취향태그', variant: 'DURATION' as const }],
-    viewCount: 130,
-    likeCount: 45,
-  },
-  {
-    id: 3,
-    dday: 'D-3',
-    title: '한국 광고 아카데미 한광아 11기 모집',
-    tags: [
-      { label: '#취향태그', variant: 'PURPOSE' as const },
-      { label: '#취향태그', variant: 'SIZE' as const },
-    ],
-    viewCount: 320,
-    likeCount: 90,
-  },
-  {
-    id: 4,
-    dday: 'D-20',
-    title: '강남 요리 원데이 클래스',
-    tags: [{ label: '#취향태그', variant: 'MOOD' as const }],
-    viewCount: 80,
-    likeCount: 30,
-  },
-  {
-    id: 5,
-    dday: 'D-7',
-    title: '서울 사진 동아리 신입 모집',
-    tags: [{ label: '#취향태그', variant: 'INTENSITY' as const }],
-    viewCount: 200,
-    likeCount: 60,
-  },
-];
+const SEARCH_DEBOUNCE_MS = 400;
+
+function getDaysLeft(activity: ActivitySummary) {
+  return Math.ceil((new Date(activity.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
+function toCardProps(activity: ActivitySummary) {
+  const daysLeft = getDaysLeft(activity);
+  const dday = daysLeft <= 0 ? 'D-day' : `D-${daysLeft}`;
+  const tags = activity.tags.slice(0, 2).map((label, i) => ({
+    label,
+    variant: getTagVariant(label, i),
+  }));
+  return {
+    dday,
+    title: activity.title,
+    tags,
+    viewCount: activity.viewCount,
+    likeCount: activity.likeCount,
+    thumbnailUrl: activity.thumbnailUrl,
+  };
+}
 
 export default function SearchScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState('');
+  const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
-  const results = useMemo(() => {
-    if (!searchText.trim()) return null;
-    return MOCK_ACTIVITIES.filter((a) => a.title.includes(searchText.trim()));
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedKeyword(searchText.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
   }, [searchText]);
+
+  const {
+    data: results,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['activities', 'search', debouncedKeyword],
+    queryFn: () => searchActivities(debouncedKeyword),
+    enabled: !!debouncedKeyword,
+    retry: (failureCount, error) =>
+      (error as AxiosError)?.response?.status !== 401 && failureCount < 1,
+  });
+
+  const errorMessage = (() => {
+    if (!isError) return null;
+    const err = error as AxiosError;
+    if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+    if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
+      return '네트워크 연결을 확인해주세요.';
+    return '검색 결과를 불러오지 못했어요. 다시 시도해주세요.';
+  })();
+
+  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
+
+  const visibleResults = (results ?? []).filter((item) => getDaysLeft(item) >= 0);
+
+  const handleSearch = (text: string) => {
+    setSearchText(text);
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.neutral.white }} edges={['top']}>
@@ -75,12 +87,30 @@ export default function SearchScreen() {
             <ArrowLeft width={10} height={18.5} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <SearchBar value={searchText} onChangeText={setSearchText} />
+            <SearchBar value={searchText} onChangeText={handleSearch} />
           </View>
         </View>
 
-        {results !== null &&
-          (results.length === 0 ? (
+        {errorMessage ? (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{errorMessage}</Text>
+            {isRetriable && (
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={() => refetch()}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.retryText}>다시 시도</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : isLoading ? (
+          <View style={styles.emptyState}>
+            <Loading />
+          </View>
+        ) : (
+          results !== undefined &&
+          (visibleResults.length === 0 ? (
             <View style={styles.emptyState}>
               <Typography size="lg" weight="medium" style={styles.emptyText}>
                 {`'${searchText}'에 대한 검색 결과가 없습니다.`}
@@ -95,14 +125,19 @@ export default function SearchScreen() {
                 {`'${searchText}'에 대한 검색 결과`}
               </Typography>
               <View style={styles.cards}>
-                {results.map((item, i) => (
-                  <TouchableOpacity key={i} activeOpacity={0.7} onPress={() => router.push(`/detail/${item.id}`)}>
-                    <ActivityCard {...item} />
+                {visibleResults.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    activeOpacity={0.7}
+                    onPress={() => router.push(`/detail/${item.id}`)}
+                  >
+                    <ActivityCard {...toCardProps(item)} />
                   </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
-          ))}
+          ))
+        )}
       </ScreenLayout>
     </SafeAreaView>
   );
@@ -138,5 +173,28 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: colors.text.tertiary,
+  },
+  errorBox: {
+    paddingTop: 60,
+    alignItems: 'center' as const,
+    gap: 16,
+  },
+  errorText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    textAlign: 'center' as const,
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
+  retryText: {
+    color: colors.text.secondary,
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
   },
 });

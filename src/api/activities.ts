@@ -1,5 +1,5 @@
 import { api } from '@/src/lib/api';
-import type { Activity } from '@/src/types/activities';
+import type { Activity, ActivitySummary } from '@/src/types/activities';
 
 interface RecommendationsResponse {
   items: Activity[];
@@ -12,8 +12,13 @@ export async function getRecommendations({
   cursor?: string;
 }): Promise<RecommendationsResponse> {
   const { data } = await api.get('/activities/recommendations', {
-    params: cursor ? { cursor } : {},
+    params: { cursor },
   });
+  return data.data;
+}
+
+export async function searchActivities(keyword: string): Promise<ActivitySummary[]> {
+  const { data } = await api.get('/activities', { params: { keyword } });
   return data.data;
 }
 
