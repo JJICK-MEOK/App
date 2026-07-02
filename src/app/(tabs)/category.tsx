@@ -218,6 +218,7 @@ export default function CategoryScreen() {
               if (activeSheet === 'type') {
                 const opt = typeOptions.find((o) => o.label === label);
                 setSelectedTypeValue(opt?.value ?? '');
+                setSelectedCategoryValue('');
               } else {
                 const opt = sortOptions.find((o) => o.label === label);
                 setSelectedSortValue(opt?.value ?? '');
