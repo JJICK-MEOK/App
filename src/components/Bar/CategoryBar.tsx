@@ -70,9 +70,10 @@ const styles = StyleSheet.create({
     color: '#999999',
   },
   indicator: {
-    height: 2.5,
+    height: 3,
     borderRadius: 200,
     alignSelf: 'stretch',
+    marginBottom: 1,
   },
   activeIndicator: {
     backgroundColor: colors.text.primary,

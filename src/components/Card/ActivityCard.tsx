@@ -1,8 +1,10 @@
-import { View, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import Eyes from '@/src/components/Icon/Eyes';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
 
 type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
@@ -18,7 +20,7 @@ type Props = {
   tags: Tag[];
   viewCount: number;
   likeCount: number;
-  imageSource?: ImageSourcePropType;
+  thumbnailUrl?: string;
 };
 
 export default function ActivityCard({
@@ -27,8 +29,10 @@ export default function ActivityCard({
   tags,
   viewCount,
   likeCount,
-  imageSource,
+  thumbnailUrl,
 }: Props) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.leftSection}>
@@ -36,7 +40,7 @@ export default function ActivityCard({
           <Typography size="sm" weight="semiBold" style={styles.ddayText}>
             {dday}
           </Typography>
-          <Typography size="lg" weight="semiBold" style={styles.titleText}>
+          <Typography size="lg" weight="semiBold" style={styles.titleText} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
             {title}
           </Typography>
         </View>
@@ -63,10 +67,10 @@ export default function ActivityCard({
           </View>
         </View>
         <View style={styles.imageWrapper}>
-          {imageSource ? (
-            <Image source={imageSource} style={styles.image} resizeMode="cover" />
+          {thumbnailUrl && !imageError ? (
+            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" onError={() => setImageError(true)} />
           ) : (
-            <View style={styles.imagePlaceholder} />
+            <DefaultActivity width={80} height={80} />
           )}
         </View>
       </View>

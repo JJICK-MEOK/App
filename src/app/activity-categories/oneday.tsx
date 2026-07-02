@@ -1,16 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
-import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
-import { colors } from '@/src/constants/colors';
+import CategoryListScreen from './_CategoryListScreen';
 
 export default function OnedayListScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-
-  return (
-    <ScreenLayout style={{ backgroundColor: colors.neutral.white, paddingTop: insets.top }}>
-      <ArrowLeftBar onPress={() => router.back()} title="원데이" />
-    </ScreenLayout>
-  );
+  return <CategoryListScreen type="ONE_DAY" title="원데이" />;
 }

@@ -1,20 +1,31 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import Search from '@/assets/images/Search.svg';
 import { Typography } from '@/src/components/Typography/Typography';
 
 type Props = {
   name: string;
+  profileImageUrl?: string;
   onSearchPress?: () => void;
 };
 
-export default function TopNav({ name, onSearchPress }: Props) {
+export default function TopNav({ name, profileImageUrl, onSearchPress }: Props) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
-        {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
-        <View style={styles.profile} />
+        {profileImageUrl && !imageError ? (
+          <Image
+            source={{ uri: profileImageUrl }}
+            style={styles.profile}
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <View style={styles.profile} />
+        )}
         <Typography size="xxl" weight="semiBold" style={styles.title}>
-          {name} 님
+          {`${name} 님`}
         </Typography>
       </View>
       <View style={styles.icons}>

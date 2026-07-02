@@ -1,22 +1,35 @@
-import { View, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import { colors } from '@/src/constants/colors';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 
 type Props = {
   category: string;
   title: string;
   showAD?: boolean;
+  deadline: number;
+  thumbnailUrl?: string;
 };
 
-export default function PromotionCard({ category, title, showAD = true }: Props) {
+export default function PromotionCard({
+  category,
+  title,
+  showAD = true,
+  deadline,
+  thumbnailUrl,
+}: Props) {
+  const [imageError, setImageError] = useState(false);
+  const ddayLabel = deadline <= 0 ? 'D-day' : `D-${deadline}`;
+
   return (
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.infoRow}>
           <View style={styles.ddayWrapper}>
             <Typography size="sm" weight="semiBold" style={styles.dday}>
-              D-7
+              {ddayLabel}
             </Typography>
           </View>
           {showAD && (
@@ -28,12 +41,23 @@ export default function PromotionCard({ category, title, showAD = true }: Props)
             <ChipBadge label={category} variant="categoryDark" />
           </View>
         </View>
-        <Typography size="lg" weight="bold" style={styles.title}>
+        <Typography
+          size="lg"
+          weight="bold"
+          style={styles.title}
+          lineBreakStrategyIOS="hangul-word"
+          android_hyphenationFrequency="none"
+        >
           {title}
         </Typography>
       </View>
-      {/* 백엔드 연결 시 Image 컴포넌트로 교체 */}
-      <View style={styles.image} />
+      <View style={[styles.image, { overflow: 'hidden' }]}>
+        {thumbnailUrl && !imageError ? (
+          <Image source={{ uri: thumbnailUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" onError={() => setImageError(true)} />
+        ) : (
+          <DefaultActivity width={78} height={78} />
+        )}
+      </View>
     </View>
   );
 }
@@ -71,11 +95,6 @@ const styles = StyleSheet.create({
     color: colors.neutral.white,
     alignSelf: 'stretch',
     marginTop: 6,
-  },
-  subtitle: {
-    color: '#888',
-    alignSelf: 'stretch',
-    marginTop: 3,
   },
   image: {
     width: 78,
