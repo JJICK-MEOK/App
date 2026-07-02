@@ -23,8 +23,8 @@ export default function RecommendationCard({ category, title, preferences }: Pro
         <Typography style={styles.title}>{title}</Typography>
       </View>
       <View style={styles.preferences}>
-        <ChipBadge label={preferences[0]} variant="mood" />
-        <ChipBadge label={preferences[1]} variant="mood" />
+        <ChipBadge label={preferences[0]} variant="MOOD" />
+        <ChipBadge label={preferences[1]} variant="MOOD" />
       </View>
     </View>
   );

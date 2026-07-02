@@ -6,7 +6,7 @@ import HeartSaved from '@/assets/images/HeartSaved.svg';
 import HeartUnselected from '@/assets/images/HeartUnselected.svg';
 import { colors } from '@/src/constants/colors';
 
-type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
 type Tag = {
   label: string;

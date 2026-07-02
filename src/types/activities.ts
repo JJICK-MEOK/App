@@ -1,4 +1,4 @@
-export type TagType = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+export type TagType = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
 export type Tag = {
   label: string;

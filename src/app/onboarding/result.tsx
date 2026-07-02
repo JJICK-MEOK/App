@@ -16,9 +16,9 @@ const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: Con
       subtitle: '201P Rookies 13기',
       imageUri: '',
       tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
+        { label: '#힐링', variant: 'MOOD' },
+        { label: '#단기', variant: 'DURATION' },
+        { label: '#소규모', variant: 'SIZE' },
       ],
     },
     {
@@ -26,9 +26,9 @@ const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: Con
       subtitle: '201P Rookies 13기',
       imageUri: '',
       tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
+        { label: '#힐링', variant: 'MOOD' },
+        { label: '#단기', variant: 'DURATION' },
+        { label: '#소규모', variant: 'SIZE' },
       ],
     },
     {
@@ -36,9 +36,9 @@ const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: Con
       subtitle: '201P Rookies 13기',
       imageUri: '',
       tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
+        { label: '#힐링', variant: 'MOOD' },
+        { label: '#단기', variant: 'DURATION' },
+        { label: '#소규모', variant: 'SIZE' },
       ],
     },
   ];

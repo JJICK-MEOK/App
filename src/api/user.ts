@@ -16,15 +16,17 @@ export const getRegions = async (parentId?: number): Promise<RegionItem[]> => {
 };
 
 export type TagType = 'TOPIC_CATEGORY' | 'PREFERENCE_TAG' | 'ACTIVITY_CATEGORY';
+export type TagGroupType = 'MOOD' | 'INTENSITY' | 'PURPOSE' | 'DURATION' | 'SIZE';
 
 export interface TagItem {
   id: number;
   name: string;
   type: TagType;
+  tagGroupType: TagGroupType | null;
 }
 
 export const getTags = async (type?: TagType): Promise<TagItem[]> => {
-  const { data } = await api.get('/tags', { params: type ? { type } : {} });
+  const { data } = await api.get('/tags', { params: type ? { tagType: type } : {} });
   const result: TagItem[] = data.data;
   return [...result].sort((a, b) => a.id - b.id);
 };

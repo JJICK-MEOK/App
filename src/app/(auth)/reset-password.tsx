@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import { postPasswordReset } from '@/src/api/auth';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -20,7 +22,7 @@ const CONDITIONS = [
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email: string }>();
+  const { resetToken } = useLocalSearchParams<{ resetToken: string }>();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -42,10 +44,15 @@ export default function ResetPasswordScreen() {
       ? '비밀번호가 일치하지 않아요.'
       : undefined;
 
-  const handleComplete = () => {
-    // TODO: call reset password API with { email, password }
-    router.replace('/(auth)/login');
-  };
+  const { mutate: resetPassword, isPending } = useMutation({
+    mutationFn: () => postPasswordReset(resetToken, password, confirm),
+    onSuccess: () => {
+      router.replace('/(auth)/login');
+    },
+    onError: (error: any) => {
+      console.error('[resetPassword] error:', error?.response?.data ?? error);
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -96,9 +103,9 @@ export default function ResetPasswordScreen() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="완료"
-          onPress={handleComplete}
+          onPress={() => resetPassword()}
           variant="dark"
-          disabled={!isComplete}
+          disabled={!isComplete || isPending}
         />
       </CTAContainer>
     </ScreenLayout>

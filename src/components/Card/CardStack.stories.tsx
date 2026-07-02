@@ -8,9 +8,9 @@ const ACTIVITIES: Activity[] = [
     title: '[영등포문화재단] 도림생활문화센터\n2026 사계절클래스 [봄] 프로그램',
     days: 11,
     tags: [
-      { label: '취향태그', type: 'mood' },
-      { label: '취향태그', type: 'intensity' },
-      { label: '취향태그', type: 'groupSize' },
+      { label: '취향태그', type: 'MOOD' },
+      { label: '취향태그', type: 'INTENSITY' },
+      { label: '취향태그', type: 'SIZE' },
     ],
   },
   {
@@ -18,8 +18,8 @@ const ACTIVITIES: Activity[] = [
     title: '[서대문구] 2026 봄 문화예술 프로그램',
     days: 5,
     tags: [
-      { label: '취향태그', type: 'mood' },
-      { label: '취향태그', type: 'duration' },
+      { label: '취향태그', type: 'MOOD' },
+      { label: '취향태그', type: 'DURATION' },
     ],
   },
   {
@@ -27,8 +27,8 @@ const ACTIVITIES: Activity[] = [
     title: '[마포구] 홍대앞 창작스튜디오 오픈클래스',
     days: 20,
     tags: [
-      { label: '취향태그', type: 'intensity' },
-      { label: '취향태그', type: 'purpose' },
+      { label: '취향태그', type: 'INTENSITY' },
+      { label: '취향태그', type: 'PURPOSE' },
     ],
   },
   {
@@ -36,8 +36,8 @@ const ACTIVITIES: Activity[] = [
     title: '[종로구] 인사동 전통문화체험 프로그램',
     days: 3,
     tags: [
-      { label: '취향태그', type: 'mood' },
-      { label: '취향태그', type: 'groupSize' },
+      { label: '취향태그', type: 'MOOD' },
+      { label: '취향태그', type: 'SIZE' },
     ],
   },
   {
@@ -45,8 +45,8 @@ const ACTIVITIES: Activity[] = [
     title: '[성동구] 성수동 아트마켓 참여 프로그램',
     days: 15,
     tags: [
-      { label: '취향태그', type: 'duration' },
-      { label: '취향태그', type: 'purpose' },
+      { label: '취향태그', type: 'DURATION' },
+      { label: '취향태그', type: 'PURPOSE' },
     ],
   },
 ];

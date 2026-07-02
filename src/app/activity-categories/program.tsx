@@ -18,8 +18,8 @@ const MOCK_ACTIVITIES = Array.from({ length: 9 }, (_, i) => ({
   dday: 'D-11',
   title: '서울야외도서관 힙독클럽 2기 모집',
   tags: [
-    { label: '#취향태그', variant: 'mood' as const },
-    { label: '#취향태그', variant: 'intensity' as const },
+    { label: '#취향태그', variant: 'MOOD' as const },
+    { label: '#취향태그', variant: 'INTENSITY' as const },
   ],
   viewCount: 240,
   likeCount: 70,

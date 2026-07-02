@@ -16,8 +16,8 @@ const MOCK_SAVED = Array.from({ length: 6 }, () => ({
   dday: 'D-12',
   title: '제목(활동명) 제목',
   tags: [
-    { label: '#취향태그', variant: 'mood' as const },
-    { label: '#취향태그', variant: 'intensity' as const },
+    { label: '#취향태그', variant: 'MOOD' as const },
+    { label: '#취향태그', variant: 'INTENSITY' as const },
   ],
 }));
 

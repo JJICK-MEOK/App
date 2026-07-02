@@ -13,7 +13,7 @@ import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
-import { postEmailSendCode, postEmailVerifyCode } from '@/src/api/auth';
+import { postPasswordResetSendCode, postPasswordResetVerifyCode } from '@/src/api/auth';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -84,7 +84,7 @@ export default function FindPasswordScreen() {
   }, [isExpired]);
 
   const { mutate: sendCode, isPending: isSending } = useMutation({
-    mutationFn: () => postEmailSendCode(email),
+    mutationFn: () => postPasswordResetSendCode(email),
     onSuccess: (data) => {
       setServerError('');
       setCode('');
@@ -103,7 +103,7 @@ export default function FindPasswordScreen() {
   });
 
   const { mutate: resendCode, isPending: isResending } = useMutation({
-    mutationFn: () => postEmailSendCode(email),
+    mutationFn: () => postPasswordResetSendCode(email),
     onSuccess: (data) => {
       setCode('');
       setCodeError('');
@@ -120,9 +120,9 @@ export default function FindPasswordScreen() {
   });
 
   const { mutate: verifyCode, isPending: isVerifying } = useMutation({
-    mutationFn: () => postEmailVerifyCode(email, code),
-    onSuccess: () => {
-      router.push({ pathname: '/(auth)/reset-password', params: { email } });
+    mutationFn: () => postPasswordResetVerifyCode(email, code),
+    onSuccess: (data) => {
+      router.push({ pathname: '/(auth)/reset-password', params: { resetToken: data.resetToken } });
     },
     onError: (error: any) => {
       const errorCode = error?.response?.data?.code;

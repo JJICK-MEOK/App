@@ -5,7 +5,7 @@ import Eyes from '@/src/components/Icon/Eyes';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import { colors } from '@/src/constants/colors';
 
-type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
 type Tag = {
   label: string;

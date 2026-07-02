@@ -2,7 +2,7 @@ import { View, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
-type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 export type ChipBadgeVariant = 'category' | 'categoryDark' | 'ad' | TagVariant;
 
 type Props = {
@@ -12,11 +12,16 @@ type Props = {
   onPress?: () => void;
 };
 
-const TAG_VARIANTS: TagVariant[] = ['mood', 'intensity', 'duration', 'groupSize', 'purpose'];
+const TAG_VARIANTS: TagVariant[] = ['MOOD', 'INTENSITY', 'DURATION', 'SIZE', 'PURPOSE'];
 
-function getVariantStyles(variant: ChipBadgeVariant, dark?: boolean): { container: ViewStyle; text: TextStyle } {
+function getVariantStyles(
+  variant: ChipBadgeVariant,
+  dark?: boolean,
+): { container: ViewStyle; text: TextStyle } {
   if (TAG_VARIANTS.includes(variant as TagVariant)) {
-    const tagColors = dark ? colors.tagDark[variant as TagVariant] : colors.tag[variant as TagVariant];
+    const tagColors = dark
+      ? colors.tagDark[variant as TagVariant]
+      : colors.tag[variant as TagVariant];
     return {
       container: { backgroundColor: tagColors.bg, paddingVertical: 4 },
       text: { color: tagColors.text },

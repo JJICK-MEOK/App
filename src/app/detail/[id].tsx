@@ -15,9 +15,9 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
 const TAG_CHIPS: { label: string; variant: ChipBadgeVariant }[] = [
-  { label: '#취향태그', variant: 'mood' },
-  { label: '#힐링', variant: 'groupSize' },
-  { label: '#힐링태그', variant: 'duration' },
+  { label: '#취향태그', variant: 'MOOD' },
+  { label: '#힐링', variant: 'SIZE' },
+  { label: '#힐링태그', variant: 'DURATION' },
 ];
 
 const TABS = [

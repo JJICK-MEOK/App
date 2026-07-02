@@ -1,9 +1,11 @@
 import { View, Text, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import CardStack from '@/src/components/Card/CardStack';
 import { useActivities } from '@/src/hooks/useActivities';
+import { getPersonalizationActivities } from '@/src/api/activities';
 import type { Activity } from '@/src/types/activities';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -14,6 +16,20 @@ export default function CustomScreen() {
   const { activities, fetchMore, isLoading } = useActivities();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  useQuery({
+    queryKey: ['personalization-activities'],
+    queryFn: async () => {
+      try {
+        const data = await getPersonalizationActivities();
+        console.log('[personalization-activities]', JSON.stringify(data, null, 2));
+        return data;
+      } catch (e: any) {
+        console.log('[personalization-activities] error:', e?.response?.data ?? e?.message ?? e);
+        throw e;
+      }
+    },
+  });
 
   const handlePressCard = (activity: Activity) => {
     router.push(`/detail/${activity.id}`);

@@ -9,9 +9,9 @@ const meta: Meta<typeof ContentCard> = {
     subtitle: '201P Rookies 13기',
     imageUri: 'https://picsum.photos/105',
     tags: [
-      { label: '#힐링', variant: 'mood' },
-      { label: '#단기', variant: 'duration' },
-      { label: '#소규모', variant: 'groupSize' },
+      { label: '#힐링', variant: 'MOOD' },
+      { label: '#단기', variant: 'DURATION' },
+      { label: '#소규모', variant: 'SIZE' },
     ],
   },
 };
@@ -28,11 +28,11 @@ export const Pressable: Story = {
 export const ManyTags: Story = {
   args: {
     tags: [
-      { label: '#힐링', variant: 'mood' },
-      { label: '#단기', variant: 'duration' },
-      { label: '#소규모', variant: 'groupSize' },
-      { label: '#주말', variant: 'purpose' },
-      { label: '#실내', variant: 'intensity' },
+      { label: '#힐링', variant: 'MOOD' },
+      { label: '#단기', variant: 'DURATION' },
+      { label: '#소규모', variant: 'SIZE' },
+      { label: '#주말', variant: 'PURPOSE' },
+      { label: '#실내', variant: 'INTENSITY' },
     ],
   },
 };

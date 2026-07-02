@@ -20,43 +20,43 @@ export const CategoryDark: Story = {
 };
 
 export const Mood: Story = {
-  args: { label: '#취향태그', variant: 'mood' },
+  args: { label: '#취향태그', variant: 'MOOD' },
 };
 
 export const Intensity: Story = {
-  args: { label: '#취향태그', variant: 'intensity' },
+  args: { label: '#취향태그', variant: 'INTENSITY' },
 };
 
 export const Duration: Story = {
-  args: { label: '#취향태그', variant: 'duration' },
+  args: { label: '#취향태그', variant: 'DURATION' },
 };
 
 export const GroupSize: Story = {
-  args: { label: '#취향태그', variant: 'groupSize' },
+  args: { label: '#취향태그', variant: 'SIZE' },
 };
 
 export const Purpose: Story = {
-  args: { label: '#취향태그', variant: 'purpose' },
+  args: { label: '#취향태그', variant: 'PURPOSE' },
 };
 
 export const MoodDark: Story = {
-  args: { label: '#취향태그', variant: 'mood', dark: true },
+  args: { label: '#취향태그', variant: 'MOOD', dark: true },
 };
 
 export const IntensityDark: Story = {
-  args: { label: '#취향태그', variant: 'intensity', dark: true },
+  args: { label: '#취향태그', variant: 'INTENSITY', dark: true },
 };
 
 export const DurationDark: Story = {
-  args: { label: '#취향태그', variant: 'duration', dark: true },
+  args: { label: '#취향태그', variant: 'DURATION', dark: true },
 };
 
 export const GroupSizeDark: Story = {
-  args: { label: '#취향태그', variant: 'groupSize', dark: true },
+  args: { label: '#취향태그', variant: 'SIZE', dark: true },
 };
 
 export const PurposeDark: Story = {
-  args: { label: '#취향태그', variant: 'purpose', dark: true },
+  args: { label: '#취향태그', variant: 'PURPOSE', dark: true },
 };
 
 export const AD: Story = {
@@ -69,19 +69,19 @@ export const All: Story = {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <ChipBadge label="프로그램" variant="category" />
         <ChipBadge label="프로그램" variant="categoryDark" />
-        <ChipBadge label="#취향태그" variant="mood" />
-        <ChipBadge label="#취향태그" variant="intensity" />
-        <ChipBadge label="#취향태그" variant="duration" />
-        <ChipBadge label="#취향태그" variant="groupSize" />
-        <ChipBadge label="#취향태그" variant="purpose" />
+        <ChipBadge label="#취향태그" variant="MOOD" />
+        <ChipBadge label="#취향태그" variant="INTENSITY" />
+        <ChipBadge label="#취향태그" variant="DURATION" />
+        <ChipBadge label="#취향태그" variant="SIZE" />
+        <ChipBadge label="#취향태그" variant="PURPOSE" />
         <ChipBadge label="AD" variant="ad" />
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-        <ChipBadge label="#취향태그" variant="mood" dark />
-        <ChipBadge label="#취향태그" variant="intensity" dark />
-        <ChipBadge label="#취향태그" variant="duration" dark />
-        <ChipBadge label="#취향태그" variant="groupSize" dark />
-        <ChipBadge label="#취향태그" variant="purpose" dark />
+        <ChipBadge label="#취향태그" variant="MOOD" dark />
+        <ChipBadge label="#취향태그" variant="INTENSITY" dark />
+        <ChipBadge label="#취향태그" variant="DURATION" dark />
+        <ChipBadge label="#취향태그" variant="SIZE" dark />
+        <ChipBadge label="#취향태그" variant="PURPOSE" dark />
       </View>
     </View>
   ),

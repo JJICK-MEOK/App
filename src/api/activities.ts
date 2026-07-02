@@ -16,3 +16,8 @@ export async function getRecommendations({
   });
   return data.data;
 }
+
+export async function getPersonalizationActivities(): Promise<unknown> {
+  const { data } = await api.get('/personalization/users/me/personlization-activities');
+  return data;
+}
