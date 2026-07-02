@@ -61,6 +61,27 @@ export type ActivityImage = {
   thumbnail: boolean;
 };
 
+export type ActivitySummary = {
+  id: number;
+  regionId: number;
+  regionName: string;
+  title: string;
+  thumbnailUrl: string;
+  address: string;
+  startAt: string;
+  endAt: string;
+  recruitEndAt: string;
+  activityType: string;
+  category: string;
+  tags: string[];
+  price: number;
+  viewCount: number;
+  likeCount: number;
+  reviewCount: number;
+  liked: boolean;
+  createdAt: string;
+};
+
 export type FilterOption = {
   value: string;
   label: string;

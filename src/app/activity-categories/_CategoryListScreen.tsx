@@ -159,7 +159,9 @@ export default function CategoryListScreen({ type, title }: Props) {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            scrollYRef.current = e.nativeEvent.contentOffset.y;
+          }}
           scrollEventThrottle={16}
         >
           {isLoading ? (
@@ -168,12 +170,23 @@ export default function CategoryListScreen({ type, title }: Props) {
             </View>
           ) : errorMessage ? (
             <View style={styles.messageBox}>
-              <Typography size="sm" weight="medium" color="secondary" style={{ textAlign: 'center' }}>
+              <Typography
+                size="sm"
+                weight="medium"
+                color="secondary"
+                style={{ textAlign: 'center' }}
+              >
                 {errorMessage}
               </Typography>
               {isRetriable && (
-                <TouchableOpacity style={styles.retryButton} onPress={() => refetch()} activeOpacity={0.7}>
-                  <Typography size="sm" weight="medium" color="secondary">다시 시도</Typography>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => refetch()}
+                  activeOpacity={0.7}
+                >
+                  <Typography size="sm" weight="medium" color="secondary">
+                    다시 시도
+                  </Typography>
                 </TouchableOpacity>
               )}
             </View>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,119 +6,142 @@ import {
   Pressable,
   Modal,
   TouchableOpacity,
-  Animated,
   PanResponder,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
 import ActivityCard from '@/src/components/Card/ActivityCard';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
+import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-import { getTags } from '@/src/api/tags';
+import { getCategoryPageData, getHomeData } from '@/src/api/pages';
+import type { HomeActivity } from '@/src/types/activities';
+import { getTagVariant } from '@/src/utils/tagVariant';
 import AppBar from '@/src/components/Bar/AppBar';
 import CategoryBar from '@/src/components/Bar/CategoryBar';
 
-const SORT_OPTIONS = ['추천순', '인기순', '마감순'];
+type SheetType = 'type' | 'sort' | null;
 
-const MOCK_ACTIVITIES = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  dday: 'D-11',
-  title: '서울야외도서관 힙독클럽 2기 모집',
-  tags: [
-    { label: '#취향태그', variant: 'mood' as const },
-    { label: '#취향태그', variant: 'intensity' as const },
-  ],
-  viewCount: 240,
-  likeCount: 70,
-}));
+const PULL_THRESHOLD = 60;
 
-type SheetType = 'category' | 'sort' | null;
+function toCardProps(activity: HomeActivity) {
+  const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
+  const tags = (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
+    label,
+    variant: getTagVariant(label, i),
+  }));
+  return {
+    dday,
+    title: activity.title,
+    tags,
+    viewCount: activity.viewCount,
+    likeCount: activity.likeCount,
+    thumbnailUrl: activity.thumbnailUrl,
+  };
+}
 
 export default function CategoryScreen() {
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState('전체');
-  const [selectedSort, setSelectedSort] = useState('추천순');
+  const [selectedTypeValue, setSelectedTypeValue] = useState('');
+  const [selectedCategoryValue, setSelectedCategoryValue] = useState('');
+  const [selectedSortValue, setSelectedSortValue] = useState('');
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
-  const [categoryOptions, setCategoryOptions] = useState<string[]>(['전체']);
-  const [tabOptions, setTabOptions] = useState<string[]>(['전체']);
-  const [selectedTab, setSelectedTab] = useState('전체');
-  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
-  const isPullingRef = useRef(false);
-  const pullAnim = useRef(new Animated.Value(0)).current;
-
-  const PULL_THRESHOLD = 60;
-  const PULL_MAX = 80;
+  const isRefreshingRef = useRef(false);
+  const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
         scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
-      onPanResponderMove: (_, { dy }) => {
-        if (dy > 0) {
-          const pull = Math.min(dy * 0.4, PULL_MAX);
-          pullAnim.setValue(pull);
-          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
-            isPullingRef.current = true;
-            setIsPulling(true);
-          }
-        }
-      },
       onPanResponderRelease: (_, { dy }) => {
-        const pull = Math.min(dy * 0.4, PULL_MAX);
-        if (pull >= PULL_THRESHOLD) {
-          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          setTimeout(() => {
-            isPullingRef.current = false;
-            setIsPulling(false);
-            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          }, 1500);
-        } else {
-          isPullingRef.current = false;
-          setIsPulling(false);
-          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        if (dy * 0.4 >= PULL_THRESHOLD && !isRefreshingRef.current) {
+          isRefreshingRef.current = true;
+          setIsRefreshing(true);
+          refetchRef.current().finally(() => {
+            isRefreshingRef.current = false;
+            setIsRefreshing(false);
+          });
         }
       },
-      onPanResponderTerminate: () => {
-        isPullingRef.current = false;
-        setIsPulling(false);
-        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-      },
+      onPanResponderTerminate: () => {},
     }),
   ).current;
 
-  useEffect(() => {
-    const ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
-    getTags('ACTIVITY_CATEGORY')
-      .then((tags) => {
-        const sorted = [...tags].sort((a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name));
-        setCategoryOptions(['전체', ...sorted.map((t) => t.name)]);
-      })
-      .catch(() => {});
+  const { data, refetch, isLoading, isError, error } = useQuery({
+    queryKey: ['category', selectedTypeValue, selectedCategoryValue, selectedSortValue],
+    queryFn: () =>
+      getCategoryPageData({
+        type: selectedTypeValue || undefined,
+        category: selectedCategoryValue || undefined,
+        sort: selectedSortValue || undefined,
+      }),
+  });
+  refetchRef.current = refetch;
 
-    getTags('TOPIC_CATEGORY')
-      .then((tags) => setTabOptions(['전체', ...tags.map((t) => t.name)]))
-      .catch(() => {});
-  }, []);
+  const { data: homeData } = useQuery({
+    queryKey: ['home'],
+    queryFn: () => getHomeData(6),
+  });
+  const nickname = homeData?.user.nickname ?? '';
+
+  const typeOptions = data?.typeOptions ?? [];
+  const categoryOptions = data?.categoryOptions ?? [];
+  const sortOptions = data?.sortOptions ?? [];
+  const activities = data?.activities ?? [];
+
+  const selectedTypeLabel = typeOptions.find((o) => o.value === selectedTypeValue)?.label ?? '전체';
+  const selectedCategoryLabel =
+    categoryOptions.find((o) => o.value === selectedCategoryValue)?.label ?? '전체';
+  const selectedSortLabel =
+    sortOptions.find((o) => o.value === selectedSortValue)?.label ?? '추천순';
+
+  const tabOptions = categoryOptions.length > 0 ? categoryOptions.map((o) => o.label) : ['전체'];
+
+  const errorMessage = (() => {
+    if (isError) {
+      const err = error as AxiosError;
+      if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+      if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
+        return '네트워크 연결을 확인해주세요.';
+      return '활동 목록을 불러오지 못했어요. 다시 시도해주세요.';
+    }
+    if (data && activities.length === 0) return '조건에 맞는 활동이 없어요.';
+    return null;
+  })();
+
+  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
 
   useFocusEffect(
     useCallback(() => {
-      setSelectedCategory('전체');
-      setSelectedSort('추천순');
-      setSelectedTab('전체');
+      setSelectedTypeValue('');
+      setSelectedCategoryValue('');
+      setSelectedSortValue('');
     }, []),
   );
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white }}>
-      <AppBar name="00" onSearchPress={() => router.push('/search')} />
-      <CategoryBar tabs={tabOptions} selected={selectedTab} onSelect={setSelectedTab} />
+      <AppBar name={nickname} onSearchPress={() => router.push('/search')} />
+      <CategoryBar
+        tabs={tabOptions}
+        selected={selectedCategoryLabel}
+        onSelect={(label) => {
+          const opt = categoryOptions.find((o) => o.label === label);
+          setSelectedCategoryValue(opt?.value ?? '');
+        }}
+      />
       <View {...panResponder.panHandlers} style={{ flex: 1 }}>
-        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
-          {isPulling && <Loading />}
-        </Animated.View>
+        {isRefreshing && (
+          <View style={styles.loadingArea}>
+            <Loading />
+          </View>
+        )}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContent}
@@ -128,20 +151,48 @@ export default function CategoryScreen() {
           scrollEventThrottle={16}
         >
           <View style={[styles.filterRow, styles.fullWidth]}>
-            <Dropdown label={selectedCategory} onPress={() => setActiveSheet('category')} />
-            <Dropdown label={selectedSort} onPress={() => setActiveSheet('sort')} />
+            <Dropdown label={selectedTypeLabel} onPress={() => setActiveSheet('type')} />
+            <Dropdown label={selectedSortLabel} onPress={() => setActiveSheet('sort')} />
           </View>
-          <View style={styles.cards}>
-            {MOCK_ACTIVITIES.map((activity, i) => (
-              <TouchableOpacity
-                key={i}
-                activeOpacity={0.7}
-                onPress={() => router.push(`/detail/${activity.id}`)}
+          {isLoading && !isRefreshing ? (
+            <View style={styles.messageBox}>
+              <Loading />
+            </View>
+          ) : errorMessage ? (
+            <View style={styles.messageBox}>
+              <Typography
+                size="sm"
+                weight="medium"
+                color="secondary"
+                style={{ textAlign: 'center' }}
               >
-                <ActivityCard {...activity} />
-              </TouchableOpacity>
-            ))}
-          </View>
+                {errorMessage}
+              </Typography>
+              {isRetriable && (
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={() => refetch()}
+                  activeOpacity={0.7}
+                >
+                  <Typography size="sm" weight="medium" color="secondary">
+                    다시 시도
+                  </Typography>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={styles.cards}>
+              {activities.map((activity) => (
+                <TouchableOpacity
+                  key={activity.id}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(`/detail/${activity.id}`)}
+                >
+                  <ActivityCard {...toCardProps(activity)} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </View>
 
@@ -154,14 +205,23 @@ export default function CategoryScreen() {
         <Pressable style={styles.backdrop} onPress={() => setActiveSheet(null)} />
         <View style={styles.sheetContainer}>
           <CategoryFilter
-            title={activeSheet === 'category' ? '카테고리 선택' : '정렬'}
-            options={activeSheet === 'category' ? categoryOptions : SORT_OPTIONS}
-            selected={activeSheet === 'category' ? selectedCategory : selectedSort}
+            title={activeSheet === 'type' ? '카테고리 선택' : '정렬'}
+            options={
+              activeSheet === 'type'
+                ? typeOptions.map((o) => o.label)
+                : sortOptions.map((o) => o.label)
+            }
+            selected={activeSheet === 'type' ? selectedTypeLabel : selectedSortLabel}
             optionGap={activeSheet === 'sort' ? 35 : 30}
-            height={activeSheet === 'category' ? 428 : 322}
-            onSelect={(item) => {
-              if (activeSheet === 'category') setSelectedCategory(item);
-              else setSelectedSort(item);
+            height={activeSheet === 'type' ? 428 : 322}
+            onSelect={(label) => {
+              if (activeSheet === 'type') {
+                const opt = typeOptions.find((o) => o.label === label);
+                setSelectedTypeValue(opt?.value ?? '');
+              } else {
+                const opt = sortOptions.find((o) => o.label === label);
+                setSelectedSortValue(opt?.value ?? '');
+              }
               setActiveSheet(null);
             }}
             onClose={() => setActiveSheet(null)}
@@ -191,11 +251,23 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     gap: 24,
   },
-  pullArea: {
-    overflow: 'hidden',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+  loadingArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
     backgroundColor: colors.neutral.white,
+  },
+  messageBox: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,

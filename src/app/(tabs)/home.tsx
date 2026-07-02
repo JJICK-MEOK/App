@@ -1,17 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-} from 'react-native';
+import { useState, useMemo, useRef } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, PanResponder } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import TopNav from '@/src/components/Nav/TopNav';
 import PersonalizedCTA from '@/src/components/Button/PersonalizedCTA';
@@ -22,7 +15,7 @@ import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 import { getTags } from '@/src/api/tags';
-import { getHomeData } from '@/src/api/pages';
+import { getHomeData, getCategoryPageData } from '@/src/api/pages';
 
 type IconConfig = {
   Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
@@ -30,13 +23,11 @@ type IconConfig = {
   route: string;
 };
 
-const ICON_ORDER = ['프로그램', '원데이', '행사·강연', '동아리'];
-
-const ICON_CONFIG: Record<string, Omit<IconConfig, 'label'>> = {
-  프로그램: { Svg: Program, route: '/activity-categories/program' },
-  원데이: { Svg: OneDay, route: '/activity-categories/oneday' },
-  '행사·강연': { Svg: Event, route: '/activity-categories/festival' },
-  동아리: { Svg: Club, route: '/activity-categories/club' },
+const ICON_CONFIG: Record<string, IconConfig> = {
+  프로그램: { Svg: Program, label: '프로그램', route: '/activity-categories/program' },
+  원데이: { Svg: OneDay, label: '원데이', route: '/activity-categories/oneday' },
+  '행사·강연': { Svg: Event, label: '행사·강연', route: '/activity-categories/festival' },
+  동아리: { Svg: Club, label: '동아리', route: '/activity-categories/club' },
 };
 
 const DEFAULT_ICONS: IconConfig[] = [
@@ -48,107 +39,106 @@ const DEFAULT_ICONS: IconConfig[] = [
 
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   PROGRAM: '프로그램',
-  ONEDAY: '원데이',
   ONE_DAY: '원데이',
   EVENT: '행사·강연',
   CLUB: '동아리',
 };
 
+const PULL_THRESHOLD = 60;
+
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [icons, setIcons] = useState<IconConfig[]>(DEFAULT_ICONS);
-  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
-  const isPullingRef = useRef(false);
-  const pullAnim = useRef(new Animated.Value(0)).current;
-
-  const PULL_THRESHOLD = 60;
-  const PULL_MAX = 80;
-
-  const { data: homeData, refetch, isError, error } = useQuery({
-    queryKey: ['home'],
-    queryFn: getHomeData,
-  });
-
-  const nickname = homeData?.user.nickname ?? '';
-
-  const closingSoon = homeData?.closingSoonActivities ?? [];
-  const adCard = closingSoon.find((a) => a.isAd);
-  const nonAdCards = closingSoon.filter((a) => !a.isAd);
-  const displayCards = adCard ? [adCard, ...nonAdCards] : nonAdCards;
-
-  const isNetworkError = !!(error as any)?.message?.includes('Network Error');
-
-  const recommendErrorMessage = isNetworkError
-    ? '네트워크 연결을 확인해주세요'
-    : '추천 활동을 불러오지 못했어요. 다시 시도해주세요.';
-
-  const closingSoonErrorMessage = isNetworkError
-    ? '네트워크 연결을 확인해주세요'
-    : '인기활동을 불러오지 못했어요. 다시 시도해주세요';
+  const isRefreshingRef = useRef(false);
+  const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
         scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
-      onPanResponderMove: (_, { dy }) => {
-        if (dy > 0) {
-          const pull = Math.min(dy * 0.4, PULL_MAX);
-          pullAnim.setValue(pull);
-          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
-            isPullingRef.current = true;
-            setIsPulling(true);
-          }
-        }
-      },
       onPanResponderRelease: (_, { dy }) => {
-        const pull = Math.min(dy * 0.4, PULL_MAX);
-        if (pull >= PULL_THRESHOLD) {
-          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          refetch().finally(() => {
-            isPullingRef.current = false;
-            setIsPulling(false);
-            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
+        if (dy * 0.4 >= PULL_THRESHOLD && !isRefreshingRef.current) {
+          isRefreshingRef.current = true;
+          setIsRefreshing(true);
+          refetchRef.current().finally(() => {
+            isRefreshingRef.current = false;
+            setIsRefreshing(false);
           });
-        } else {
-          isPullingRef.current = false;
-          setIsPulling(false);
-          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
         }
       },
-      onPanResponderTerminate: () => {
-        isPullingRef.current = false;
-        setIsPulling(false);
-        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-      },
+      onPanResponderTerminate: () => {},
     }),
   ).current;
 
-  useEffect(() => {
-    getTags('ACTIVITY_CATEGORY')
-      .then((tags) => {
-        const mapped = tags
-          .map((tag) => {
-            const config = ICON_CONFIG[tag.name];
-            return config ? { ...config, label: tag.name } : null;
-          })
-          .filter((item): item is IconConfig => item !== null)
-          .sort((a, b) => ICON_ORDER.indexOf(a.label) - ICON_ORDER.indexOf(b.label));
-        if (mapped.length > 0) setIcons(mapped);
-      })
-      .catch(() => {});
-  }, []);
+  const {
+    data: homeData,
+    refetch,
+    isError,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['home'],
+    queryFn: () => getHomeData(6),
+  });
+  refetchRef.current = refetch;
+
+  const { data: tagsData } = useQuery({
+    queryKey: ['tags', 'ACTIVITY_CATEGORY'],
+    queryFn: () => getTags('ACTIVITY_CATEGORY'),
+  });
+
+  const icons = useMemo(() => {
+    if (!tagsData || tagsData.length === 0) return DEFAULT_ICONS;
+    const mapped = tagsData
+      .map((tag) => ICON_CONFIG[tag.name] ?? null)
+      .filter((item): item is IconConfig => item !== null);
+    return mapped.length > 0 ? mapped : DEFAULT_ICONS;
+  }, [tagsData]);
+
+  const nickname = homeData?.user.nickname ?? '';
+
+  const recommended = (homeData?.recommendedActivities ?? []).slice(0, 6);
+
+  const shouldLoadGeneralActivities = !isLoading && !isError && recommended.length === 0;
+  const { data: generalCategoryData, isLoading: isGeneralLoading } = useQuery({
+    queryKey: ['category', '', '', ''],
+    queryFn: () => getCategoryPageData({}),
+    enabled: shouldLoadGeneralActivities,
+  });
+  const generalActivities = (generalCategoryData?.activities ?? []).slice(0, 6);
+  const recommendedOrGeneral = recommended.length > 0 ? recommended : generalActivities;
+
+  const closingSoon = (homeData?.closingSoonActivities ?? []).filter((a) => a.deadline >= 0);
+  const adCard = closingSoon.find((a) => a.isAd);
+  const nonAdCards = closingSoon.filter((a) => !a.isAd);
+  const displayCards = (adCard ? [adCard, ...nonAdCards] : nonAdCards).slice(0, 3);
+
+  const isNetworkError = axios.isAxiosError(error) && !error.response;
+  const isSessionExpired = axios.isAxiosError(error) && error.response?.status === 401;
+
+  const homeErrorMessage = isSessionExpired
+    ? '로그인 시간이 만료되었어요. 다시 로그인해주세요.'
+    : isNetworkError
+      ? '네트워크 연결을 확인해주세요.'
+      : '홈 화면을 불러오지 못했어요. 다시 시도해주세요.';
 
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav name={nickname} onSearchPress={() => router.push('/search')} />
+        <TopNav
+          name={nickname}
+          profileImageUrl={homeData?.user.profileImageUrl}
+          onSearchPress={() => router.push('/search')}
+        />
       </View>
-      <View {...panResponder.panHandlers} style={{ flex: 1 }}>
-        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
-          {isPulling && <Loading />}
-        </Animated.View>
+      <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+        {isRefreshing && (
+          <View style={styles.loadingArea}>
+            <Loading />
+          </View>
+        )}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
@@ -175,9 +165,9 @@ export default function HomeScreen() {
             <View style={styles.divider} />
             <View style={styles.iconSection}>
               <View style={styles.iconRow}>
-                {icons.map(({ Svg, label, route }, i) => (
+                {icons.map(({ Svg, label, route }) => (
                   <TouchableOpacity
-                    key={i}
+                    key={label}
                     style={styles.iconItem}
                     activeOpacity={0.7}
                     onPress={() => router.push(route)}
@@ -194,19 +184,31 @@ export default function HomeScreen() {
 
             <View style={styles.contentSheet}>
               <View style={styles.recommendSection}>
-                <Text style={styles.sectionTitle}>{nickname} 님에게 추천해요!</Text>
+                <Text style={styles.sectionTitle}>
+                  {nickname ? `${nickname} 님에게 추천해요!` : '환영합니다!'}
+                </Text>
                 {isError ? (
                   <View style={styles.recommendErrorBox}>
-                    <Text style={styles.errorText}>{recommendErrorMessage}</Text>
-                    <TouchableOpacity
-                      style={styles.retryButton}
-                      onPress={() => refetch()}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.retryText}>다시 시도</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.errorText}>{homeErrorMessage}</Text>
+                    {!isSessionExpired && (
+                      <TouchableOpacity
+                        style={styles.retryButton}
+                        onPress={() => refetch()}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.retryText}>다시 시도</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
-                ) : (homeData?.recommendedActivities ?? []).length === 0 ? (
+                ) : isLoading && !isRefreshing ? (
+                  <View style={styles.recommendErrorBox}>
+                    <Loading />
+                  </View>
+                ) : shouldLoadGeneralActivities && isGeneralLoading ? (
+                  <View style={styles.recommendErrorBox}>
+                    <Loading />
+                  </View>
+                ) : recommendedOrGeneral.length === 0 ? (
                   <View style={styles.recommendErrorBox}>
                     <Text style={styles.errorText}>아직 추천할 활동이 부족해요.</Text>
                   </View>
@@ -216,14 +218,16 @@ export default function HomeScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.cardsContainer}
                   >
-                    {(homeData?.recommendedActivities ?? []).map((activity) => (
+                    {recommendedOrGeneral.map((activity) => (
                       <TouchableOpacity
                         key={activity.id}
                         activeOpacity={0.7}
                         onPress={() => router.push(`/detail/${activity.id}`)}
                       >
                         <RecommendationCard
-                          category={ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType}
+                          category={
+                            ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType
+                          }
                           title={activity.title}
                           hashtags={activity.hashtags}
                           deadline={activity.deadline}
@@ -242,14 +246,16 @@ export default function HomeScreen() {
                   </View>
                   {isError ? (
                     <View style={styles.errorBox}>
-                      <Text style={styles.errorText}>{closingSoonErrorMessage}</Text>
-                      <TouchableOpacity
-                        style={styles.retryButton}
-                        onPress={() => refetch()}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.retryText}>다시 시도</Text>
-                      </TouchableOpacity>
+                      <Text style={styles.errorText}>{homeErrorMessage}</Text>
+                      {!isSessionExpired && (
+                        <TouchableOpacity
+                          style={styles.retryButton}
+                          onPress={() => refetch()}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.retryText}>다시 시도</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   ) : (
                     <View style={styles.darkCard}>
@@ -261,7 +267,9 @@ export default function HomeScreen() {
                           onPress={() => router.push(`/detail/${activity.id}`)}
                         >
                           <PromotionCard
-                            category={ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType}
+                            category={
+                              ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType
+                            }
                             title={activity.title}
                             showAD={activity.isAd}
                             deadline={activity.deadline}
@@ -285,10 +293,10 @@ const styles = StyleSheet.create({
   topNavWrapper: {
     backgroundColor: '#FFF',
   },
-  pullArea: {
-    overflow: 'hidden',
+  loadingArea: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
     backgroundColor: '#FFF',
   },
   scrollContent: {

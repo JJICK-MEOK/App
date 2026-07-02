@@ -1,8 +1,8 @@
 import { api } from '@/src/lib/api';
 import type { HomeData, DetailActivity, CategoryPageData } from '@/src/types/activities';
 
-export async function getHomeData(): Promise<HomeData> {
-  const { data } = await api.get('/pages/home');
+export async function getHomeData(limit = 10): Promise<HomeData> {
+  const { data } = await api.get('/pages/home', { params: { limit } });
   return data.data;
 }
 

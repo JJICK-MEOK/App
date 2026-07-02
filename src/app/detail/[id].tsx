@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
-  Animated,
   PanResponder,
   Image,
   Linking,
@@ -14,6 +13,7 @@ import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import CloseLarge from '@/assets/images/CloseLarge.svg';
@@ -35,13 +35,13 @@ const TABS = [
 
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   PROGRAM: '프로그램',
-  ONEDAY: '원데이',
   ONE_DAY: '원데이',
   EVENT: '행사·강연',
   CLUB: '동아리',
 };
 
 const BOTTOM_BAR_HEIGHT = 114;
+const PULL_THRESHOLD = 60;
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -74,19 +74,46 @@ export default function ActivityDetailPage() {
   const [activeTab, setActiveTab] = useState('info');
   const [saved, setSaved] = useState(false);
   const [zoomed, setZoomed] = useState(false);
-  const [isPulling, setIsPulling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
-  const isPullingRef = useRef(false);
-  const pullAnim = useRef(new Animated.Value(0)).current;
+  const isRefreshingRef = useRef(false);
+  const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
 
-  const PULL_THRESHOLD = 60;
-  const PULL_MAX = 80;
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
+        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
+      onPanResponderRelease: (_, { dy }) => {
+        if (dy * 0.4 >= PULL_THRESHOLD && !isRefreshingRef.current) {
+          isRefreshingRef.current = true;
+          setIsRefreshing(true);
+          refetchRef.current().finally(() => {
+            isRefreshingRef.current = false;
+            setIsRefreshing(false);
+          });
+        }
+      },
+      onPanResponderTerminate: () => {},
+    }),
+  ).current;
 
-  const { data, refetch } = useQuery({
+  const { data, refetch, isLoading, isError, error } = useQuery({
     queryKey: ['detail', activityId],
     queryFn: () => getDetailData(activityId),
     enabled: !!activityId,
   });
+  refetchRef.current = refetch;
+
+  const errorMessage = (() => {
+    if (!isError) return null;
+    const err = error as AxiosError;
+    if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+    if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
+      return '네트워크 연결을 확인해주세요.';
+    return '활동 정보를 불러오지 못했어요. 다시 시도해주세요.';
+  })();
+
+  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
 
   useEffect(() => {
     if (data?.liked !== undefined) {
@@ -110,43 +137,6 @@ export default function ActivityDetailPage() {
     }
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) =>
-        scrollYRef.current <= 0 && dy > 8 && dy > Math.abs(dx) * 2,
-      onPanResponderMove: (_, { dy }) => {
-        if (dy > 0) {
-          const pull = Math.min(dy * 0.4, PULL_MAX);
-          pullAnim.setValue(pull);
-          if (pull >= PULL_THRESHOLD && !isPullingRef.current) {
-            isPullingRef.current = true;
-            setIsPulling(true);
-          }
-        }
-      },
-      onPanResponderRelease: (_, { dy }) => {
-        const pull = Math.min(dy * 0.4, PULL_MAX);
-        if (pull >= PULL_THRESHOLD) {
-          Animated.spring(pullAnim, { toValue: PULL_MAX, useNativeDriver: false }).start();
-          refetch().finally(() => {
-            isPullingRef.current = false;
-            setIsPulling(false);
-            Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-          });
-        } else {
-          isPullingRef.current = false;
-          setIsPulling(false);
-          Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        isPullingRef.current = false;
-        setIsPulling(false);
-        Animated.spring(pullAnim, { toValue: 0, useNativeDriver: false }).start();
-      },
-    })
-  ).current;
-
   const infoRows = data
     ? [
         { label: '주최기관', value: data.organizer },
@@ -156,9 +146,10 @@ export default function ActivityDetailPage() {
         },
         {
           label: '활동날짜(기간)',
-          value: ['ONEDAY', 'ONE_DAY'].includes(data.activityType)
-            ? formatActivityDate(data.startAt)
-            : `${formatActivityDate(data.startAt)}부터 ${formatActivityDate(data.endAt)}`,
+          value:
+            data.activityType === 'ONE_DAY'
+              ? formatActivityDate(data.startAt)
+              : `${formatActivityDate(data.startAt)}부터 ${formatActivityDate(data.endAt)}`,
         },
         { label: '대상', value: data.target },
         { label: '금액', value: formatPrice(data.price) },
@@ -167,115 +158,165 @@ export default function ActivityDetailPage() {
       ].filter((row) => row.value)
     : [];
 
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <ArrowLeftBar onPress={() => router.back()} />
 
         <View {...panResponder.panHandlers} style={{ flex: 1 }}>
-        <Animated.View style={[styles.pullArea, { height: pullAnim }]}>
-          {isPulling && <Loading />}
-        </Animated.View>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          onScroll={(e) => { scrollYRef.current = e.nativeEvent.contentOffset.y; }}
-          scrollEventThrottle={16}
-        >
-          <View style={styles.card}>
-            <View style={styles.thumbnail}>
-              {data?.thumbnailUrl ? (
-                <Image
-                  source={{ uri: data.thumbnailUrl }}
-                  style={StyleSheet.absoluteFill}
-                  resizeMode="cover"
-                />
-              ) : null}
-              <View style={styles.zoomButtonPos}>
-                <ZoomButton onPress={() => setZoomed(true)} />
-              </View>
-            </View>
-
-            <View style={styles.metaRow}>
-              <ChipBadge
-                label={ACTIVITY_TYPE_LABEL[data?.activityType ?? ''] ?? (data?.activityType ?? '')}
-                variant="category"
-              />
-              <View style={styles.statsRow}>
-                <Typography size="sm" weight="semiBold" style={styles.DDay}>
-                  D-{data?.deadline ?? '-'}
-                </Typography>
-                <View style={styles.statItem}>
-                  <EyeOn width={14} height={14} color="#CCCCCC" />
-                  <Typography size="sm" style={styles.statText}>
-                    {data?.viewCount ?? 0}
-                  </Typography>
-                </View>
-                <View style={styles.statItem}>
-                  <HeartDisabled width={14} height={14} />
-                  <Typography size="sm" style={styles.statText}>
-                    {data?.likeCount ?? 0}
-                  </Typography>
-                </View>
-              </View>
-            </View>
-
-            <Typography size="xxl" weight="semiBold" style={styles.title}>
-              {data?.title ?? ''}
-            </Typography>
-
-            <Typography size="sm" weight="medium" style={styles.date}>
-              {data ? `${formatDate(data.startAt)} ~ ${formatDate(data.endAt)}` : ''}
-            </Typography>
-
-            <View style={styles.tagsRow}>
-              {(data?.hashtags ?? []).map((tag, i) => (
-                <ChipBadge key={tag} label={tag} variant={getTagVariant(tag, i)} />
-              ))}
-            </View>
-          </View>
-
-          <View style={styles.tabWrapper}>
-            <DetailTab tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
-          </View>
-
-          {activeTab === 'info' && (
-            <View style={styles.infoContent}>
-              <View style={styles.posterSection}>
-                <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
-                  {`<${data?.title ?? ''}>`}
-                </Typography>
-                <View style={styles.posterPlaceholder}>
-                  {data?.thumbnailUrl ? (
-                    <Image
-                      source={{ uri: data.thumbnailUrl }}
-                      style={StyleSheet.absoluteFill}
-                      resizeMode="cover"
-                    />
-                  ) : null}
-                </View>
-              </View>
-
-              {infoRows.map((row) => (
-                <View key={row.label} style={styles.infoRow}>
-                  <View style={styles.infoLabelRow}>
-                    <View style={styles.infoAccent} />
-                    <Typography size="md" weight="semiBold" color="tertiary">
-                      {row.label}
-                    </Typography>
-                  </View>
-                  <View style={styles.infoValueRow}>
-                    <Typography size="md" style={styles.infoValueBullet}>{'• '}</Typography>
-                    <Typography size="md" style={styles.infoValueText} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
-                      {row.value}
-                    </Typography>
-                  </View>
-                </View>
-              ))}
+          {isRefreshing && (
+            <View style={styles.loadingArea}>
+              <Loading />
             </View>
           )}
-        </ScrollView>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            onScroll={(e) => {
+              scrollYRef.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
+          >
+            {isLoading ? (
+              <View style={styles.messageBox}>
+                <Loading />
+              </View>
+            ) : errorMessage ? (
+              <View style={styles.messageBox}>
+                <Typography
+                  size="sm"
+                  weight="medium"
+                  color="secondary"
+                  style={{ textAlign: 'center' }}
+                >
+                  {errorMessage}
+                </Typography>
+                {isRetriable && (
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={() => refetch()}
+                    activeOpacity={0.7}
+                  >
+                    <Typography size="sm" weight="medium" color="secondary">
+                      다시 시도
+                    </Typography>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              <>
+                <View style={styles.card}>
+                  <View style={styles.thumbnail}>
+                    {data?.thumbnailUrl ? (
+                      <Image
+                        source={{ uri: data.thumbnailUrl }}
+                        style={StyleSheet.absoluteFill}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                    <View style={styles.zoomButtonPos}>
+                      <ZoomButton onPress={() => setZoomed(true)} />
+                    </View>
+                  </View>
+
+                  <View style={styles.metaRow}>
+                    <ChipBadge
+                      label={
+                        ACTIVITY_TYPE_LABEL[data?.activityType ?? ''] ?? data?.activityType ?? ''
+                      }
+                      variant="category"
+                    />
+                    <View style={styles.statsRow}>
+                      <Typography size="sm" weight="semiBold" style={styles.DDay}>
+                        {data?.deadline != null
+                          ? data.deadline <= 0
+                            ? 'D-day'
+                            : `D-${data.deadline}`
+                          : '-'}
+                      </Typography>
+                      <View style={styles.statItem}>
+                        <EyeOn width={14} height={14} color="#CCCCCC" />
+                        <Typography size="sm" style={styles.statText}>
+                          {data?.viewCount ?? 0}
+                        </Typography>
+                      </View>
+                      <View style={styles.statItem}>
+                        <HeartDisabled width={14} height={14} />
+                        <Typography size="sm" style={styles.statText}>
+                          {data?.likeCount ?? 0}
+                        </Typography>
+                      </View>
+                    </View>
+                  </View>
+
+                  <Typography size="xxl" weight="semiBold" style={styles.title}>
+                    {data?.title ?? ''}
+                  </Typography>
+
+                  <Typography size="sm" weight="medium" style={styles.date}>
+                    {data
+                      ? data.activityType === 'ONE_DAY'
+                        ? formatDate(data.startAt)
+                        : `${formatDate(data.startAt)} ~ ${formatDate(data.endAt)}`
+                      : ''}
+                  </Typography>
+
+                  <View style={styles.tagsRow}>
+                    {(data?.hashtags ?? []).map((tag, i) => (
+                      <ChipBadge key={tag} label={tag} variant={getTagVariant(tag, i)} />
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.tabWrapper}>
+                  <DetailTab tabs={TABS} activeKey={activeTab} onTabChange={setActiveTab} />
+                </View>
+
+                {activeTab === 'info' && (
+                  <View style={styles.infoContent}>
+                    <View style={styles.posterSection}>
+                      <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
+                        {`<${data?.title ?? ''}>`}
+                      </Typography>
+                      <View style={styles.posterPlaceholder}>
+                        {data?.thumbnailUrl ? (
+                          <Image
+                            source={{ uri: data.thumbnailUrl }}
+                            style={StyleSheet.absoluteFill}
+                            resizeMode="cover"
+                          />
+                        ) : null}
+                      </View>
+                    </View>
+
+                    {infoRows.map((row) => (
+                      <View key={row.label} style={styles.infoRow}>
+                        <View style={styles.infoLabelRow}>
+                          <View style={styles.infoAccent} />
+                          <Typography size="md" weight="semiBold" color="tertiary">
+                            {row.label}
+                          </Typography>
+                        </View>
+                        <View style={styles.infoValueRow}>
+                          <Typography size="md" style={styles.infoValueBullet}>
+                            {'• '}
+                          </Typography>
+                          <Typography
+                            size="md"
+                            style={styles.infoValueText}
+                            lineBreakStrategyIOS="hangul-word"
+                            android_hyphenationFrequency="none"
+                          >
+                            {row.value}
+                          </Typography>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </ScrollView>
         </View>
 
         <View style={styles.bottomBar}>
@@ -284,7 +325,7 @@ export default function ActivityDetailPage() {
             onSavePress={handleSavePress}
             label="바로 지원하기"
             onPress={() => {
-              if (data?.sourceUrl) Linking.openURL(data.sourceUrl);
+              if (data?.sourceUrl) Linking.openURL(data.sourceUrl).catch(() => {});
             }}
           />
         </View>
@@ -321,14 +362,24 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: BOTTOM_BAR_HEIGHT,
   },
-  pullArea: {
-    overflow: 'hidden',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
+  loadingArea: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
     backgroundColor: colors.neutral.white,
   },
-
-
+  messageBox: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
+  },
   card: {
     backgroundColor: colors.neutral.white,
     paddingHorizontal: 20,
@@ -387,11 +438,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 5,
   },
-
   tabWrapper: {
     backgroundColor: colors.neutral.white,
   },
-
   infoContent: {
     paddingHorizontal: 20,
     paddingTop: 35,
@@ -438,19 +487,12 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     lineHeight: 22,
   },
-
-  reviewContent: {
-    paddingVertical: 60,
-    alignItems: 'center',
-  },
-
   bottomBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
   },
-
   zoomedOverlay: {
     flex: 1,
     backgroundColor: '#000',
