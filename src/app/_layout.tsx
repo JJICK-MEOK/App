@@ -40,7 +40,7 @@ export default function AppLayout() {
     }
   }, [isInitialized, accessToken, segments, fontsLoaded, fontsError]);
 
-  if (!fontsLoaded && !fontsError) return null;
+  if ((!fontsLoaded && !fontsError) || !isInitialized) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
