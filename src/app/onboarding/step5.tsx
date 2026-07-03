@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -28,9 +28,14 @@ export default function OnboardingStep5() {
 
   const nickname = customData?.nickname ?? storedNickname;
 
+  const queryClient = useQueryClient();
+
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
-    onSuccess: () => router.replace('/onboarding/result'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
+      router.replace('/onboarding/result');
+    },
   });
 
   const completeOnboarding = () => mutate({ topicTagIds, regionIds, preferenceTagIds });

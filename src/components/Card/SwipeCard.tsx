@@ -84,7 +84,13 @@ function GradientBorderAnimation({ w, h }: { w: number; h: number }) {
   );
 }
 
-export default function SwipeCard({ activity, isFront = false, saved = false, onSave, onHeartPressIn }: Props) {
+export default function SwipeCard({
+  activity,
+  isFront = false,
+  saved = false,
+  onSave,
+  onHeartPressIn,
+}: Props) {
   const bg = '#BEBEBE';
 
   const handleHeartPressIn = () => {
@@ -94,11 +100,34 @@ export default function SwipeCard({ activity, isFront = false, saved = false, on
 
   return (
     // 항상 동일한 최상위 View — isFront 변경 시에도 언마운트/리마운트 없음
-    <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT, borderRadius: 12, overflow: 'hidden', backgroundColor: bg }}>
+    <View
+      style={{
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: bg,
+      }}
+    >
       {isFront && <GradientBorderAnimation w={CARD_WIDTH} h={CARD_HEIGHT} />}
-      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: 10, overflow: 'hidden', backgroundColor: bg }}>
+      <View
+        style={{
+          position: 'absolute',
+          top: 2,
+          left: 2,
+          right: 2,
+          bottom: 2,
+          borderRadius: 10,
+          overflow: 'hidden',
+          backgroundColor: bg,
+        }}
+      >
         {activity.imageUrl ? (
-          <Image source={{ uri: activity.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          <Image
+            source={{ uri: activity.imageUrl }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
         ) : (
           <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
         )}
@@ -109,7 +138,9 @@ export default function SwipeCard({ activity, isFront = false, saved = false, on
           end={{ x: 0, y: 1 }}
           style={[styles.overlay, { height: CARD_HEIGHT * 0.488 }]}
         />
-        <View style={[styles.content, { top: CARD_HEIGHT * 0.7154, paddingHorizontal: 14, gap: 12 }]}>
+        <View
+          style={[styles.content, { top: CARD_HEIGHT * 0.7154, paddingHorizontal: 14, gap: 12 }]}
+        >
           <View style={{ gap: 5 }}>
             <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
             <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>

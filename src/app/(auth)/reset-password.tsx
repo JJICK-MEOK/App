@@ -56,7 +56,7 @@ export default function ResetPasswordScreen() {
       if (code === 'PASSWORD_SAME_AS_OLD') {
         setServerError('기존 비밀번호와 동일한 비밀번호로 변경할 수 없어요.');
       } else {
-        console.error('[resetPassword] error:', error?.response?.data ?? error);
+        setServerError('비밀번호 재설정에 실패했어요. 다시 시도해주세요.');
       }
     },
   });
@@ -84,7 +84,10 @@ export default function ResetPasswordScreen() {
             <TextField
               placeholder="••••••••"
               value={password}
-              onChangeText={(text) => { setPassword(text); setServerError(undefined); }}
+              onChangeText={(text) => {
+                setPassword(text);
+                setServerError(undefined);
+              }}
               onBlur={() => setPasswordTouched(true)}
               secureText
               errorMessage={passwordError}

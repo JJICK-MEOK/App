@@ -38,7 +38,7 @@ export default function OnboardingStep4() {
   });
 
   const tagsByGroup = useMemo(() => {
-    const map: Record<string, (typeof tags)> = {};
+    const map: Record<string, typeof tags> = {};
     tags.forEach((t) => {
       const group = t.tagGroupType ?? 'ETC';
       if (!map[group]) map[group] = [];
@@ -46,6 +46,11 @@ export default function OnboardingStep4() {
     });
     return map;
   }, [tags]);
+
+  const groups = useMemo(
+    () => GROUP_ORDER.filter((g) => (tagsByGroup[g]?.length ?? 0) > 0),
+    [tagsByGroup],
+  );
 
   const toggleTag = (id: number) => {
     setSelectedTagIds((prev) => {
@@ -59,13 +64,10 @@ export default function OnboardingStep4() {
     });
   };
 
-  const allCategoriesSelected = useMemo(() => {
-    return GROUP_ORDER.every((group) =>
-      (tagsByGroup[group] ?? []).some((t) => selectedTagIds.has(t.id)),
-    );
-  }, [selectedTagIds, tagsByGroup]);
-
-  const groups = GROUP_ORDER.filter((g) => (tagsByGroup[g]?.length ?? 0) > 0);
+  const allCategoriesSelected = useMemo(
+    () => groups.every((group) => (tagsByGroup[group] ?? []).some((t) => selectedTagIds.has(t.id))),
+    [groups, selectedTagIds, tagsByGroup],
+  );
 
   return (
     <ScreenLayout style={styles.container}>

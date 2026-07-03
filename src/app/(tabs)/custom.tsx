@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,7 +46,10 @@ export default function CustomScreen() {
     queryFn: getPersonalizationActivities,
   });
 
-  const activities: Activity[] = (rawActivities ?? []).map(toActivity);
+  const activities = useMemo<Activity[]>(
+    () => (rawActivities ?? []).map(toActivity),
+    [rawActivities],
+  );
   const nickname = pageData?.nickname ?? '';
 
   const handlePressCard = (activity: Activity) => {
