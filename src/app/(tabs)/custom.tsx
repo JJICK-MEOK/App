@@ -6,6 +6,7 @@ import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import CardStack from '@/src/components/Card/CardStack';
 import { getPersonalizationActivities } from '@/src/api/activities';
 import { getCustomPageData } from '@/src/api/pages';
+import { getTagVariant } from '@/src/utils/tagVariant';
 import type { Activity } from '@/src/types/activities';
 import type { PersonalizationActivity } from '@/src/types/activities';
 
@@ -21,9 +22,12 @@ function toActivity(item: PersonalizationActivity): Activity {
     id: String(item.activityId),
     title: item.activityTitle,
     days: Math.max(0, daysLeft),
-    tags: [],
+    tags: (item.hashtags ?? []).slice(0, 3).map((tag, i) => {
+      const label = tag.startsWith('#') ? tag.slice(1) : tag;
+      return { label, type: getTagVariant(label, i) };
+    }),
     imageUrl: item.activityThumbnailUri,
-    favoriteId: item.activityFavoriteId || undefined,
+    favoriteId: item.activityFavoriteId ?? undefined,
   };
 }
 

@@ -19,9 +19,10 @@ export type PersonalizationActivity = {
   activityThumbnailUri: string;
   activityTitle: string;
   activityRecruitEndAt: string;
-  activityFavoriteId: number;
+  activityFavoriteId: number | null;
   activityFavoriteCount: number;
   recommendScore: number;
+  hashtags?: string[];
 };
 
 export type ActivityFavoriteResponse = {

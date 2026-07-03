@@ -31,19 +31,7 @@ type Props = {
   onHeartPressIn?: () => void;
 };
 
-function AnimatedGradientBorder({
-  w,
-  h,
-  borderRadius,
-  bgColor,
-  children,
-}: {
-  w: number;
-  h: number;
-  borderRadius: number;
-  bgColor: string;
-  children: React.ReactNode;
-}) {
+function GradientBorderAnimation({ w, h }: { w: number; h: number }) {
   const angle = useSharedValue(0);
   const borderOpacity = useSharedValue(0);
   const [webDeg, setWebDeg] = useState(0);
@@ -79,36 +67,20 @@ function AnimatedGradientBorder({
     Platform.OS === 'web' ? { transform: [{ rotate: `${webDeg}deg` }] } : nativeStyle;
 
   return (
-    <View style={{ width: w, height: h, borderRadius: borderRadius + 2, overflow: 'hidden' }}>
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            width: spinnerSize,
-            height: spinnerSize,
-            top: (h - spinnerSize) / 2,
-            left: (w - spinnerSize) / 2,
-          },
-          spinnerStyle,
-        ]}
-      >
-        <LinearGradient colors={[...BORDER_GRADIENT_COLORS]} style={{ flex: 1 }} />
-      </Animated.View>
-      <View
-        style={{
+    <Animated.View
+      style={[
+        {
           position: 'absolute',
-          top: 2,
-          left: 2,
-          right: 2,
-          bottom: 2,
-          borderRadius,
-          overflow: 'hidden',
-          backgroundColor: bgColor,
-        }}
-      >
-        {children}
-      </View>
-    </View>
+          width: spinnerSize,
+          height: spinnerSize,
+          top: (h - spinnerSize) / 2,
+          left: (w - spinnerSize) / 2,
+        },
+        spinnerStyle,
+      ]}
+    >
+      <LinearGradient colors={[...BORDER_GRADIENT_COLORS]} style={{ flex: 1 }} />
+    </Animated.View>
   );
 }
 
@@ -120,74 +92,50 @@ export default function SwipeCard({ activity, isFront = false, saved = false, on
     onHeartPressIn?.();
   };
 
-  const inner = (
-    <>
-      {activity.imageUrl ? (
-        <Image source={{ uri: activity.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-      ) : (
-        <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
-      )}
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.98)', 'rgba(0,0,0,0.98)']}
-        locations={[0, 0.556, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={[styles.overlay, { height: CARD_HEIGHT * 0.488 }]}
-      />
-      <View
-        style={[
-          styles.content,
-          {
-            top: CARD_HEIGHT * 0.7154,
-            paddingHorizontal: 14,
-            gap: 12,
-          },
-        ]}
-      >
-        <View style={{ gap: 5 }}>
-          <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
-          <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>
-            {activity.title}
-          </Text>
-        </View>
-        <View style={styles.bottomRow}>
-          <View style={[styles.tags, { gap: 5 }]}>
-            {activity.tags.map((tag) => (
-              <ChipBadge
-                key={`${tag.type}-${tag.label}`}
-                label={`#${tag.label}`}
-                variant={tag.type}
-                dark
-              />
-            ))}
-          </View>
-          <IconHeart saved={saved} size={29} onPressIn={handleHeartPressIn} />
-        </View>
-      </View>
-    </>
-  );
-
-  if (isFront) {
-    return (
-      <AnimatedGradientBorder w={CARD_WIDTH} h={CARD_HEIGHT} borderRadius={10} bgColor={bg}>
-        {inner}
-      </AnimatedGradientBorder>
-    );
-  }
-
   return (
-    <View style={[styles.card, { width: CARD_WIDTH, height: CARD_HEIGHT, borderRadius: 10, backgroundColor: bg }]}>
-      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: 8, overflow: 'hidden' }}>
-        {inner}
+    // 항상 동일한 최상위 View — isFront 변경 시에도 언마운트/리마운트 없음
+    <View style={{ width: CARD_WIDTH, height: CARD_HEIGHT, borderRadius: 12, overflow: 'hidden', backgroundColor: bg }}>
+      {isFront && <GradientBorderAnimation w={CARD_WIDTH} h={CARD_HEIGHT} />}
+      <View style={{ position: 'absolute', top: 2, left: 2, right: 2, bottom: 2, borderRadius: 10, overflow: 'hidden', backgroundColor: bg }}>
+        {activity.imageUrl ? (
+          <Image source={{ uri: activity.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        ) : (
+          <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
+        )}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.98)', 'rgba(0,0,0,0.98)']}
+          locations={[0, 0.556, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={[styles.overlay, { height: CARD_HEIGHT * 0.488 }]}
+        />
+        <View style={[styles.content, { top: CARD_HEIGHT * 0.7154, paddingHorizontal: 14, gap: 12 }]}>
+          <View style={{ gap: 5 }}>
+            <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
+            <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>
+              {activity.title}
+            </Text>
+          </View>
+          <View style={styles.bottomRow}>
+            <View style={[styles.tags, { gap: 5 }]}>
+              {activity.tags.map((tag) => (
+                <ChipBadge
+                  key={`${tag.type}-${tag.label}`}
+                  label={`#${tag.label}`}
+                  variant={tag.type}
+                  dark
+                />
+              ))}
+            </View>
+            <IconHeart saved={saved} size={29} onPressIn={handleHeartPressIn} />
+          </View>
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    overflow: 'hidden',
-  },
   overlay: {
     position: 'absolute',
     bottom: 0,
