@@ -2,9 +2,12 @@ import { Image, StyleSheet, View } from 'react-native';
 import AddButton from '@/src/components/Button/AddButton';
 import { Typography } from '@/src/components/Typography/Typography';
 
+type SvgProps = { width?: number | string; height?: number | string };
+
 type CategoryCardProps = {
   categoryName: string;
-  imageUri: string;
+  imageUri?: string;
+  ImageComponent?: React.ComponentType<SvgProps>;
   onSubscribePress: () => void;
   subscriberText?: string;
   subscribed?: boolean;
@@ -13,6 +16,7 @@ type CategoryCardProps = {
 export const CategoryCard = ({
   categoryName,
   imageUri,
+  ImageComponent,
   onSubscribePress,
   subscriberText,
   subscribed = false,
@@ -20,7 +24,13 @@ export const CategoryCard = ({
   return (
     <View style={styles.container}>
       <View style={styles.info}>
-        {imageUri ? <Image source={{ uri: imageUri }} style={styles.image} /> : null}
+        {ImageComponent ? (
+          <View style={styles.image}>
+            <ImageComponent width={70} height={70} />
+          </View>
+        ) : imageUri ? (
+          <Image source={{ uri: imageUri }} style={styles.image} />
+        ) : null}
         <View style={styles.textArea}>
           <Typography size="lg" weight="semiBold" color="primary">
             {categoryName}

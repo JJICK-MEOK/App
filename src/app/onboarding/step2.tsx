@@ -12,6 +12,36 @@ import { colors } from '@/src/constants/colors';
 import { getTags } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 import { useState } from 'react';
+import BookSvg from '@/assets/images/book.svg';
+import ArtSvg from '@/assets/images/art.svg';
+import PhotoSvg from '@/assets/images/photo.svg';
+import LanguageSvg from '@/assets/images/language.svg';
+import TravelSvg from '@/assets/images/travel.svg';
+import MakeSvg from '@/assets/images/make.svg';
+import CareerSvg from '@/assets/images/career.svg';
+import CookSvg from '@/assets/images/cook.svg';
+import SportSvg from '@/assets/images/sport.svg';
+import VolunteerSvg from '@/assets/images/volunteer.svg';
+
+type SvgComponent = React.ComponentType<{ width?: number | string; height?: number | string }>;
+
+const CATEGORY_IMAGE_MAP: Record<string, SvgComponent> = {
+  '책/글': BookSvg,
+  '문화/예술': ArtSvg,
+  '사진/영상': PhotoSvg,
+  '언어/해외': LanguageSvg,
+  '여행/탐방': TravelSvg,
+  '공예/만들기': MakeSvg,
+  '성장/커리어': CareerSvg,
+  '요리/베이킹': CookSvg,
+  '운동/액티비티': SportSvg,
+  봉사활동: VolunteerSvg,
+};
+
+function getCategoryImage(name: string): SvgComponent | undefined {
+  const normalized = name.replace(/\s*\/\s*/g, '/');
+  return CATEGORY_IMAGE_MAP[normalized];
+}
 
 export default function OnboardingStep2() {
   const router = useRouter();
@@ -73,7 +103,7 @@ export default function OnboardingStep2() {
               <CategoryCard
                 key={topic.id}
                 categoryName={topic.name}
-                imageUri={`https://picsum.photos/seed/${topic.id}/70/70`}
+                ImageComponent={getCategoryImage(topic.name)}
                 subscribed={selectedTopicIds.has(topic.id)}
                 onSubscribePress={() => toggleTopic(topic.id)}
               />
