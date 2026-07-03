@@ -17,6 +17,7 @@ import type { AxiosError } from 'axios';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import CloseLarge from '@/assets/images/CloseLarge.svg';
+import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import ZoomButton from '@/src/components/Button/ZoomButton';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import DetailTab from '@/src/components/Tab/DetailTab';
@@ -76,6 +77,7 @@ export default function ActivityDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const scrollYRef = useRef(0);
   const isRefreshingRef = useRef(false);
   const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
@@ -121,6 +123,12 @@ export default function ActivityDetailPage() {
       setSaved(data.liked);
     }
   }, [data?.liked]);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [data?.thumbnailUrl]);
+
+  const hasImage = !!data?.thumbnailUrl && !imageError;
 
   useFocusEffect(
     useCallback(() => {
@@ -207,16 +215,21 @@ export default function ActivityDetailPage() {
               <>
                 <View style={styles.card}>
                   <View style={styles.thumbnail}>
-                    {data?.thumbnailUrl ? (
+                    {hasImage ? (
                       <Image
                         source={{ uri: data.thumbnailUrl }}
                         style={StyleSheet.absoluteFill}
                         resizeMode="cover"
+                        onError={() => setImageError(true)}
                       />
-                    ) : null}
-                    <View style={styles.zoomButtonPos}>
-                      <ZoomButton onPress={() => setZoomed(true)} />
-                    </View>
+                    ) : (
+                      <DefaultActivity width={135} height={135} />
+                    )}
+                    {hasImage && (
+                      <View style={styles.zoomButtonPos}>
+                        <ZoomButton onPress={() => setZoomed(true)} />
+                      </View>
+                    )}
                   </View>
 
                   <View style={styles.metaRow}>
@@ -278,15 +291,16 @@ export default function ActivityDetailPage() {
                       <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
                         {`<${data?.title ?? ''}>`}
                       </Typography>
-                      <View style={styles.posterPlaceholder}>
-                        {data?.thumbnailUrl ? (
+                      {hasImage && (
+                        <View style={styles.posterPlaceholder}>
                           <Image
                             source={{ uri: data.thumbnailUrl }}
                             style={StyleSheet.absoluteFill}
                             resizeMode="cover"
+                            onError={() => setImageError(true)}
                           />
-                        ) : null}
-                      </View>
+                        </View>
+                      )}
                     </View>
 
                     {infoRows.map((row) => (
@@ -401,6 +415,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#D9D9D9',
     marginBottom: 21,
     overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   metaRow: {
     flexDirection: 'row',
