@@ -30,7 +30,12 @@ export default function RecommendationCard({
         <View style={styles.upper}>
           <View style={[styles.image, { overflow: 'hidden' }]}>
             {thumbnailUrl && !imageError ? (
-              <Image source={{ uri: thumbnailUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" onError={() => setImageError(true)} />
+              <Image
+                source={{ uri: thumbnailUrl }}
+                style={{ width: '100%', height: '100%' }}
+                resizeMode="cover"
+                onError={() => setImageError(true)}
+              />
             ) : (
               <DefaultActivity width={143} height={140} />
             )}
@@ -40,7 +45,13 @@ export default function RecommendationCard({
             <Typography style={styles.dday}>{ddayLabel}</Typography>
           </View>
         </View>
-        <Typography style={styles.title} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">{title}</Typography>
+        <Typography
+          style={styles.title}
+          lineBreakStrategyIOS="hangul-word"
+          android_hyphenationFrequency="none"
+        >
+          {title}
+        </Typography>
       </View>
       <View style={styles.preferences}>
         {displayTags.map((tag, i) => (

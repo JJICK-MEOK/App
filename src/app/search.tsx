@@ -18,7 +18,9 @@ import { getTagVariant } from '@/src/utils/tagVariant';
 const SEARCH_DEBOUNCE_MS = 400;
 
 function getDaysLeft(activity: ActivitySummary) {
-  return Math.ceil((new Date(activity.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return Math.ceil(
+    (new Date(activity.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
 }
 
 function toCardProps(activity: ActivitySummary) {

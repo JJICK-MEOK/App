@@ -15,7 +15,11 @@ export default function GenderButton({ label, selected = false, onPress }: Props
       activeOpacity={0.8}
       style={[styles.container, selected ? styles.selected : styles.default]}
     >
-      <Typography size="md" weight={selected ? 'medium' : 'regular'} color={selected ? 'primary' : 'tertiary'}>
+      <Typography
+        size="md"
+        weight={selected ? 'medium' : 'regular'}
+        color={selected ? 'primary' : 'tertiary'}
+      >
         {label}
       </Typography>
     </TouchableOpacity>

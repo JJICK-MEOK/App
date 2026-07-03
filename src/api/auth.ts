@@ -41,7 +41,6 @@ export const postHandoff = async (handoffToken: string): Promise<LoginResponse> 
   return data.data;
 };
 
-
 interface SignupResponse {
   userId: number;
   email: string;

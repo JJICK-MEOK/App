@@ -53,7 +53,12 @@ export default function PromotionCard({
       </View>
       <View style={[styles.image, { overflow: 'hidden' }]}>
         {thumbnailUrl && !imageError ? (
-          <Image source={{ uri: thumbnailUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" onError={() => setImageError(true)} />
+          <Image
+            source={{ uri: thumbnailUrl }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
         ) : (
           <DefaultActivity width={78} height={78} />
         )}

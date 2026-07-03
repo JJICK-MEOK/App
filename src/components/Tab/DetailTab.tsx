@@ -27,7 +27,10 @@ export default function DetailTab({ tabs, activeKey, onTabChange }: Props) {
             <Typography
               size="lg"
               weight="semiBold"
-              style={[styles.tabText, tab.key === activeKey ? styles.activeText : styles.inactiveText]}
+              style={[
+                styles.tabText,
+                tab.key === activeKey ? styles.activeText : styles.inactiveText,
+              ]}
             >
               {tab.label}
             </Typography>

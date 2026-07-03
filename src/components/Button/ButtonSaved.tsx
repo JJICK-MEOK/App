@@ -11,9 +11,7 @@ type Props = {
 export default function ButtonSaved({ saved = false, onPress }: Props) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.container}>
-      <View style={styles.iconWrapper}>
-        {saved ? <HeartSaved /> : <HeartDisabled />}
-      </View>
+      <View style={styles.iconWrapper}>{saved ? <HeartSaved /> : <HeartDisabled />}</View>
     </TouchableOpacity>
   );
 }

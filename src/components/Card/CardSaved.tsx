@@ -25,7 +25,15 @@ type Props = {
   onRemove?: (activityId: number) => void;
 };
 
-export default function CardSaved({ activityId, dday, title, tags, initialSaved = true, thumbnailUrl, onRemove }: Props) {
+export default function CardSaved({
+  activityId,
+  dday,
+  title,
+  tags,
+  initialSaved = true,
+  thumbnailUrl,
+  onRemove,
+}: Props) {
   const [saved, setSaved] = useState(initialSaved);
   const [imageError, setImageError] = useState(false);
   const [imgWidth, setImgWidth] = useState(0);
@@ -57,12 +65,21 @@ export default function CardSaved({ activityId, dday, title, tags, initialSaved 
           onLayout={(e) => setImgWidth(e.nativeEvent.layout.width)}
         >
           {thumbnailUrl && !imageError ? (
-            <Image source={{ uri: thumbnailUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" onError={() => setImageError(true)} />
+            <Image
+              source={{ uri: thumbnailUrl }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+              onError={() => setImageError(true)}
+            />
           ) : (
             <DefaultActivity width={imgWidth} height={150} />
           )}
         </View>
-        <TouchableOpacity onPress={handleHeartPress} activeOpacity={0.7} style={styles.heartContainer}>
+        <TouchableOpacity
+          onPress={handleHeartPress}
+          activeOpacity={0.7}
+          style={styles.heartContainer}
+        >
           {saved ? (
             <HeartSaved width={23} height={20} />
           ) : (
@@ -72,7 +89,14 @@ export default function CardSaved({ activityId, dday, title, tags, initialSaved 
       </View>
       <View style={styles.content}>
         <View style={styles.titleRow}>
-          <Typography size="lg" weight="semiBold" style={styles.title} numberOfLines={2} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
+          <Typography
+            size="lg"
+            weight="semiBold"
+            style={styles.title}
+            numberOfLines={2}
+            lineBreakStrategyIOS="hangul-word"
+            android_hyphenationFrequency="none"
+          >
             {title}
           </Typography>
           <Typography size="sm" weight="semiBold" style={styles.dday} numberOfLines={1}>
