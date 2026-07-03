@@ -36,7 +36,9 @@ export default function OnboardingResult() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
           <Typography size="xxxl" weight="semiBold" style={styles.title}>
-            {profileTitle ? `${nickname}님은\n${profileTitle}` : `${nickname}님을 위한\n추천 활동이 준비됐어요`}
+            {profileTitle
+              ? `${nickname}님은\n${profileTitle}`
+              : `${nickname}님을 위한\n추천 활동이 준비됐어요`}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
             나만을 위한 추천 활동을 확인하세요
@@ -53,7 +55,7 @@ export default function OnboardingResult() {
               <ContentCard
                 key={activity.id}
                 title={activity.title}
-                subtitle={activity.regionName}
+                subtitle={activity.address}
                 imageUri={activity.thumbnailUrl || undefined}
                 tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
                   label: tag,

@@ -1,5 +1,10 @@
 import { api } from '@/src/lib/api';
-import type { HomeData, DetailActivity, CategoryPageData, CustomPageData } from '@/src/types/activities';
+import type {
+  HomeData,
+  DetailActivity,
+  CategoryPageData,
+  CustomPageData,
+} from '@/src/types/activities';
 
 export async function getHomeData(limit = 10): Promise<HomeData> {
   const { data } = await api.get('/pages/home', { params: { limit } });

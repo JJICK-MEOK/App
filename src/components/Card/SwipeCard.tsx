@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Platform } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, Platform } from 'react-native';
+import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -121,6 +122,11 @@ export default function SwipeCard({ activity, isFront = false, saved = false, on
 
   const inner = (
     <>
+      {activity.imageUrl ? (
+        <Image source={{ uri: activity.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      ) : (
+        <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
+      )}
       <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.98)', 'rgba(0,0,0,0.98)']}
         locations={[0, 0.556, 1]}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,6 +11,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
 import type { Activity } from './SwipeCard';
+import { addFavorite, deleteFavorite } from '@/src/api/favorites';
 
 const GAP = 7;
 const BACK_SCALE = 0.81;
@@ -33,11 +34,27 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const panOffset = useSharedValue(0);
 
+  useEffect(() => {
+    setSavedIds(new Set(activities.filter((a) => a.favoriteId).map((a) => a.id)));
+  }, [activities]);
+
   const handleSave = useCallback((id: string) => {
     setSavedIds((prev) => {
+      const isSaved = prev.has(id);
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (isSaved) {
+        next.delete(id);
+        deleteFavorite(Number(id)).catch(() => setSavedIds((p) => new Set(p).add(id)));
+      } else {
+        next.add(id);
+        addFavorite(Number(id)).catch(() =>
+          setSavedIds((p) => {
+            const r = new Set(p);
+            r.delete(id);
+            return r;
+          }),
+        );
+      }
       return next;
     });
   }, []);

@@ -11,6 +11,17 @@ export type Activity = {
   days: number;
   tags: Tag[];
   imageUrl?: string;
+  favoriteId?: number;
+};
+
+export type PersonalizationActivity = {
+  activityId: number;
+  activityThumbnailUri: string;
+  activityTitle: string;
+  activityRecruitEndAt: string;
+  activityFavoriteId: number;
+  activityFavoriteCount: number;
+  recommendScore: number;
 };
 
 export type ActivityFavoriteResponse = {

@@ -4,32 +4,45 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import CardStack from '@/src/components/Card/CardStack';
-import { useActivities } from '@/src/hooks/useActivities';
 import { getPersonalizationActivities } from '@/src/api/activities';
+import { getCustomPageData } from '@/src/api/pages';
 import type { Activity } from '@/src/types/activities';
+import type { PersonalizationActivity } from '@/src/types/activities';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const ELLIPSE_W = SCREEN_WIDTH * (614 / 375);
 const ELLIPSE_H = SCREEN_WIDTH * (507 / 375);
 
+function toActivity(item: PersonalizationActivity): Activity {
+  const daysLeft = Math.ceil(
+    (new Date(item.activityRecruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  return {
+    id: String(item.activityId),
+    title: item.activityTitle,
+    days: Math.max(0, daysLeft),
+    tags: [],
+    imageUrl: item.activityThumbnailUri,
+    favoriteId: item.activityFavoriteId || undefined,
+  };
+}
+
 export default function CustomScreen() {
-  const { activities, fetchMore, isLoading } = useActivities();
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  useQuery({
-    queryKey: ['personalization-activities'],
-    queryFn: async () => {
-      try {
-        const data = await getPersonalizationActivities();
-        console.log('[personalization-activities]', JSON.stringify(data, null, 2));
-        return data;
-      } catch (e: any) {
-        console.log('[personalization-activities] error:', e?.response?.data ?? e?.message ?? e);
-        throw e;
-      }
-    },
+  const { data: pageData } = useQuery({
+    queryKey: ['pages', 'custom'],
+    queryFn: () => getCustomPageData(),
   });
+
+  const { data: rawActivities, isLoading } = useQuery({
+    queryKey: ['personalization-activities'],
+    queryFn: getPersonalizationActivities,
+  });
+
+  const activities: Activity[] = (rawActivities ?? []).map(toActivity);
+  const nickname = pageData?.nickname ?? '';
 
   const handlePressCard = (activity: Activity) => {
     router.push(`/detail/${activity.id}`);
@@ -40,18 +53,14 @@ export default function CustomScreen() {
       <View style={styles.bgEllipse} />
 
       <View style={styles.bar}>
-        <Text style={styles.barText}>00 님을 위해 준비했어요!</Text>
+        <Text style={styles.barText}>{nickname ? `${nickname} 님을 위해 준비했어요!` : ' '}</Text>
       </View>
 
       <View style={styles.cardArea}>
-        {activities.length === 0 && isLoading ? (
+        {isLoading ? (
           <ActivityIndicator color="#999" />
         ) : (
-          <CardStack
-            activities={activities}
-            onEndReached={fetchMore}
-            onPressCard={handlePressCard}
-          />
+          <CardStack activities={activities} onPressCard={handlePressCard} />
         )}
       </View>
     </ScreenLayout>
