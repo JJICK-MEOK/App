@@ -22,6 +22,7 @@ import CareerSvg from '@/assets/images/career.svg';
 import CookSvg from '@/assets/images/cook.svg';
 import SportSvg from '@/assets/images/sport.svg';
 import VolunteerSvg from '@/assets/images/volunteer.svg';
+import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
 
 type SvgComponent = React.ComponentType<{ width?: number | string; height?: number | string }>;
 
@@ -38,9 +39,9 @@ const CATEGORY_IMAGE_MAP: Record<string, SvgComponent> = {
   봉사활동: VolunteerSvg,
 };
 
-function getCategoryImage(name: string): SvgComponent | undefined {
+function getCategoryImage(name: string): SvgComponent {
   const normalized = name.replace(/\s*\/\s*/g, '/');
-  return CATEGORY_IMAGE_MAP[normalized];
+  return CATEGORY_IMAGE_MAP[normalized] ?? DefaultActivitySvg;
 }
 
 export default function OnboardingStep2() {
