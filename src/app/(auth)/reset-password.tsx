@@ -27,6 +27,7 @@ export default function ResetPasswordScreen() {
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmTouched, setConfirmTouched] = useState(false);
+  const [serverError, setServerError] = useState<string | undefined>();
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -35,9 +36,10 @@ export default function ResetPasswordScreen() {
 
   const failedLabels = CONDITIONS.filter((_, i) => !conditionsMet[i]).map((c) => c.label);
   const passwordError =
-    passwordTouched && password.length > 0 && !allMet
+    serverError ??
+    (passwordTouched && password.length > 0 && !allMet
       ? failedLabels.join(', ') + '이 필요해요.'
-      : undefined;
+      : undefined);
 
   const confirmError =
     confirmTouched && confirm.length > 0 && !passwordsMatch
@@ -50,7 +52,12 @@ export default function ResetPasswordScreen() {
       router.replace('/(auth)/login');
     },
     onError: (error: any) => {
-      console.error('[resetPassword] error:', error?.response?.data ?? error);
+      const code = error?.response?.data?.code;
+      if (code === 'PASSWORD_SAME_AS_OLD') {
+        setServerError('기존 비밀번호와 동일한 비밀번호로 변경할 수 없어요.');
+      } else {
+        console.error('[resetPassword] error:', error?.response?.data ?? error);
+      }
     },
   });
 
@@ -77,7 +84,7 @@ export default function ResetPasswordScreen() {
             <TextField
               placeholder="••••••••"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => { setPassword(text); setServerError(undefined); }}
               onBlur={() => setPasswordTouched(true)}
               secureText
               errorMessage={passwordError}
