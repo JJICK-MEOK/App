@@ -1,5 +1,5 @@
 import { SvgProps } from 'react-native-svg';
-import LOGO from '@/assets/images/LOGO.svg';
+import LOGO from '@/assets/images/Logo.svg';
 import LOGO_1 from '@/assets/images/LOGO_1.svg';
 import LOGO_02_1 from '@/assets/images/LOGO_02 1.svg';
 import LOGO01_5 from '@/assets/images/LOGO01_5.svg';
