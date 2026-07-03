@@ -14,7 +14,7 @@ import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
-import { getTags } from '@/src/api/tags';
+import { getTags } from '@/src/api/user';
 import { getHomeData, getCategoryPageData } from '@/src/api/pages';
 
 type IconConfig = {

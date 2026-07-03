@@ -15,7 +15,7 @@ import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Dropdown } from '@/src/components/Filter/Dropdown';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { colors } from '@/src/constants/colors';
-import { getTags } from '@/src/api/tags';
+import { getTags } from '@/src/api/user';
 import CategoryBar from '@/src/components/Bar/CategoryBar';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { Typography } from '@/src/components/Typography/Typography';
