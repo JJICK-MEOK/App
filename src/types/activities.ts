@@ -1,4 +1,4 @@
-export type TagType = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+export type TagType = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
 export type Tag = {
   label: string;
@@ -11,6 +11,18 @@ export type Activity = {
   days: number;
   tags: Tag[];
   imageUrl?: string;
+  favoriteId?: number;
+};
+
+export type PersonalizationActivity = {
+  activityId: number;
+  activityThumbnailUri: string;
+  activityTitle: string;
+  activityRecruitEndAt: string;
+  activityFavoriteId: number | null;
+  activityFavoriteCount: number;
+  recommendScore: number;
+  hashtags?: string[];
 };
 
 export type ActivityFavoriteResponse = {
@@ -98,6 +110,21 @@ export type CategoryPageData = {
   categoryOptions: FilterOption[];
   sortOptions: FilterOption[];
   activities: HomeActivity[];
+};
+
+export type CustomPageData = {
+  nickname: string;
+  tasteProfile: {
+    title: string;
+    subtitle: string | null;
+    hashtags: string[];
+  };
+  recommended: {
+    key: string;
+    title: string;
+    subtitle: string | null;
+    activities: HomeActivity[];
+  };
 };
 
 export type DetailActivity = {

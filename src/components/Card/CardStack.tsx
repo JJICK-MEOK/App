@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -11,6 +11,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
 import type { Activity } from './SwipeCard';
+import { addFavorite, deleteFavorite } from '@/src/api/favorites';
 
 const GAP = 7;
 const BACK_SCALE = 0.81;
@@ -31,15 +32,39 @@ type Props = {
 export default function CardStack({ activities, onPressCard, onSwipe, onEndReached }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const savedIdsRef = useRef<Set<string>>(new Set());
+  const inFlightIds = useRef<Set<string>>(new Set());
   const panOffset = useSharedValue(0);
 
+  useEffect(() => {
+    const initial = new Set(activities.filter((a) => a.favoriteId).map((a) => a.id));
+    savedIdsRef.current = initial;
+    setSavedIds(initial);
+  }, [activities]);
+
   const handleSave = useCallback((id: string) => {
-    setSavedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    if (inFlightIds.current.has(id)) return;
+    inFlightIds.current.add(id);
+
+    const isSaved = savedIdsRef.current.has(id);
+    const next = new Set(savedIdsRef.current);
+    if (isSaved) next.delete(id);
+    else next.add(id);
+    savedIdsRef.current = next;
+    setSavedIds(new Set(next));
+
+    const apiCall = isSaved ? deleteFavorite(Number(id)) : addFavorite(Number(id));
+    apiCall
+      .catch(() => {
+        const rollback = new Set(savedIdsRef.current);
+        if (isSaved) rollback.add(id);
+        else rollback.delete(id);
+        savedIdsRef.current = rollback;
+        setSavedIds(new Set(rollback));
+      })
+      .finally(() => {
+        inFlightIds.current.delete(id);
+      });
   }, []);
 
   const current = activities[currentIndex];
@@ -117,10 +142,8 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
       panOffset.value = e.translationX;
     })
     .onEnd((e) => {
-      const shouldGoLeft =
-        e.translationX < -SWIPE_THRESHOLD || e.velocityX < -VELOCITY_THRESHOLD;
-      const shouldGoRight =
-        e.translationX > SWIPE_THRESHOLD || e.velocityX > VELOCITY_THRESHOLD;
+      const shouldGoLeft = e.translationX < -SWIPE_THRESHOLD || e.velocityX < -VELOCITY_THRESHOLD;
+      const shouldGoRight = e.translationX > SWIPE_THRESHOLD || e.velocityX > VELOCITY_THRESHOLD;
 
       if (shouldGoLeft && next) {
         panOffset.value = withSpring(
@@ -148,12 +171,20 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
       <View style={styles.container}>
         {prev && (
           <Animated.View key={prev.id} style={[styles.card, prevStyle]}>
-            <SwipeCard activity={prev} saved={savedIds.has(prev.id)} onSave={() => handleSave(prev.id)} />
+            <SwipeCard
+              activity={prev}
+              saved={savedIds.has(prev.id)}
+              onSave={() => handleSave(prev.id)}
+            />
           </Animated.View>
         )}
         {next && (
           <Animated.View key={next.id} style={[styles.card, nextStyle]}>
-            <SwipeCard activity={next} saved={savedIds.has(next.id)} onSave={() => handleSave(next.id)} />
+            <SwipeCard
+              activity={next}
+              saved={savedIds.has(next.id)}
+              onSave={() => handleSave(next.id)}
+            />
           </Animated.View>
         )}
         <Animated.View key={current.id} style={[styles.card, currentStyle]}>

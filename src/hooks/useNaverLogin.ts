@@ -5,15 +5,15 @@ import { postHandoff } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
 
-const KAKAO_AUTH_URL = `${process.env.EXPO_PUBLIC_API_URL}/oauth/kakao/login`;
-const KAKAO_REDIRECT_URI = 'jjikmeok://oauth/kakao';
+const NAVER_AUTH_URL = `${process.env.EXPO_PUBLIC_API_URL}/oauth/naver/login`;
+const NAVER_REDIRECT_URI = 'jjikmeok://oauth/naver';
 
-export const useKakaoLogin = () => {
+export const useNaverLogin = () => {
   const router = useRouter();
   const { setToken } = useAuthStore();
 
   const login = async () => {
-    const result = await WebBrowser.openAuthSessionAsync(KAKAO_AUTH_URL, KAKAO_REDIRECT_URI);
+    const result = await WebBrowser.openAuthSessionAsync(NAVER_AUTH_URL, NAVER_REDIRECT_URI);
     if (result.type !== 'success') return;
 
     const { queryParams } = Linking.parse(result.url);
@@ -36,7 +36,7 @@ export const useKakaoLogin = () => {
         router.replace('/(tabs)/home');
       }
     } catch (error: any) {
-      console.error('[useKakaoLogin] error:', error?.response?.data ?? error);
+      console.error('[useNaverLogin] error:', error?.response?.data ?? error);
     }
   };
 

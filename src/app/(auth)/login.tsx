@@ -7,6 +7,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
 import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
+import { useNaverLogin } from '@/src/hooks/useNaverLogin';
 import CarouselAuto from '@/src/components/Carousel/CarouselAuto';
 import Ellipse37 from '@/assets/images/Ellipse 37.svg';
 import Ellipse38 from '@/assets/images/Ellipse 38.svg';
@@ -17,6 +18,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { login: kakaoLogin } = useKakaoLogin();
   const { login: googleLogin } = useGoogleLogin();
+  const { login: naverLogin } = useNaverLogin();
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
@@ -30,7 +32,7 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.socialButtons}>
-        <SocialLoginButton provider="naver" onPress={() => {}} />
+        <SocialLoginButton provider="naver" onPress={naverLogin} />
         <SocialLoginButton provider="google" onPress={googleLogin} />
         <SocialLoginButton provider="kakao" onPress={kakaoLogin} />
       </View>
@@ -50,8 +52,6 @@ export default function LoginScreen() {
           variant="dark"
         />
       </CTAContainer>
-
-
     </View>
   );
 }

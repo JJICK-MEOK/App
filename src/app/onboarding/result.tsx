@@ -1,51 +1,31 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
-import { ContentCard, type ContentCardTag } from '@/src/components/Card/ContentCard';
+import { getCustomPageData } from '@/src/api/pages';
+import { getTagVariant } from '@/src/utils/tagVariant';
+import { ContentCard } from '@/src/components/Card/ContentCard';
+import { Loading } from '@/src/components/Loading/Loading';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-
-const MOCK_CARDS: { title: string; subtitle: string; imageUri: string; tags: ContentCardTag[] }[] =
-  [
-    {
-      title: '201P 밴드\nROOKIES 프로젝트',
-      subtitle: '201P Rookies 13기',
-      imageUri: '',
-      tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
-      ],
-    },
-    {
-      title: 'ROOKIES 프로젝트',
-      subtitle: '201P Rookies 13기',
-      imageUri: '',
-      tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
-      ],
-    },
-    {
-      title: '201P 밴드\nROOKIES 프로젝트',
-      subtitle: '201P Rookies 13기',
-      imageUri: '',
-      tags: [
-        { label: '#힐링', variant: 'mood' },
-        { label: '#단기', variant: 'duration' },
-        { label: '#소규모', variant: 'groupSize' },
-      ],
-    },
-  ];
+import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
 
 export default function OnboardingResult() {
   const router = useRouter();
-  const nickname = useOnboardingStore((s) => s.nickname) || '회원';
+  const storedNickname = useOnboardingStore((s) => s.nickname) || '회원';
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['pages', 'custom'],
+    queryFn: () => getCustomPageData(3),
+  });
+
+  const nickname = data?.nickname ?? storedNickname;
+  const profileTitle = data?.tasteProfile.title;
+  const activities = (data?.recommended.activities ?? []).slice(0, 3);
 
   return (
     <ScreenLayout style={styles.container}>
@@ -56,18 +36,37 @@ export default function OnboardingResult() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
           <Typography size="xxxl" weight="semiBold" style={styles.title}>
-            {`${nickname}님은\n소규모・가벼운 체험형을\n선호해요`}
+            {profileTitle
+              ? `${nickname}님은\n${profileTitle}`
+              : `${nickname}님을 위한\n추천 활동이 준비됐어요`}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
             나만을 위한 추천 활동을 확인하세요
           </Typography>
         </View>
 
-        <View style={styles.cardList}>
-          {MOCK_CARDS.map((card, index) => (
-            <ContentCard key={index} {...card} />
-          ))}
-        </View>
+        {isLoading ? (
+          <View style={styles.loadingBox}>
+            <Loading />
+          </View>
+        ) : (
+          <View style={styles.cardList}>
+            {activities.map((activity) => (
+              <ContentCard
+                key={activity.id}
+                title={activity.title}
+                subtitle={activity.address}
+                imageUri={activity.thumbnailUrl || undefined}
+                tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
+                  label: tag,
+                  variant: getTagVariant(tag, i),
+                }))}
+                onPress={() => router.push(`/detail/${activity.id}`)}
+                renderFallback={() => <DefaultActivitySvg width="100%" height="100%" />}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
@@ -102,6 +101,10 @@ const styles = StyleSheet.create({
   },
   cardList: {
     gap: 13,
+  },
+  loadingBox: {
+    alignItems: 'center',
+    paddingVertical: 40,
   },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
 });

@@ -17,7 +17,7 @@ export default function SplashScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ gestureEnabled: false }} />
       <View style={styles.logoWrapper}>
-        <Logo variant="LOGO_4" width={202} height={202} />
+        <Logo variant="LOGO_FINAL" width={202} height={202} />
       </View>
     </View>
   );

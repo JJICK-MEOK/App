@@ -60,6 +60,8 @@ export default function EmailLoginScreen() {
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');
+      } else if (registrationStatus === 'PROFILE_COMPLETED') {
+        router.replace('/onboarding/step1');
       } else {
         router.replace('/(tabs)/home');
       }

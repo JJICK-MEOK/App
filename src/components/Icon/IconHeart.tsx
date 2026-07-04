@@ -10,7 +10,13 @@ type Props = {
   onPressIn?: () => void;
 };
 
-export default function IconHeart({ saved = false, size = 29, color = '#fff', onPress, onPressIn }: Props) {
+export default function IconHeart({
+  saved = false,
+  size = 29,
+  color = '#fff',
+  onPress,
+  onPressIn,
+}: Props) {
   return (
     <TouchableOpacity
       onPressIn={onPressIn}

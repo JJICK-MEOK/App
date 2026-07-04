@@ -7,7 +7,7 @@ import HeartDisabled from '@/assets/images/HeartDisabled.svg';
 import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
 
-type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 
 type Tag = {
   label: string;
@@ -40,7 +40,13 @@ export default function ActivityCard({
           <Typography size="sm" weight="semiBold" style={styles.ddayText}>
             {dday}
           </Typography>
-          <Typography size="lg" weight="semiBold" style={styles.titleText} lineBreakStrategyIOS="hangul-word" android_hyphenationFrequency="none">
+          <Typography
+            size="lg"
+            weight="semiBold"
+            style={styles.titleText}
+            lineBreakStrategyIOS="hangul-word"
+            android_hyphenationFrequency="none"
+          >
             {title}
           </Typography>
         </View>
@@ -68,7 +74,12 @@ export default function ActivityCard({
         </View>
         <View style={styles.imageWrapper}>
           {thumbnailUrl && !imageError ? (
-            <Image source={{ uri: thumbnailUrl }} style={styles.image} resizeMode="cover" onError={() => setImageError(true)} />
+            <Image
+              source={{ uri: thumbnailUrl }}
+              style={styles.image}
+              resizeMode="cover"
+              onError={() => setImageError(true)}
+            />
           ) : (
             <DefaultActivity width={80} height={80} />
           )}

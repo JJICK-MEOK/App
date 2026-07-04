@@ -8,9 +8,9 @@ const MOCK_ACTIVITIES: Activity[] = [
     title: '[영등포문화재단] 도림생활문화센터\n2026 사계절클래스 [봄] 프로그램',
     days: 11,
     tags: [
-      { label: '힐링', type: 'mood' },
-      { label: '저강도', type: 'intensity' },
-      { label: '소그룹', type: 'groupSize' },
+      { label: '힐링', type: 'MOOD' },
+      { label: '저강도', type: 'INTENSITY' },
+      { label: '소그룹', type: 'SIZE' },
     ],
   },
   {
@@ -18,8 +18,8 @@ const MOCK_ACTIVITIES: Activity[] = [
     title: '[서대문구] 2026 봄 문화예술 프로그램',
     days: 5,
     tags: [
-      { label: '창작', type: 'mood' },
-      { label: '반나절', type: 'duration' },
+      { label: '창작', type: 'MOOD' },
+      { label: '반나절', type: 'DURATION' },
     ],
   },
   {
@@ -27,8 +27,8 @@ const MOCK_ACTIVITIES: Activity[] = [
     title: '[마포구] 홍대앞 창작스튜디오 오픈클래스',
     days: 20,
     tags: [
-      { label: '고강도', type: 'intensity' },
-      { label: '자기계발', type: 'purpose' },
+      { label: '고강도', type: 'INTENSITY' },
+      { label: '자기계발', type: 'PURPOSE' },
     ],
   },
   {
@@ -36,8 +36,8 @@ const MOCK_ACTIVITIES: Activity[] = [
     title: '[종로구] 인사동 전통문화체험 프로그램',
     days: 3,
     tags: [
-      { label: '힐링', type: 'mood' },
-      { label: '대그룹', type: 'groupSize' },
+      { label: '힐링', type: 'MOOD' },
+      { label: '대그룹', type: 'SIZE' },
     ],
   },
   {
@@ -45,8 +45,8 @@ const MOCK_ACTIVITIES: Activity[] = [
     title: '[성동구] 성수동 아트마켓 참여 프로그램',
     days: 15,
     tags: [
-      { label: '하루종일', type: 'duration' },
-      { label: '네트워킹', type: 'purpose' },
+      { label: '하루종일', type: 'DURATION' },
+      { label: '네트워킹', type: 'PURPOSE' },
     ],
   },
 ];

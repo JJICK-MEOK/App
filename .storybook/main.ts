@@ -33,14 +33,8 @@ const config: StorybookConfig = {
             __dirname,
             './mocks/react-native-safe-area-context.tsx',
           ),
-          'expo-linear-gradient': path.resolve(
-            __dirname,
-            './mocks/expo-linear-gradient.tsx',
-          ),
-          'react-native-reanimated': path.resolve(
-            __dirname,
-            './mocks/react-native-reanimated.ts',
-          ),
+          'expo-linear-gradient': path.resolve(__dirname, './mocks/expo-linear-gradient.tsx'),
+          'react-native-reanimated': path.resolve(__dirname, './mocks/react-native-reanimated.ts'),
           'react-native-gesture-handler': path.resolve(
             __dirname,
             './mocks/react-native-gesture-handler.tsx',

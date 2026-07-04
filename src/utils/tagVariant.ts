@@ -1,34 +1,29 @@
 import type { TagVariant } from '@/src/components/Chip/ChipBadge';
 
 const TAG_VARIANT_MAP: Record<string, TagVariant> = {
-  // mood (핑크) - 활동 분위기
-  편안한: 'mood',
-  힐링: 'mood',
-  활기찬: 'mood',
-  감성적: 'mood',
-  창의적: 'mood',
-  트렌디: 'mood',
-  // intensity (보라) - 활동 강도
-  입문: 'intensity',
-  가볍게: 'intensity',
-  몰입: 'intensity',
-  도전: 'intensity',
-  // purpose (주황) - 활동 목적
-  휴식: 'purpose',
-  취미: 'purpose',
-  배움: 'purpose',
-  성장: 'purpose',
-  // duration (초록) - 활동 기간
-  단기: 'duration',
-  한달: 'duration',
-  '6개월': 'duration',
-  '1년이상': 'duration',
-  // groupSize (파랑) - 활동 규모
-  소규모: 'groupSize',
-  대규모: 'groupSize',
+  편안한: 'MOOD',
+  힐링: 'MOOD',
+  활기찬: 'MOOD',
+  감성적: 'MOOD',
+  창의적: 'MOOD',
+  트렌디: 'MOOD',
+  입문: 'INTENSITY',
+  가볍게: 'INTENSITY',
+  몰입: 'INTENSITY',
+  도전: 'INTENSITY',
+  휴식: 'PURPOSE',
+  취미: 'PURPOSE',
+  배움: 'PURPOSE',
+  성장: 'PURPOSE',
+  단기: 'DURATION',
+  한달: 'DURATION',
+  '6개월': 'DURATION',
+  '1년이상': 'DURATION',
+  소규모: 'SIZE',
+  대규모: 'SIZE',
 };
 
-const FALLBACK_VARIANTS: TagVariant[] = ['mood', 'intensity', 'duration', 'groupSize', 'purpose'];
+const FALLBACK_VARIANTS: TagVariant[] = ['MOOD', 'INTENSITY', 'DURATION', 'SIZE', 'PURPOSE'];
 
 export function getTagVariant(hashtag: string, fallbackIndex: number = 0): TagVariant {
   const key = hashtag.startsWith('#') ? hashtag.slice(1) : hashtag;

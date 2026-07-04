@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import { postPasswordReset } from '@/src/api/auth';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -20,11 +22,12 @@ const CONDITIONS = [
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email: string }>();
+  const { resetToken } = useLocalSearchParams<{ resetToken: string }>();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [confirmTouched, setConfirmTouched] = useState(false);
+  const [serverError, setServerError] = useState<string | undefined>();
 
   const conditionsMet = CONDITIONS.map((c) => c.check(password));
   const allMet = conditionsMet.every(Boolean);
@@ -33,19 +36,30 @@ export default function ResetPasswordScreen() {
 
   const failedLabels = CONDITIONS.filter((_, i) => !conditionsMet[i]).map((c) => c.label);
   const passwordError =
-    passwordTouched && password.length > 0 && !allMet
+    serverError ??
+    (passwordTouched && password.length > 0 && !allMet
       ? failedLabels.join(', ') + '이 필요해요.'
-      : undefined;
+      : undefined);
 
   const confirmError =
     confirmTouched && confirm.length > 0 && !passwordsMatch
       ? '비밀번호가 일치하지 않아요.'
       : undefined;
 
-  const handleComplete = () => {
-    // TODO: call reset password API with { email, password }
-    router.replace('/(auth)/login');
-  };
+  const { mutate: resetPassword, isPending } = useMutation({
+    mutationFn: () => postPasswordReset(resetToken, password, confirm),
+    onSuccess: () => {
+      router.replace('/(auth)/login');
+    },
+    onError: (error: any) => {
+      const code = error?.response?.data?.code;
+      if (code === 'PASSWORD_SAME_AS_OLD') {
+        setServerError('기존 비밀번호와 동일한 비밀번호로 변경할 수 없어요.');
+      } else {
+        setServerError('비밀번호 재설정에 실패했어요. 다시 시도해주세요.');
+      }
+    },
+  });
 
   return (
     <ScreenLayout withKeyboard style={styles.container}>
@@ -70,7 +84,10 @@ export default function ResetPasswordScreen() {
             <TextField
               placeholder="••••••••"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                setServerError(undefined);
+              }}
               onBlur={() => setPasswordTouched(true)}
               secureText
               errorMessage={passwordError}
@@ -96,9 +113,9 @@ export default function ResetPasswordScreen() {
       <CTAContainer style={styles.cta}>
         <BottomCTA
           label="완료"
-          onPress={handleComplete}
+          onPress={() => resetPassword()}
           variant="dark"
-          disabled={!isComplete}
+          disabled={!isComplete || isPending}
         />
       </CTAContainer>
     </ScreenLayout>

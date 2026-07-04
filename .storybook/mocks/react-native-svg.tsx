@@ -16,8 +16,6 @@ export const LinearGradient = ({ children, ...props }: any) => (
   <linearGradient {...props}>{children}</linearGradient>
 );
 export const Stop = (props: any) => <stop {...props} />;
-export const ClipPath = ({ children, ...props }: any) => (
-  <clipPath {...props}>{children}</clipPath>
-);
+export const ClipPath = ({ children, ...props }: any) => <clipPath {...props}>{children}</clipPath>;
 
 export default Svg;

@@ -8,9 +8,9 @@ const DUMMY: Activity = {
   title: '[영등포문화재단] 도림생활문화센터\n2026 사계절클래스 [봄] 프로그램',
   days: 11,
   tags: [
-    { label: '취향태그', type: 'mood' },
-    { label: '취향태그', type: 'intensity' },
-    { label: '취향태그', type: 'groupSize' },
+    { label: '취향태그', type: 'MOOD' },
+    { label: '취향태그', type: 'INTENSITY' },
+    { label: '취향태그', type: 'SIZE' },
   ],
 };
 

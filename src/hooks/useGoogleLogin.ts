@@ -28,9 +28,13 @@ export const useGoogleLogin = () => {
       ]);
       setToken(accessToken);
 
-      router.replace(
-        registrationStatus === 'NOT_STARTED' ? '/(auth)/profile-setup' : '/(tabs)/home',
-      );
+      if (registrationStatus === 'NOT_STARTED') {
+        router.replace('/(auth)/profile-setup');
+      } else if (registrationStatus === 'PROFILE_COMPLETED') {
+        router.replace('/onboarding/step1');
+      } else {
+        router.replace('/(tabs)/home');
+      }
     } catch (error: any) {
       console.error('[useGoogleLogin] error:', error?.response?.data ?? error);
     }

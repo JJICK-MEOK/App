@@ -2,16 +2,15 @@ import { View, TouchableOpacity, StyleSheet, ViewStyle, TextStyle } from 'react-
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 
-export type TagVariant = 'mood' | 'intensity' | 'duration' | 'groupSize' | 'purpose';
+export type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
 export type ChipBadgeVariant = 'category' | 'categoryDark' | 'ad' | TagVariant;
 
-// 속성명·정의 프론트 매핑 — 백엔드가 variant + label을 내려주면 이 매핑으로 속성명/정의를 표시
 export const TAG_VARIANT_META: Record<TagVariant, { name: string; description: string }> = {
-  mood:      { name: '활동 분위기', description: '활동에서 느껴지는 전체적인 정서와 무드' },
-  intensity: { name: '활동 강도',   description: '활동에 필요한 부담감, 몰입도, 도전 정도' },
-  purpose:   { name: '활동 목적',   description: '사용자가 활동을 통해 얻고 싶은 것' },
-  duration:  { name: '활동 기간',   description: '활동이 지속되는 기간' },
-  groupSize: { name: '활동 규모',   description: '활동에 함께 참여하는 인원 규모와 참여 환경' },
+  MOOD: { name: '활동 분위기', description: '활동에서 느껴지는 전체적인 정서와 무드' },
+  INTENSITY: { name: '활동 강도', description: '활동에 필요한 부담감, 몰입도, 도전 정도' },
+  PURPOSE: { name: '활동 목적', description: '사용자가 활동을 통해 얻고 싶은 것' },
+  DURATION: { name: '활동 기간', description: '활동이 지속되는 기간' },
+  SIZE: { name: '활동 규모', description: '활동에 함께 참여하는 인원 규모와 참여 환경' },
 };
 
 type Props = {
@@ -21,11 +20,16 @@ type Props = {
   onPress?: () => void;
 };
 
-const TAG_VARIANTS: TagVariant[] = ['mood', 'intensity', 'duration', 'groupSize', 'purpose'];
+const TAG_VARIANTS: TagVariant[] = ['MOOD', 'INTENSITY', 'DURATION', 'SIZE', 'PURPOSE'];
 
-function getVariantStyles(variant: ChipBadgeVariant, dark?: boolean): { container: ViewStyle; text: TextStyle } {
+function getVariantStyles(
+  variant: ChipBadgeVariant,
+  dark?: boolean,
+): { container: ViewStyle; text: TextStyle } {
   if (TAG_VARIANTS.includes(variant as TagVariant)) {
-    const tagColors = dark ? colors.tagDark[variant as TagVariant] : colors.tag[variant as TagVariant];
+    const tagColors = dark
+      ? colors.tagDark[variant as TagVariant]
+      : colors.tag[variant as TagVariant];
     return {
       container: { backgroundColor: tagColors.bg, paddingVertical: 4 },
       text: { color: tagColors.text },

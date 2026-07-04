@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
@@ -9,15 +9,33 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import IconSuccess from '@/src/components/Icon/IconSuccess';
 import { postOnboarding } from '@/src/api/user';
+import { getCustomPageData } from '@/src/api/pages';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 
 export default function OnboardingStep5() {
   const router = useRouter();
-  const { nickname, topicTagIds, regionIds, preferenceTagIds } = useOnboardingStore();
+  const {
+    nickname: storedNickname,
+    topicTagIds,
+    regionIds,
+    preferenceTagIds,
+  } = useOnboardingStore();
+
+  const { data: customData } = useQuery({
+    queryKey: ['pages', 'custom'],
+    queryFn: () => getCustomPageData(),
+  });
+
+  const nickname = customData?.nickname ?? storedNickname;
+
+  const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
-    onSuccess: () => router.replace('/onboarding/result'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
+      router.replace('/onboarding/result');
+    },
   });
 
   const completeOnboarding = () => mutate({ topicTagIds, regionIds, preferenceTagIds });
