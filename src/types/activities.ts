@@ -15,14 +15,12 @@ export type Activity = {
 };
 
 export type PersonalizationActivity = {
-  activityId: number;
-  activityThumbnailUri: string;
-  activityTitle: string;
-  activityRecruitEndAt: string;
+  id: number;
+  title: string;
+  thumbnailUrl: string;
+  recruitEndAt: string;
   activityFavoriteId: number | null;
-  activityFavoriteCount: number;
-  recommendScore: number;
-  hashtags?: string[];
+  tags?: string[];
 };
 
 export type ActivityFavoriteResponse = {

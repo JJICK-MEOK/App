@@ -144,7 +144,7 @@ export default function ProfileSetupScreen() {
             placeholder="닉네임을 입력해주세요"
             value={nickname}
             onChangeText={setNickname}
-            helperText="영문, 숫자, 특수문자를 포함하여 8~20자리까지 입력해 주세요"
+            helperText="2자 이상 20자 이하로 입력해 주세요"
             errorMessage={nicknameError}
             maxLength={20}
           />

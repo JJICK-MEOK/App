@@ -36,6 +36,9 @@ export default function OnboardingStep5() {
       queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
       router.replace('/onboarding/result');
     },
+    onError: (error: any) => {
+      console.error('온보딩 완료 실패', error);
+    },
   });
 
   const completeOnboarding = () => mutate({ topicTagIds, regionIds, preferenceTagIds });

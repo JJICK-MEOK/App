@@ -15,19 +15,24 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const ELLIPSE_W = SCREEN_WIDTH * (614 / 375);
 const ELLIPSE_H = SCREEN_WIDTH * (507 / 375);
 
+function pickRandomTags(tags: string[], count: number): string[] {
+  const shuffled = [...tags].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
+
 function toActivity(item: PersonalizationActivity): Activity {
   const daysLeft = Math.ceil(
-    (new Date(item.activityRecruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    (new Date(item.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
   );
   return {
-    id: String(item.activityId),
-    title: item.activityTitle,
+    id: String(item.id),
+    title: item.title,
     days: Math.max(0, daysLeft),
-    tags: (item.hashtags ?? []).slice(0, 3).map((tag, i) => {
+    tags: pickRandomTags(item.tags ?? [], 3).map((tag, i) => {
       const label = tag.startsWith('#') ? tag.slice(1) : tag;
       return { label, type: getTagVariant(label, i) };
     }),
-    imageUrl: item.activityThumbnailUri,
+    imageUrl: item.thumbnailUrl,
     favoriteId: item.activityFavoriteId ?? undefined,
   };
 }
