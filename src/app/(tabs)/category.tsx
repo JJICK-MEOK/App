@@ -23,6 +23,7 @@ import type { HomeActivity } from '@/src/types/activities';
 import { getTagVariant } from '@/src/utils/tagVariant';
 import AppBar from '@/src/components/Bar/AppBar';
 import CategoryBar from '@/src/components/Bar/CategoryBar';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 type SheetType = 'type' | 'sort' | null;
 
@@ -46,6 +47,7 @@ function toCardProps(activity: HomeActivity) {
 
 export default function CategoryScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [selectedTypeValue, setSelectedTypeValue] = useState('');
   const [selectedCategoryValue, setSelectedCategoryValue] = useState('');
   const [selectedSortValue, setSelectedSortValue] = useState('');
@@ -186,7 +188,7 @@ export default function CategoryScreen() {
                 <TouchableOpacity
                   key={activity.id}
                   activeOpacity={0.7}
-                  onPress={() => router.push(`/detail/${activity.id}`)}
+                  onPress={() => navigateOnce(`/detail/${activity.id}`)}
                 >
                   <ActivityCard {...toCardProps(activity)} />
                 </TouchableOpacity>

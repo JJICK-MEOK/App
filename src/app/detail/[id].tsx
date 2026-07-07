@@ -517,8 +517,8 @@ const styles = StyleSheet.create({
   },
   zoomedClose: {
     position: 'absolute',
-    top: 52,
-    left: 20,
+    top: 68,
+    left: 15,
     zIndex: 10,
   },
   zoomedImage: {

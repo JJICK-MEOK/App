@@ -16,6 +16,7 @@ import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import PromotionCard from '@/src/components/Card/PromotionCard';
 import { getTags } from '@/src/api/user';
 import { getHomeData, getCategoryPageData } from '@/src/api/pages';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 type IconConfig = {
   Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
@@ -48,6 +49,7 @@ const PULL_THRESHOLD = 60;
 
 export default function HomeScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const insets = useSafeAreaInsets();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const scrollYRef = useRef(0);
@@ -265,7 +267,7 @@ export default function HomeScreen() {
                       <TouchableOpacity
                         key={activity.id}
                         activeOpacity={0.7}
-                        onPress={() => router.push(`/detail/${activity.id}`)}
+                        onPress={() => navigateOnce(`/detail/${activity.id}`)}
                       >
                         <RecommendationCard
                           category={
@@ -307,7 +309,7 @@ export default function HomeScreen() {
                           key={activity.id}
                           activeOpacity={0.7}
                           style={{ alignSelf: 'stretch' }}
-                          onPress={() => router.push(`/detail/${activity.id}`)}
+                          onPress={() => navigateOnce(`/detail/${activity.id}`)}
                         >
                           <PromotionCard
                             category={

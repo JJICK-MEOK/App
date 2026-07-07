@@ -24,6 +24,7 @@ import { getFavorites } from '@/src/api/favorites';
 import { getDetailData } from '@/src/api/pages';
 import type { DetailActivity } from '@/src/types/activities';
 import { getTagVariant } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   PROGRAM: '프로그램',
@@ -41,6 +42,7 @@ const PULL_THRESHOLD = 60;
 
 export default function ProgramListScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [selectedTab, setSelectedTab] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('담은순');
   const [showSortSheet, setShowSortSheet] = useState(false);
@@ -196,7 +198,7 @@ export default function ProgramListScreen() {
                           key={activity.id}
                           style={styles.gridItem}
                           activeOpacity={0.9}
-                          onPress={() => router.push(`/detail/${activity.id}`)}
+                          onPress={() => navigateOnce(`/detail/${activity.id}`)}
                         >
                           <CardSaved
                             activityId={activity.id}

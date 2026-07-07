@@ -14,6 +14,7 @@ import { colors } from '@/src/constants/colors';
 import { searchActivities } from '@/src/api/activities';
 import type { ActivitySummary } from '@/src/types/activities';
 import { getTagVariant } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const SEARCH_DEBOUNCE_MS = 400;
 
@@ -42,6 +43,7 @@ function toCardProps(activity: ActivitySummary) {
 
 export default function SearchScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [searchText, setSearchText] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
@@ -131,7 +133,7 @@ export default function SearchScreen() {
                   <TouchableOpacity
                     key={item.id}
                     activeOpacity={0.7}
-                    onPress={() => router.push(`/detail/${item.id}`)}
+                    onPress={() => navigateOnce(`/detail/${item.id}`)}
                   >
                     <ActivityCard {...toCardProps(item)} />
                   </TouchableOpacity>
