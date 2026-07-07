@@ -1,5 +1,5 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import SearchSvg from '@/assets/images/Search.svg';
+import Search from '@/assets/images/Search.svg';
 import { colors } from '@/src/constants/colors';
 import { Typography } from '@/src/components/Typography/Typography';
 
@@ -14,14 +14,14 @@ export default function AppBar({ name, onSearchPress }: Props) {
       <View style={styles.row}>
         <View>
           <Typography size="xxl" weight="semiBold" style={styles.text}>
-            {name} 님
+            {name}님
           </Typography>
           <Typography size="xxl" weight="semiBold" style={styles.text}>
             어떤 활동에 끌리세요?
           </Typography>
         </View>
         <TouchableOpacity onPress={onSearchPress} activeOpacity={0.7} hitSlop={12}>
-          <SearchSvg width={28} height={28} />
+          <Search width={28} height={28} />
         </TouchableOpacity>
       </View>
     </View>
