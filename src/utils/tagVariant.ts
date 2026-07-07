@@ -29,3 +29,11 @@ export function getTagVariant(hashtag: string, fallbackIndex: number = 0): TagVa
   const key = hashtag.startsWith('#') ? hashtag.slice(1) : hashtag;
   return TAG_VARIANT_MAP[key] ?? FALLBACK_VARIANTS[fallbackIndex % FALLBACK_VARIANTS.length];
 }
+
+const VARIANT_PRIORITY: TagVariant[] = ['MOOD', 'INTENSITY', 'PURPOSE', 'DURATION', 'SIZE'];
+
+export function sortByVariantPriority<T extends { variant: TagVariant }>(items: T[]): T[] {
+  return [...items].sort(
+    (a, b) => VARIANT_PRIORITY.indexOf(a.variant) - VARIANT_PRIORITY.indexOf(b.variant),
+  );
+}
