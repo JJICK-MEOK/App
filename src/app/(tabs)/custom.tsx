@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     top: -(SCREEN_WIDTH * (153 / 375)),
     left: -(ELLIPSE_W - SCREEN_WIDTH) / 2,
     borderRadius: ELLIPSE_W,
-    backgroundColor: '#1C1C2E',
+    backgroundColor: '#222',
   },
   bar: {
     height: 60,
