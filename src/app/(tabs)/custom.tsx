@@ -20,10 +20,12 @@ function pickRandomTags(tags: string[], count: number): string[] {
   return shuffled.slice(0, count);
 }
 
+function getDaysLeft(recruitEndAt: string): number {
+  return Math.ceil((new Date(recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
 function toActivity(item: PersonalizationActivity): Activity {
-  const daysLeft = Math.ceil(
-    (new Date(item.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const daysLeft = getDaysLeft(item.recruitEndAt);
   return {
     id: String(item.id),
     title: item.title,
@@ -52,7 +54,8 @@ export default function CustomScreen() {
   });
 
   const activities = useMemo<Activity[]>(
-    () => (rawActivities ?? []).map(toActivity),
+    () =>
+      (rawActivities ?? []).filter((item) => getDaysLeft(item.recruitEndAt) >= 0).map(toActivity),
     [rawActivities],
   );
   const nickname = pageData?.nickname ?? '';
