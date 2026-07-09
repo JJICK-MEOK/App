@@ -82,7 +82,7 @@ export default function OnboardingStep4() {
             {'어떤 유형의\n활동이 끌리나요?'}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
-            최대 10개까지 선택해주세요.
+            항목별로 1개 이상, 최대 10개까지 선택해주세요.
           </Typography>
         </View>
 
