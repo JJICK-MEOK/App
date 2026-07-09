@@ -216,7 +216,7 @@ export default function HomeScreen() {
 
             <View style={styles.contentSheet}>
               <View style={styles.recommendSection}>
-                <Text style={styles.sectionTitle}>{`${nickname} 님에게 추천해요!`}</Text>
+                <Text style={styles.sectionTitle}>{`${nickname}님에게 추천해요!`}</Text>
                 {isError ? (
                   <View style={styles.recommendErrorBox}>
                     <Text style={styles.errorText}>{homeErrorMessage}</Text>

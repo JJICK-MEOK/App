@@ -69,7 +69,7 @@ export default function CustomScreen() {
       <View style={styles.bgEllipse} />
 
       <View style={styles.bar}>
-        <Text style={styles.barText}>{nickname ? `${nickname} 님을 위해 준비했어요!` : ' '}</Text>
+        <Text style={styles.barText}>{nickname ? `${nickname}님을 위해 준비했어요!` : ' '}</Text>
       </View>
 
       <View style={styles.cardArea}>
