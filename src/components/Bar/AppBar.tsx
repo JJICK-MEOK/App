@@ -21,7 +21,7 @@ export default function AppBar({ name, onSearchPress }: Props) {
           </Typography>
         </View>
         <TouchableOpacity onPress={onSearchPress} activeOpacity={0.7} hitSlop={12}>
-          <Search width={28} height={28} />
+          <Search width={28} height={28} color={colors.text.primary} />
         </TouchableOpacity>
       </View>
     </View>

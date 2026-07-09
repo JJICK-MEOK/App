@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -20,
     left: 0,
-    color: colors.text.primary,
+    color: colors.text.secondary,
   },
   titleText: {
     color: colors.text.primary,

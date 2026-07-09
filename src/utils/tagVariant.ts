@@ -30,10 +30,25 @@ export function getTagVariant(hashtag: string, fallbackIndex: number = 0): TagVa
   return TAG_VARIANT_MAP[key] ?? FALLBACK_VARIANTS[fallbackIndex % FALLBACK_VARIANTS.length];
 }
 
-const VARIANT_PRIORITY: TagVariant[] = ['MOOD', 'INTENSITY', 'PURPOSE', 'DURATION', 'SIZE'];
+export const VARIANT_PRIORITY: TagVariant[] = ['MOOD', 'INTENSITY', 'PURPOSE', 'DURATION', 'SIZE'];
 
 export function sortByVariantPriority<T extends { variant: TagVariant }>(items: T[]): T[] {
   return [...items].sort(
     (a, b) => VARIANT_PRIORITY.indexOf(a.variant) - VARIANT_PRIORITY.indexOf(b.variant),
   );
+}
+
+export function assignUniqueVariants<T extends string>(
+  labels: T[],
+): { label: T; variant: TagVariant }[] {
+  const used = new Set<TagVariant>();
+  const assigned = labels.map((label, i) => {
+    let variant = getTagVariant(label, i);
+    if (used.has(variant)) {
+      variant = VARIANT_PRIORITY.find((v) => !used.has(v)) ?? variant;
+    }
+    used.add(variant);
+    return { label, variant };
+  });
+  return sortByVariantPriority(assigned);
 }

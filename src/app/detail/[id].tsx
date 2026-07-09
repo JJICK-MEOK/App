@@ -8,6 +8,7 @@ import {
   PanResponder,
   Image,
   Linking,
+  Alert,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +28,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getDetailData } from '@/src/api/pages';
 import { addFavorite, deleteFavorite } from '@/src/api/favorites';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
 
 const TABS = [
   { key: 'info', label: '정보' },
@@ -275,8 +276,8 @@ export default function ActivityDetailPage() {
                   </Typography>
 
                   <View style={styles.tagsRow}>
-                    {(data?.hashtags ?? []).map((tag, i) => (
-                      <ChipBadge key={tag} label={tag} variant={getTagVariant(tag, i)} />
+                    {assignUniqueVariants(data?.hashtags ?? []).map((tag) => (
+                      <ChipBadge key={tag.label} label={tag.label} variant={tag.variant} />
                     ))}
                   </View>
                 </View>
@@ -339,7 +340,10 @@ export default function ActivityDetailPage() {
             onSavePress={handleSavePress}
             label="바로 지원하기"
             onPress={() => {
-              if (data?.sourceUrl) Linking.openURL(data.sourceUrl).catch(() => {});
+              if (!data?.sourceUrl) return;
+              Linking.openURL(data.sourceUrl).catch(() => {
+                Alert.alert('링크를 열 수 없어요', '잠시 후 다시 시도해주세요.');
+              });
             }}
           />
         </View>
@@ -435,7 +439,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   DDay: {
-    color: colors.text.primary,
+    color: colors.text.secondary,
     fontSize: 12,
   },
   statText: {

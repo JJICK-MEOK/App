@@ -20,7 +20,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getCategoryPageData, getHomeData } from '@/src/api/pages';
 import type { HomeActivity } from '@/src/types/activities';
-import { getTagVariant, sortByVariantPriority } from '@/src/utils/tagVariant';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
 import AppBar from '@/src/components/Bar/AppBar';
 import CategoryBar from '@/src/components/Bar/CategoryBar';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
@@ -31,12 +31,7 @@ const PULL_THRESHOLD = 60;
 
 function toCardProps(activity: HomeActivity) {
   const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
-  const tags = sortByVariantPriority(
-    (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
-      label,
-      variant: getTagVariant(label, i),
-    })),
-  );
+  const tags = assignUniqueVariants((activity.hashtags ?? []).slice(0, 2));
   return {
     dday,
     title: activity.title,
@@ -197,6 +192,7 @@ export default function CategoryScreen() {
               ))}
             </View>
           )}
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </View>
 
@@ -240,6 +236,11 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   fullWidth: {
     marginHorizontal: -20,
+  },
+  bottomSpacer: {
+    height: 25,
+    alignSelf: 'stretch',
+    backgroundColor: '#FFF',
   },
   filterRow: {
     flexDirection: 'row',

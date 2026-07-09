@@ -23,6 +23,11 @@ export type PersonalizationActivity = {
   tags?: string[];
 };
 
+export type PersonalizationBestType = {
+  bestType: string;
+  userTags: string[];
+};
+
 export type ActivityFavoriteResponse = {
   id: number;
   userId: number;
@@ -58,10 +63,15 @@ export type HomeUser = {
   profileImageUrl: string;
 };
 
+export type HomeSection = {
+  activities: HomeActivity[];
+};
+
 export type HomeData = {
   user: HomeUser;
-  recommendedActivities: HomeActivity[];
-  closingSoonActivities: HomeActivity[];
+  featured: HomeSection;
+  popular: HomeSection;
+  expandedRecommendation: HomeSection;
 };
 
 export type ActivityImage = {

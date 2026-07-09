@@ -6,6 +6,7 @@ import { colors } from '@/src/constants/colors';
 import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 
 type Props = {
+  rank: number;
   category: string;
   title: string;
   showAD?: boolean;
@@ -13,7 +14,8 @@ type Props = {
   thumbnailUrl?: string;
 };
 
-export default function PromotionCard({
+export default function RankingCard({
+  rank,
   category,
   title,
   showAD = true,
@@ -25,10 +27,13 @@ export default function PromotionCard({
 
   return (
     <View style={styles.container}>
+      <Typography size="xxl" weight="medium" style={styles.rank}>
+        {rank}
+      </Typography>
       <View style={styles.content}>
         <View style={styles.infoRow}>
           <View style={styles.ddayWrapper}>
-            <Typography size="sm" weight="semiBold" style={styles.dday}>
+            <Typography size="md" weight="semiBold" style={styles.dday}>
               {ddayLabel}
             </Typography>
           </View>
@@ -38,13 +43,14 @@ export default function PromotionCard({
             </View>
           )}
           <View style={!showAD ? { marginLeft: 11 } : undefined}>
-            <ChipBadge label={category} variant="categoryDark" />
+            <ChipBadge label={category} variant="category" />
           </View>
         </View>
         <Typography
           size="lg"
-          weight="bold"
+          weight="semiBold"
           style={styles.title}
+          numberOfLines={2}
           lineBreakStrategyIOS="hangul-word"
           android_hyphenationFrequency="none"
         >
@@ -60,7 +66,7 @@ export default function PromotionCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <DefaultActivity width={78} height={78} />
+          <DefaultActivity width={72} height={72} />
         )}
       </View>
     </View>
@@ -71,14 +77,22 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 60,
+    height: 72,
   },
   content: {
     flex: 1,
+    marginRight: 60,
   },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  rank: {
+    color: colors.text.primary,
+    textAlign: 'center',
+    marginRight: 25,
+    alignSelf: 'center',
+    marginTop: -20,
   },
   ddayWrapper: {
     height: 14,
@@ -87,8 +101,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   dday: {
-    fontSize: 12,
-    color: '#FFF',
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   adWrapper: {
@@ -97,17 +110,17 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   title: {
-    color: colors.neutral.white,
+    color: colors.text.primary,
     alignSelf: 'stretch',
     marginTop: 6,
   },
   image: {
-    width: 78,
-    height: 78,
+    width: 72,
+    height: 72,
     aspectRatio: 1,
-    borderRadius: 4.895,
-    borderWidth: 0.979,
-    borderColor: '#EAEAEA',
-    backgroundColor: '#CCC',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: colors.border.default,
+    backgroundColor: colors.border.light,
   },
 });

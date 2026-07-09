@@ -1,5 +1,13 @@
 import { useState, useMemo, useRef } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, PanResponder } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  PanResponder,
+  Dimensions,
+} from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,16 +15,50 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import TopNav from '@/src/components/Nav/TopNav';
-import PersonalizedCTA from '@/src/components/Button/PersonalizedCTA';
 import Program from '@/assets/images/Program.svg';
 import OneDay from '@/assets/images/OneDay.svg';
 import Event from '@/assets/images/Event.svg';
 import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
-import PromotionCard from '@/src/components/Card/PromotionCard';
+import RankingCard from '@/src/components/Card/RankingCard';
+import Curation from '@/src/components/Card/Curation';
 import { getTags } from '@/src/api/user';
-import { getHomeData, getCategoryPageData } from '@/src/api/pages';
+import { getHomeData } from '@/src/api/pages';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
+import type { Activity, HomeActivity } from '@/src/types/activities';
+
+const SCREEN_WIDTH = Math.min(Dimensions.get('window').width, 430);
+const CURATION_ITEM_WIDTH = SCREEN_WIDTH * (211 / 375);
+
+const RANKING_PAGE_SIZE = 3;
+const RANKING_CARD_HEIGHT = 72;
+const RANKING_CARD_GAP = 13;
+const RANKING_PAGE_PADDING_TOP = 0;
+const RANKING_PAGE_PADDING_BOTTOM = 22;
+const RANKING_PAGE_HEIGHT =
+  RANKING_PAGE_PADDING_TOP +
+  RANKING_PAGE_PADDING_BOTTOM +
+  RANKING_PAGE_SIZE * RANKING_CARD_HEIGHT +
+  (RANKING_PAGE_SIZE - 1) * RANKING_CARD_GAP;
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size) result.push(items.slice(i, i + size));
+  return result;
+}
+
+function toCurationActivity(item: HomeActivity): Activity {
+  return {
+    id: String(item.id),
+    title: item.title,
+    days: Math.max(0, item.deadline),
+    tags: assignUniqueVariants(
+      (item.hashtags ?? []).slice(0, 2).map((tag) => (tag.startsWith('#') ? tag.slice(1) : tag)),
+    ).map(({ label, variant }) => ({ label, type: variant })),
+    imageUrl: item.thumbnailUrl,
+  };
+}
 
 type IconConfig = {
   Svg: React.ComponentType<{ width?: number; height?: number; style?: object }>;
@@ -47,11 +89,44 @@ const ACTIVITY_TYPE_LABEL: Record<string, string> = {
 
 const PULL_THRESHOLD = 60;
 
+function getErrorMessage(error: unknown, fallbackMessage: string) {
+  const isSessionExpired = axios.isAxiosError(error) && error.response?.status === 401;
+  const isNetworkError = axios.isAxiosError(error) && !error.response;
+  const message = isSessionExpired
+    ? '로그인 시간이 만료되었어요. 다시 로그인해주세요.'
+    : isNetworkError
+      ? '네트워크 연결을 확인해주세요.'
+      : fallbackMessage;
+  return { message, isSessionExpired };
+}
+
+function ErrorBox({
+  style,
+  message,
+  onRetry,
+}: {
+  style: object;
+  message: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <View style={style}>
+      <Text style={styles.errorText}>{message}</Text>
+      {onRetry && (
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.7}>
+          <Text style={styles.retryText}>다시 시도</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const navigateOnce = useNavigateOnce();
   const insets = useSafeAreaInsets();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [rankPageIndex, setRankPageIndex] = useState(0);
   const scrollYRef = useRef(0);
   const isRefreshingRef = useRef(false);
   const refetchRef = useRef<() => Promise<any>>(() => Promise.resolve());
@@ -82,7 +157,7 @@ export default function HomeScreen() {
     error,
   } = useQuery({
     queryKey: ['home'],
-    queryFn: () => getHomeData(6),
+    queryFn: () => getHomeData(),
   });
 
   const { data: tagsData } = useQuery({
@@ -99,73 +174,28 @@ export default function HomeScreen() {
     return mapped.length > 0 ? mapped : DEFAULT_ICONS;
   }, [tagsData]);
 
-  const nickname = homeData?.user.nickname ?? '';
-
-  const recommendedRaw = (homeData?.recommendedActivities ?? []).filter((a) => a.deadline >= 0);
-  const closingSoonRaw = (homeData?.closingSoonActivities ?? []).filter((a) => a.deadline >= 0);
-  const needsRecommendedFill = recommendedRaw.length < 6;
-  const needsClosingSoonFill = closingSoonRaw.length < 3;
-
-  const shouldLoadGeneralActivities =
-    !isLoading && !isError && (needsRecommendedFill || needsClosingSoonFill);
-  const {
-    data: generalCategoryData,
-    isLoading: isGeneralLoading,
-    isError: isGeneralError,
-    error: generalError,
-    refetch: refetchGeneral,
-  } = useQuery({
-    queryKey: ['category', '', '', ''],
-    queryFn: () => getCategoryPageData({}),
-    enabled: shouldLoadGeneralActivities,
-  });
-
-  const usedIds = new Set([...recommendedRaw, ...closingSoonRaw].map((a) => a.id));
-  const fillerPool = (generalCategoryData?.activities ?? []).filter(
-    (a) => a.deadline >= 0 && !usedIds.has(a.id),
+  const featured = (homeData?.featured.activities ?? []).filter((a) => a.deadline >= 0);
+  const recommended = (homeData?.expandedRecommendation.activities ?? []).filter(
+    (a) => a.deadline >= 0,
   );
-  const recommendedFill = fillerPool.slice(0, Math.max(0, 6 - recommendedRaw.length));
-  const recommended = [...recommendedRaw, ...recommendedFill];
-  const closingSoonFill = fillerPool
-    .slice(recommendedFill.length)
-    .slice(0, Math.max(0, 3 - closingSoonRaw.length));
-  const closingSoon = [...closingSoonRaw, ...closingSoonFill];
+  // 인기 활동은 백엔드가 정렬해서 내려주므로 프론트에서 재정렬하지 않는다.
+  const displayCards = (homeData?.popular.activities ?? []).filter((a) => a.deadline >= 0);
+  const rankingPageCount = Math.ceil(displayCards.length / RANKING_PAGE_SIZE);
 
-  refetchRef.current = shouldLoadGeneralActivities
-    ? () => Promise.all([refetch(), refetchGeneral()])
-    : refetch;
+  refetchRef.current = refetch;
 
-  const adCard = closingSoon.find((a) => a.isAd);
-  const nonAdCards = closingSoon.filter((a) => !a.isAd);
-  const displayCards = (adCard ? [adCard, ...nonAdCards] : nonAdCards).slice(0, 3);
+  const { message: homeErrorMessage, isSessionExpired } = getErrorMessage(
+    error,
+    '홈 화면을 불러오지 못했어요. 다시 시도해주세요.',
+  );
 
-  const isNetworkError = axios.isAxiosError(error) && !error.response;
-  const isSessionExpired = axios.isAxiosError(error) && error.response?.status === 401;
-
-  const homeErrorMessage = isSessionExpired
-    ? '로그인 시간이 만료되었어요. 다시 로그인해주세요.'
-    : isNetworkError
-      ? '네트워크 연결을 확인해주세요.'
-      : '홈 화면을 불러오지 못했어요. 다시 시도해주세요.';
-
-  const isGeneralNetworkError = axios.isAxiosError(generalError) && !generalError.response;
-  const isGeneralSessionExpired =
-    axios.isAxiosError(generalError) && generalError.response?.status === 401;
-
-  const generalErrorMessage = isGeneralSessionExpired
-    ? '로그인 시간이 만료되었어요. 다시 로그인해주세요.'
-    : isGeneralNetworkError
-      ? '네트워크 연결을 확인해주세요.'
-      : '활동 목록을 불러오지 못했어요. 다시 시도해주세요.';
+  const nickname = homeData?.user?.nickname ?? '';
+  const curationActivities = featured.map(toCurationActivity);
 
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav
-          name={nickname}
-          profileImageUrl={homeData?.user.profileImageUrl}
-          onSearchPress={() => router.push('/search')}
-        />
+        <TopNav onSearchPress={() => router.push('/search')} />
       </View>
       <View style={{ flex: 1 }} {...panResponder.panHandlers}>
         {isRefreshing && (
@@ -181,152 +211,157 @@ export default function HomeScreen() {
           }}
           scrollEventThrottle={16}
         >
-          <View style={styles.main}>
-            <View style={styles.bannerSection}>
-              <View style={styles.banner}>
-                <Text style={styles.bannerTitle}>
-                  {'확신이 없어도 괜찮아요\n일단 찍먹 해보세요'}
-                </Text>
-                <View style={styles.ctaWrapper}>
-                  <PersonalizedCTA
-                    label="나만의 경험 탐색하기"
-                    onPress={() => router.push('/(tabs)/custom')}
+          <View style={styles.pickSection}>
+            <Text style={styles.pickTitle}>{nickname}님을 위한 찍먹 PICK</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.curationSection}
+            >
+              {curationActivities.map((activity) => (
+                <View key={activity.id} style={styles.curationItem}>
+                  <Curation
+                    activity={activity}
+                    onPress={() => navigateOnce('/detail/curation-detail')}
                   />
                 </View>
-              </View>
-            </View>
+              ))}
+            </ScrollView>
+          </View>
 
-            <View style={styles.divider} />
-            <View style={styles.iconSection}>
-              <View style={styles.iconRow}>
-                {icons.map(({ Svg, label, route }) => (
-                  <TouchableOpacity
-                    key={label}
-                    style={styles.iconItem}
-                    activeOpacity={0.7}
-                    onPress={() => router.push(route)}
-                  >
-                    <View style={styles.iconContainer}>
-                      <Svg width={44} height={45} style={{ flexShrink: 0 }} />
-                    </View>
-                    <Text style={styles.iconLabel}>{label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          <View style={styles.iconSection}>
+            <View style={styles.iconRow}>
+              {icons.map(({ Svg, label, route }) => (
+                <TouchableOpacity
+                  key={label}
+                  style={styles.iconItem}
+                  activeOpacity={0.7}
+                  onPress={() => router.push(route)}
+                >
+                  <View style={styles.iconContainer}>
+                    <Svg width={44} height={45} style={{ flexShrink: 0 }} />
+                  </View>
+                  <Text style={styles.iconLabel}>{label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-            <View style={styles.divider} />
+          </View>
 
-            <View style={styles.contentSheet}>
-              <View style={styles.recommendSection}>
-                <Text style={styles.sectionTitle}>{`${nickname} 님에게 추천해요!`}</Text>
+          <View style={styles.contentSheet}>
+            {(isError || displayCards.length > 0) && (
+              <View style={styles.popularSection}>
+                <View style={styles.popularRow}>
+                  <Text style={styles.popularTitle}>인기 활동</Text>
+                </View>
                 {isError ? (
-                  <View style={styles.recommendErrorBox}>
-                    <Text style={styles.errorText}>{homeErrorMessage}</Text>
-                    {!isSessionExpired && (
-                      <TouchableOpacity
-                        style={styles.retryButton}
-                        onPress={() => refetch()}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.retryText}>다시 시도</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ) : isLoading && !isRefreshing ? (
-                  <View style={styles.recommendErrorBox}>
-                    <Loading />
-                  </View>
-                ) : recommended.length === 0 && needsRecommendedFill && isGeneralLoading ? (
-                  <View style={styles.recommendErrorBox}>
-                    <Loading />
-                  </View>
-                ) : recommended.length === 0 && needsRecommendedFill && isGeneralError ? (
-                  <View style={styles.recommendErrorBox}>
-                    <Text style={styles.errorText}>{generalErrorMessage}</Text>
-                    {!isGeneralSessionExpired && (
-                      <TouchableOpacity
-                        style={styles.retryButton}
-                        onPress={() => refetchGeneral()}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.retryText}>다시 시도</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                ) : recommended.length === 0 ? (
-                  <View style={styles.recommendErrorBox}>
-                    <Text style={styles.errorText}>아직 추천할 활동이 부족해요.</Text>
-                  </View>
+                  <ErrorBox
+                    style={styles.errorBox}
+                    message={homeErrorMessage}
+                    onRetry={!isSessionExpired ? refetch : undefined}
+                  />
                 ) : (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.cardsContainer}
-                  >
-                    {recommended.map((activity) => (
-                      <TouchableOpacity
-                        key={activity.id}
-                        activeOpacity={0.7}
-                        onPress={() => navigateOnce(`/detail/${activity.id}`)}
-                      >
-                        <RecommendationCard
-                          category={
-                            ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType
-                          }
-                          title={activity.title}
-                          hashtags={activity.hashtags}
-                          deadline={activity.deadline}
-                          thumbnailUrl={activity.thumbnailUrl}
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                  <>
+                    <ScrollView
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.rankingPageScroll}
+                      onMomentumScrollEnd={(e) => {
+                        const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                        setRankPageIndex(page);
+                      }}
+                    >
+                      {chunk(displayCards, RANKING_PAGE_SIZE).map((page, pageIndex) => (
+                        <View key={pageIndex} style={[styles.rankingPage, { width: SCREEN_WIDTH }]}>
+                          {page.map((activity, i) => (
+                            <TouchableOpacity
+                              key={activity.id}
+                              activeOpacity={0.7}
+                              style={{ alignSelf: 'stretch' }}
+                              onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                            >
+                              <RankingCard
+                                rank={pageIndex * RANKING_PAGE_SIZE + i + 1}
+                                category={
+                                  ACTIVITY_TYPE_LABEL[activity.activityType] ??
+                                  activity.activityType
+                                }
+                                title={activity.title}
+                                showAD={activity.isAd}
+                                deadline={activity.deadline}
+                                thumbnailUrl={activity.thumbnailUrl}
+                              />
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ))}
+                    </ScrollView>
+                    {rankingPageCount > 1 && (
+                      <View style={styles.rankDots}>
+                        {Array.from({ length: rankingPageCount }).map((_, i) => (
+                          <View
+                            key={i}
+                            style={[
+                              styles.rankDot,
+                              i === rankPageIndex ? styles.rankDotActive : styles.rankDotInactive,
+                            ]}
+                          />
+                        ))}
+                      </View>
+                    )}
+                  </>
                 )}
               </View>
+            )}
 
-              {(isError || displayCards.length > 0) && (
-                <View style={styles.popularSection}>
-                  <View style={styles.popularRow}>
-                    <Text style={styles.popularTitle}>인기! 마감 임박</Text>
-                  </View>
-                  {isError ? (
-                    <View style={styles.errorBox}>
-                      <Text style={styles.errorText}>{homeErrorMessage}</Text>
-                      {!isSessionExpired && (
-                        <TouchableOpacity
-                          style={styles.retryButton}
-                          onPress={() => refetch()}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.retryText}>다시 시도</Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  ) : (
-                    <View style={styles.darkCard}>
-                      {displayCards.map((activity) => (
-                        <TouchableOpacity
-                          key={activity.id}
-                          activeOpacity={0.7}
-                          style={{ alignSelf: 'stretch' }}
-                          onPress={() => navigateOnce(`/detail/${activity.id}`)}
-                        >
-                          <PromotionCard
-                            category={
-                              ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType
-                            }
-                            title={activity.title}
-                            showAD={activity.isAd}
-                            deadline={activity.deadline}
-                            thumbnailUrl={activity.thumbnailUrl}
-                          />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
+            <View style={styles.recommendSection}>
+              <View style={styles.recommendHeader}>
+                <Text style={styles.recommendTitle}>내 취향 넓혀보기</Text>
+                <Text style={styles.recommendSubtitle}>
+                  평소 관심 없던 활동도 가볍게 찍먹해봐요
+                </Text>
+              </View>
+              {isError ? (
+                <ErrorBox
+                  style={styles.recommendErrorBox}
+                  message={homeErrorMessage}
+                  onRetry={!isSessionExpired ? refetch : undefined}
+                />
+              ) : isLoading && !isRefreshing ? (
+                <View style={styles.recommendErrorBox}>
+                  <Loading />
                 </View>
+              ) : recommended.length === 0 ? (
+                <View style={styles.recommendErrorBox}>
+                  <Text style={styles.errorText}>아직 추천할 활동이 부족해요.</Text>
+                </View>
+              ) : (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.cardsContainer}
+                >
+                  {recommended.map((activity) => (
+                    <TouchableOpacity
+                      key={activity.id}
+                      activeOpacity={0.7}
+                      onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                    >
+                      <RecommendationCard
+                        category={
+                          ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType
+                        }
+                        title={activity.title}
+                        hashtags={activity.hashtags}
+                        deadline={activity.deadline}
+                        thumbnailUrl={activity.thumbnailUrl}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               )}
             </View>
+            <View style={styles.bottomSpacer} />
           </View>
         </ScrollView>
       </View>
@@ -338,6 +373,11 @@ const styles = StyleSheet.create({
   topNavWrapper: {
     backgroundColor: '#FFF',
   },
+  bottomSpacer: {
+    height: 25,
+    alignSelf: 'stretch',
+    backgroundColor: '#FFF',
+  },
   loadingArea: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -345,43 +385,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 140,
   },
-  main: {
-    gap: 5,
-    alignSelf: 'stretch',
+  pickSection: {
+    gap: 18,
+    marginTop: 18,
+    marginBottom: 15,
   },
-  bannerSection: {
-    backgroundColor: '#FFF',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  banner: {
-    alignSelf: 'stretch',
-    height: 161,
-    borderRadius: 15,
-    backgroundColor: '#F5F5F5',
-    overflow: 'hidden',
-  },
-  bannerTitle: {
-    position: 'absolute',
-    top: 27,
-    left: 21,
+  pickTitle: {
     color: '#222',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    letterSpacing: 0.6,
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: -0.36,
+    marginLeft: 20,
   },
-  ctaWrapper: {
-    position: 'absolute',
-    top: 107,
-    left: 21,
+  curationSection: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 20,
   },
-  divider: {
-    height: 5,
-    backgroundColor: '#F5F5F5',
-    alignSelf: 'stretch',
+  curationItem: {
+    width: CURATION_ITEM_WIDTH,
   },
   iconSection: {
     backgroundColor: '#FFF',
@@ -393,7 +418,7 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 38,
+    gap: 33,
   },
   iconItem: {
     alignItems: 'center',
@@ -419,14 +444,26 @@ const styles = StyleSheet.create({
   },
   recommendSection: {
     gap: 17,
-    paddingTop: 27,
+    marginTop: 70,
     alignSelf: 'stretch',
   },
-  sectionTitle: {
+  recommendHeader: {
+    gap: 7,
+    marginLeft: 20,
+  },
+  recommendTitle: {
     color: '#222',
     fontFamily: 'Pretendard-SemiBold',
-    fontSize: 20,
-    paddingLeft: 20,
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: -0.36,
+  },
+  recommendSubtitle: {
+    color: '#666',
+    fontFamily: 'Pretendard-Medium',
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: -0.28,
   },
   cardsContainer: {
     gap: 12,
@@ -435,8 +472,8 @@ const styles = StyleSheet.create({
   popularSection: {
     flexDirection: 'column',
     alignSelf: 'stretch',
-    marginTop: 70,
-    gap: 16,
+    paddingTop: 53,
+    gap: 18,
   },
   popularRow: {
     flexDirection: 'row',
@@ -454,7 +491,6 @@ const styles = StyleSheet.create({
   recommendErrorBox: {
     marginHorizontal: 20,
     borderRadius: 14,
-    backgroundColor: '#222',
     paddingVertical: 36,
     paddingHorizontal: 28,
     alignItems: 'center',
@@ -464,14 +500,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 40,
     borderRadius: 14,
-    backgroundColor: '#222',
     paddingVertical: 36,
     paddingHorizontal: 28,
     alignItems: 'center',
     gap: 16,
   },
   errorText: {
-    color: '#FFF',
+    color: '#222',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
     textAlign: 'center',
@@ -481,26 +516,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFF',
+    borderColor: '#222',
   },
   retryText: {
-    color: '#FFF',
+    color: '#222',
     fontFamily: 'Pretendard-Medium',
     fontSize: 14,
   },
-  darkCard: {
-    paddingTop: 28,
+  rankingPageScroll: {
+    height: RANKING_PAGE_HEIGHT,
+  },
+  rankingPage: {
+    paddingTop: RANKING_PAGE_PADDING_TOP,
     paddingRight: 29,
-    paddingBottom: 28,
+    paddingBottom: RANKING_PAGE_PADDING_BOTTOM,
     paddingLeft: 28,
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    gap: 31,
-    alignSelf: 'stretch',
-    marginHorizontal: 20,
-    marginBottom: 40,
-    borderRadius: 14,
-    backgroundColor: '#222',
+    gap: RANKING_CARD_GAP,
+  },
+  rankDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 11,
+  },
+  rankDot: {
+    width: 8,
+    height: 8,
+    aspectRatio: 1,
+    borderRadius: 4,
+  },
+  rankDotActive: {
+    backgroundColor: '#FFE066',
+  },
+  rankDotInactive: {
+    backgroundColor: '#EAEAEA',
   },
 });

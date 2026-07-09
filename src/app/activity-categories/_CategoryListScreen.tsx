@@ -22,7 +22,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getCategoryPageData } from '@/src/api/pages';
 import type { HomeActivity } from '@/src/types/activities';
-import { getTagVariant, sortByVariantPriority } from '@/src/utils/tagVariant';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const PULL_THRESHOLD = 60;
@@ -32,12 +32,7 @@ type SheetType = 'category' | 'sort' | null;
 
 function toCardProps(activity: HomeActivity) {
   const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
-  const tags = sortByVariantPriority(
-    (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
-      label,
-      variant: getTagVariant(label, i),
-    })),
-  );
+  const tags = assignUniqueVariants((activity.hashtags ?? []).slice(0, 2));
   return {
     dday,
     title: activity.title,
@@ -254,7 +249,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 18,
     paddingBottom: 40,
     gap: 30,
   },
