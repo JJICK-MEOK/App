@@ -36,6 +36,11 @@ export const Saved: Story = {
   args: { isFront: true, saved: true },
 };
 
+/** 취향 일치 배지 표시 */
+export const WithMatchBadge: Story = {
+  args: { isFront: true, activity: { ...DUMMY, matchRate: 67 } },
+};
+
 /** front / back 비교 */
 export const AllSizes: Story = {
   render: () => (

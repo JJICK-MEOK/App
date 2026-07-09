@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import IconHeart from '@/src/components/Icon/IconHeart';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
+import MatchBadge from '@/src/components/Badge/MatchBadge';
 import { colors } from '@/src/constants/colors';
 import type { Activity, Tag } from '@/src/types/activities';
 
@@ -23,6 +24,8 @@ export const CARD_HEIGHT = Math.round(CARD_WIDTH * (444 / 335));
 
 const BORDER_GRADIENT_COLORS = ['#28FFD9', '#FF5EAD', '#8B5CF6', '#28FFD9'] as const;
 const BORDER_DURATION = 8000;
+// API 미연동으로 matchRate가 없을 때 표시할 임시 기본값
+const DEFAULT_MATCH_RATE = 67;
 
 type Props = {
   activity: Activity;
@@ -132,6 +135,9 @@ export default function SwipeCard({
         ) : (
           <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
         )}
+        <View style={styles.matchBadge}>
+          <MatchBadge percentage={activity.matchRate ?? DEFAULT_MATCH_RATE} />
+        </View>
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.98)', 'rgba(0,0,0,0.98)']}
           locations={[0, 0.556, 1]}
@@ -168,6 +174,11 @@ export default function SwipeCard({
 }
 
 const styles = StyleSheet.create({
+  matchBadge: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+  },
   overlay: {
     position: 'absolute',
     bottom: 0,
