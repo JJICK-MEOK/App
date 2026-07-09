@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import IconHeart from '@/src/components/Icon/IconHeart';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
+import { colors } from '@/src/constants/colors';
 import type { Activity, Tag } from '@/src/types/activities';
 
 export type { Activity, Tag };
@@ -142,7 +143,7 @@ export default function SwipeCard({
           style={[styles.content, { top: CARD_HEIGHT * 0.7154, paddingHorizontal: 14, gap: 12 }]}
         >
           <View style={{ gap: 5 }}>
-            <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
+            <Text style={[styles.semiBold, styles.dday, { fontSize: 12 }]}>D-{activity.days}</Text>
             <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>
               {activity.title}
             </Text>
@@ -181,6 +182,9 @@ const styles = StyleSheet.create({
   semiBold: {
     fontFamily: 'Pretendard-SemiBold',
     color: '#FFFFFF',
+  },
+  dday: {
+    color: colors.text.secondary,
   },
   bottomRow: {
     flexDirection: 'row',
