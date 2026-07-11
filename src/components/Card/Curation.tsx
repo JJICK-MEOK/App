@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
@@ -17,6 +17,10 @@ type Props = {
 export default function Curation({ activity, onPress }: Props) {
   const [imageError, setImageError] = useState(false);
   const tags = activity.tags.slice(0, 2);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [activity.imageUrl]);
 
   return (
     <Pressable style={styles.card} onPress={onPress}>

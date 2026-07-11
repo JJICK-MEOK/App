@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
@@ -24,6 +24,10 @@ export default function RankingCard({
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const ddayLabel = deadline <= 0 ? 'D-day' : `D-${deadline}`;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [thumbnailUrl]);
 
   return (
     <View style={styles.container}>

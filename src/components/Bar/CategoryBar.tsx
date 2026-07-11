@@ -33,7 +33,7 @@ export default function CategoryBar({
     if (!layout || !containerWidth) return;
     const targetX = layout.x + layout.width / 2 - containerWidth / 2;
     scrollRef.current?.scrollTo({ x: Math.max(0, targetX), y: 0, animated: true });
-  }, [selected, containerWidth]);
+  }, [selected, containerWidth, tabs]);
 
   return (
     <View style={styles.container}>

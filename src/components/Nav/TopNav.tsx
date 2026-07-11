@@ -1,6 +1,7 @@
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import AppLogo from '@/assets/images/AppLogo.svg';
 import Search from '@/assets/images/Search.svg';
+import { colors } from '@/src/constants/colors';
 
 type Props = {
   onSearchPress?: () => void;
@@ -11,7 +12,7 @@ export default function TopNav({ onSearchPress }: Props) {
     <View style={styles.container}>
       <AppLogo width={65} height={65} />
       <TouchableOpacity activeOpacity={0.7} onPress={onSearchPress}>
-        <Search width={28} height={28} color="#222" />
+        <Search width={28} height={28} color={colors.text.primary} />
       </TouchableOpacity>
     </View>
   );

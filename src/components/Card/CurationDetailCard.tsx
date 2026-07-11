@@ -37,6 +37,10 @@ export default function CurationDetailCard({
     setSaved(initialSaved);
   }, [initialSaved]);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [thumbnailUrl]);
+
   const handleHeartPress = () => {
     if (isSaving) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

@@ -155,7 +155,7 @@ export default function CurationDetailScreen() {
           activeTab="home"
           onTabChange={(tab: TabKey) => navigateOnce(TAB_TO_ROUTE[tab])}
         />
-        <View style={styles.navBottomFiller} />
+        <View style={[styles.navBottomFiller, { height: Math.max(insets.bottom, 25) }]} />
       </View>
     </ScreenLayout>
   );
@@ -228,7 +228,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   navBottomFiller: {
-    height: 25,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.neutral.white,
   },
 });

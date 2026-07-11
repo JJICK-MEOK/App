@@ -353,6 +353,7 @@ export default function ActivityDetailPage() {
             saved={saved}
             onSavePress={handleSavePress}
             label="바로 지원하기"
+            disabled={!data?.sourceUrl}
             onPress={() => {
               if (!data?.sourceUrl) return;
               Linking.openURL(data.sourceUrl).catch(() => {
