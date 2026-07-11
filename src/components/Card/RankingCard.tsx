@@ -18,7 +18,7 @@ export default function RankingCard({
   rank,
   category,
   title,
-  showAD = true,
+  showAD = false,
   deadline,
   thumbnailUrl,
 }: Props) {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
@@ -14,8 +14,7 @@ import BottomNavigation from '@/src/components/Nav/BottomNavigation';
 import type { TabKey } from '@/src/components/Nav/BottomNav';
 import { colors } from '@/src/constants/colors';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
-import { getBestType, getPersonalizationActivities } from '@/src/api/activities';
-import { getDetailData } from '@/src/api/pages';
+import { getCurationDetailPageData } from '@/src/api/pages';
 import { assignUniqueVariants } from '@/src/utils/tagVariant';
 
 const TAB_TO_ROUTE: Record<TabKey, string> = {
@@ -26,9 +25,6 @@ const TAB_TO_ROUTE: Record<TabKey, string> = {
   my: '/mypage',
 };
 
-const CURATION_SUBTITLE = '취향에 딱 맞는 활동을 모았어요';
-const CURATION_CARD_COUNT = 4;
-
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   PROGRAM: '프로그램',
   ONE_DAY: '원데이',
@@ -36,67 +32,34 @@ const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   CLUB: '동아리',
 };
 
-type CurationDetailActivity = {
-  id: number;
-  category: string;
-  dday: string;
-  title: string;
-  thumbnailUrl?: string;
-  initialSaved: boolean;
-};
-
-async function fetchCurationDetailActivities(): Promise<CurationDetailActivity[]> {
-  const items = (await getPersonalizationActivities()).slice(0, CURATION_CARD_COUNT);
-  const details = await Promise.all(items.map((item) => getDetailData(item.id)));
-  return items.map((item, i) => {
-    const detail = details[i];
-    return {
-      id: item.id,
-      category: ACTIVITY_TYPE_LABEL[detail.activityType] ?? detail.activityType,
-      dday: detail.deadline <= 0 ? 'D-day' : `D-${detail.deadline}`,
-      title: item.title,
-      thumbnailUrl: item.thumbnailUrl,
-      initialSaved: item.activityFavoriteId != null,
-    };
-  });
-}
-
 export default function CurationDetailScreen() {
   const router = useRouter();
   const navigateOnce = useNavigateOnce();
   const insets = useSafeAreaInsets();
+  const { curationKey } = useLocalSearchParams<{ curationKey?: string }>();
 
   const {
-    data: bestType,
-    isError: isBestTypeError,
-    error: bestTypeError,
-    refetch: refetchBestType,
-  } = useQuery({
-    queryKey: ['personalization', 'best-type'],
-    queryFn: getBestType,
-  });
-
-  const {
-    data: activities,
+    data: curationData,
     isLoading,
-    isError: isActivitiesError,
-    error: activitiesError,
-    refetch: refetchActivities,
+    isError,
+    error,
+    refetch,
   } = useQuery({
-    queryKey: ['personalization', 'curation-detail-activities'],
-    queryFn: fetchCurationDetailActivities,
+    queryKey: ['curation-detail', curationKey],
+    queryFn: () => getCurationDetailPageData(curationKey!),
+    enabled: !!curationKey,
   });
 
   useFocusEffect(
     useCallback(() => {
-      refetchActivities();
-    }, [refetchActivities]),
+      if (curationKey) refetch();
+    }, [curationKey, refetch]),
   );
 
-  const isError = isBestTypeError || isActivitiesError;
-  const error = bestTypeError ?? activitiesError;
+  const hasError = isError || !curationKey;
 
   const errorMessage = (() => {
+    if (!curationKey) return '큐레이션 정보를 찾을 수 없어요.';
     if (!isError) return null;
     const err = error as AxiosError;
     if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
@@ -105,20 +68,26 @@ export default function CurationDetailScreen() {
     return '큐레이션 정보를 불러오지 못했어요. 다시 시도해주세요.';
   })();
 
-  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
+  const isRetriable = hasError && !!curationKey && (error as AxiosError)?.response?.status !== 401;
 
   const retry = () => {
-    refetchBestType();
-    refetchActivities();
+    refetch();
   };
 
-  const tags = assignUniqueVariants((bestType?.userTags ?? []).slice(0, 2));
-  const curationActivities = activities ?? [];
+  const tags = assignUniqueVariants((curationData?.hashtags ?? []).slice(0, 2));
+  const curationActivities = (curationData?.activities ?? []).map((activity) => ({
+    id: activity.id,
+    category: ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType,
+    dday: activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`,
+    title: activity.title,
+    thumbnailUrl: activity.thumbnailUrl,
+    initialSaved: activity.liked,
+  }));
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white, paddingTop: insets.top }}>
       <ArrowLeftBar onPress={() => router.back()} />
-      {isError ? (
+      {hasError ? (
         <View style={styles.errorBox}>
           <Typography size="sm" weight="medium" color="secondary" style={styles.errorText}>
             {errorMessage}
@@ -134,8 +103,8 @@ export default function CurationDetailScreen() {
       ) : (
         <>
           <View style={styles.titleBlock}>
-            <Text style={styles.title}>{bestType?.bestType ?? ''}</Text>
-            <Text style={styles.subtitle}>{CURATION_SUBTITLE}</Text>
+            <Text style={styles.title}>{curationData?.title ?? ''}</Text>
+            <Text style={styles.subtitle}>{curationData?.subtitle ?? ''}</Text>
           </View>
           <View style={styles.tagsRow}>
             {tags.map((tag) => (
@@ -149,36 +118,33 @@ export default function CurationDetailScreen() {
               </View>
             ) : (
               <View style={styles.grid}>
-                {Array.from(
-                  { length: Math.ceil(curationActivities.length / 2) },
-                  (_, rowIndex) => {
-                    const rowItems = curationActivities.slice(rowIndex * 2, rowIndex * 2 + 2);
-                    const isLastRow = rowIndex === Math.ceil(curationActivities.length / 2) - 1;
-                    const isOddTotal = curationActivities.length % 2 !== 0;
-                    return (
-                      <View key={rowItems[0]?.id ?? rowIndex} style={styles.row}>
-                        {rowItems.map((activity) => (
-                          <TouchableOpacity
-                            key={activity.id}
-                            style={styles.gridItem}
-                            activeOpacity={0.9}
-                            onPress={() => navigateOnce(`/detail/${activity.id}`)}
-                          >
-                            <CurationDetailCard
-                              activityId={activity.id}
-                              category={activity.category}
-                              dday={activity.dday}
-                              title={activity.title}
-                              thumbnailUrl={activity.thumbnailUrl}
-                              initialSaved={activity.initialSaved}
-                            />
-                          </TouchableOpacity>
-                        ))}
-                        {isLastRow && isOddTotal && <View style={styles.gridItem} />}
-                      </View>
-                    );
-                  },
-                )}
+                {Array.from({ length: Math.ceil(curationActivities.length / 2) }, (_, rowIndex) => {
+                  const rowItems = curationActivities.slice(rowIndex * 2, rowIndex * 2 + 2);
+                  const isLastRow = rowIndex === Math.ceil(curationActivities.length / 2) - 1;
+                  const isOddTotal = curationActivities.length % 2 !== 0;
+                  return (
+                    <View key={rowItems[0]?.id ?? rowIndex} style={styles.row}>
+                      {rowItems.map((activity) => (
+                        <TouchableOpacity
+                          key={activity.id}
+                          style={styles.gridItem}
+                          activeOpacity={0.9}
+                          onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                        >
+                          <CurationDetailCard
+                            activityId={activity.id}
+                            category={activity.category}
+                            dday={activity.dday}
+                            title={activity.title}
+                            thumbnailUrl={activity.thumbnailUrl}
+                            initialSaved={activity.initialSaved}
+                          />
+                        </TouchableOpacity>
+                      ))}
+                      {isLastRow && isOddTotal && <View style={styles.gridItem} />}
+                    </View>
+                  );
+                })}
               </View>
             )}
           </View>
@@ -187,7 +153,7 @@ export default function CurationDetailScreen() {
       <View style={styles.navWrapper}>
         <BottomNavigation
           activeTab="home"
-          onTabChange={(tab: TabKey) => router.push(TAB_TO_ROUTE[tab])}
+          onTabChange={(tab: TabKey) => navigateOnce(TAB_TO_ROUTE[tab])}
         />
         <View style={styles.navBottomFiller} />
       </View>

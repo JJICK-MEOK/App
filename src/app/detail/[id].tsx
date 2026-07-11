@@ -10,6 +10,7 @@ import {
   Linking,
   Alert,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -139,6 +140,7 @@ export default function ActivityDetailPage() {
 
   const handleSavePress = () => {
     if (!data || isSaving) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const nextSaved = !saved;
     setSaved(nextSaved);
     setIsSaving(true);
@@ -263,7 +265,13 @@ export default function ActivityDetailPage() {
                     </View>
                   </View>
 
-                  <Typography size="xxl" weight="semiBold" style={styles.title}>
+                  <Typography
+                    size="xxl"
+                    weight="semiBold"
+                    style={styles.title}
+                    lineBreakStrategyIOS="hangul-word"
+                    android_hyphenationFrequency="none"
+                  >
                     {data?.title ?? ''}
                   </Typography>
 
@@ -289,7 +297,13 @@ export default function ActivityDetailPage() {
                 {activeTab === 'info' && (
                   <View style={styles.infoContent}>
                     <View style={styles.posterSection}>
-                      <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
+                      <Typography
+                        size="lg"
+                        weight="semiBold"
+                        style={styles.sectionTitle}
+                        lineBreakStrategyIOS="hangul-word"
+                        android_hyphenationFrequency="none"
+                      >
                         {`<${data?.title ?? ''}>`}
                       </Typography>
                       {hasImage && (

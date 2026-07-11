@@ -13,7 +13,7 @@ import ArrowLeft from '@/assets/images/ArrowLeft.svg';
 import { colors } from '@/src/constants/colors';
 import { searchActivities } from '@/src/api/activities';
 import type { ActivitySummary } from '@/src/types/activities';
-import { assignUniqueVariants } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const SEARCH_DEBOUNCE_MS = 400;
@@ -27,7 +27,7 @@ function getDaysLeft(activity: ActivitySummary) {
 function toCardProps(activity: ActivitySummary) {
   const daysLeft = getDaysLeft(activity);
   const dday = daysLeft <= 0 ? 'D-day' : `D-${daysLeft}`;
-  const tags = assignUniqueVariants(activity.tags.slice(0, 2));
+  const tags = assignUniqueVariants(pickDiverseTags(activity.tags));
   return {
     dday,
     title: activity.title,

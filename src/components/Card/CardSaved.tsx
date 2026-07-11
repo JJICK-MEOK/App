@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
@@ -41,6 +42,7 @@ export default function CardSaved({
 
   const handleHeartPress = () => {
     if (isSaving) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const nextSaved = !saved;
     setSaved(nextSaved);
     setIsSaving(true);

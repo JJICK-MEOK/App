@@ -22,7 +22,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import CardSaved from '@/src/components/Card/CardSaved';
 import { getFavoritesPageData } from '@/src/api/pages';
 import type { HomeActivity } from '@/src/types/activities';
-import { assignUniqueVariants } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
@@ -203,7 +203,7 @@ export default function ProgramListScreen() {
                             activityId={activity.id}
                             dday={activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`}
                             title={activity.title}
-                            tags={assignUniqueVariants(activity.hashtags.slice(0, 2))}
+                            tags={assignUniqueVariants(pickDiverseTags(activity.hashtags))}
                             thumbnailUrl={activity.thumbnailUrl}
                             onRemove={handleRemove}
                           />

@@ -9,7 +9,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -22,11 +21,13 @@ import Club from '@/assets/images/Club.svg';
 import RecommendationCard from '@/src/components/Card/RecommendationCard';
 import RankingCard from '@/src/components/Card/RankingCard';
 import Curation from '@/src/components/Card/Curation';
+import Indicator from '@/src/components/Indicator/Indicator';
 import { getTags } from '@/src/api/user';
 import { getHomeData } from '@/src/api/pages';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 import { assignUniqueVariants } from '@/src/utils/tagVariant';
-import type { Activity, HomeActivity } from '@/src/types/activities';
+import { CURATION_KEY_BY_TITLE } from '@/src/constants/curationThemes';
+import type { Activity, CurationThemeCard } from '@/src/types/activities';
 
 const SCREEN_WIDTH = Math.min(Dimensions.get('window').width, 430);
 const CURATION_ITEM_WIDTH = SCREEN_WIDTH * (211 / 375);
@@ -48,11 +49,11 @@ function chunk<T>(items: T[], size: number): T[][] {
   return result;
 }
 
-function toCurationActivity(item: HomeActivity): Activity {
+function toCurationActivity(item: CurationThemeCard): Activity {
   return {
-    id: String(item.id),
+    id: item.title,
     title: item.title,
-    days: Math.max(0, item.deadline),
+    days: 0,
     tags: assignUniqueVariants(
       (item.hashtags ?? []).slice(0, 2).map((tag) => (tag.startsWith('#') ? tag.slice(1) : tag)),
     ).map(({ label, variant }) => ({ label, type: variant })),
@@ -122,7 +123,6 @@ function ErrorBox({
 }
 
 export default function HomeScreen() {
-  const router = useRouter();
   const navigateOnce = useNavigateOnce();
   const insets = useSafeAreaInsets();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -174,7 +174,7 @@ export default function HomeScreen() {
     return mapped.length > 0 ? mapped : DEFAULT_ICONS;
   }, [tagsData]);
 
-  const featured = (homeData?.featured.activities ?? []).filter((a) => a.deadline >= 0);
+  const featured = homeData?.featured.activities ?? [];
   const recommended = (homeData?.expandedRecommendation.activities ?? []).filter(
     (a) => a.deadline >= 0,
   );
@@ -195,7 +195,7 @@ export default function HomeScreen() {
   return (
     <ScreenLayout style={{ backgroundColor: '#FFF' }}>
       <View style={[styles.topNavWrapper, { paddingTop: insets.top }]}>
-        <TopNav onSearchPress={() => router.push('/search')} />
+        <TopNav onSearchPress={() => navigateOnce('/search')} />
       </View>
       <View style={{ flex: 1 }} {...panResponder.panHandlers}>
         {isRefreshing && (
@@ -218,14 +218,20 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.curationSection}
             >
-              {curationActivities.map((activity) => (
-                <View key={activity.id} style={styles.curationItem}>
-                  <Curation
-                    activity={activity}
-                    onPress={() => navigateOnce('/detail/curation-detail')}
-                  />
-                </View>
-              ))}
+              {curationActivities.map((activity) => {
+                const curationKey = CURATION_KEY_BY_TITLE[activity.title];
+                return (
+                  <View key={activity.id} style={styles.curationItem}>
+                    <Curation
+                      activity={activity}
+                      onPress={() =>
+                        curationKey &&
+                        navigateOnce(`/detail/curation-detail?curationKey=${curationKey}`)
+                      }
+                    />
+                  </View>
+                );
+              })}
             </ScrollView>
           </View>
 
@@ -236,7 +242,7 @@ export default function HomeScreen() {
                   key={label}
                   style={styles.iconItem}
                   activeOpacity={0.7}
-                  onPress={() => router.push(route)}
+                  onPress={() => navigateOnce(route)}
                 >
                   <View style={styles.iconContainer}>
                     <Svg width={44} height={45} style={{ flexShrink: 0 }} />
@@ -297,17 +303,7 @@ export default function HomeScreen() {
                       ))}
                     </ScrollView>
                     {rankingPageCount > 1 && (
-                      <View style={styles.rankDots}>
-                        {Array.from({ length: rankingPageCount }).map((_, i) => (
-                          <View
-                            key={i}
-                            style={[
-                              styles.rankDot,
-                              i === rankPageIndex ? styles.rankDotActive : styles.rankDotInactive,
-                            ]}
-                          />
-                        ))}
-                      </View>
+                      <Indicator count={rankingPageCount} activeIndex={rankPageIndex} />
                     )}
                   </>
                 )}
@@ -535,23 +531,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     gap: RANKING_CARD_GAP,
-  },
-  rankDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 11,
-  },
-  rankDot: {
-    width: 8,
-    height: 8,
-    aspectRatio: 1,
-    borderRadius: 4,
-  },
-  rankDotActive: {
-    backgroundColor: '#FFE066',
-  },
-  rankDotInactive: {
-    backgroundColor: '#EAEAEA',
   },
 });

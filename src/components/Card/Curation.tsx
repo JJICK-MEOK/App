@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
@@ -14,15 +15,17 @@ type Props = {
 };
 
 export default function Curation({ activity, onPress }: Props) {
+  const [imageError, setImageError] = useState(false);
   const tags = activity.tags.slice(0, 2);
 
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      {activity.imageUrl ? (
+      {activity.imageUrl && !imageError ? (
         <Image
           source={{ uri: activity.imageUrl }}
           style={StyleSheet.absoluteFill}
           resizeMode="cover"
+          onError={() => setImageError(true)}
         />
       ) : (
         <View style={[StyleSheet.absoluteFill, styles.defaultImageWrapper]}>
@@ -30,12 +33,7 @@ export default function Curation({ activity, onPress }: Props) {
         </View>
       )}
       <LinearGradient
-        colors={[
-          'transparent',
-          'transparent',
-          'rgba(0,0,0,0.8)',
-          'rgba(0,0,0,0.8)',
-        ]}
+        colors={['transparent', 'transparent', 'rgba(0,0,0,0.8)', 'rgba(0,0,0,0.8)']}
         locations={[0, 0.5118, 0.7833, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -51,7 +49,12 @@ export default function Curation({ activity, onPress }: Props) {
       </Text>
       <View style={styles.tags}>
         {tags.map((tag) => (
-          <ChipBadge key={`${tag.type}-${tag.label}`} label={`#${tag.label}`} variant={tag.type} dark />
+          <ChipBadge
+            key={`${tag.type}-${tag.label}`}
+            label={`#${tag.label}`}
+            variant={tag.type}
+            dark
+          />
         ))}
       </View>
     </Pressable>
