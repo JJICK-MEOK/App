@@ -1,7 +1,7 @@
 import { Tabs, useSegments } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Edge, SafeAreaView } from 'react-native-safe-area-context';
+import { Edge, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabKey } from '@/src/components/Nav/BottomNav';
 import BottomNavigation from '@/src/components/Nav/BottomNavigation';
 import { colors } from '@/src/constants/colors';
@@ -23,13 +23,11 @@ const TAB_TO_ROUTE: Record<TabKey, string> = {
 };
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
   const segments = useSegments();
   const currentTab = segments.at(-1);
   const isHome = currentTab === 'home';
   const isCustom = currentTab === 'custom';
-  const isWishlist = currentTab === 'wishlist';
-  const isCategory = currentTab === 'category';
-  const isMypage = currentTab === 'mypage';
   const edges: Edge[] = isHome || isCustom ? [] : ['top'];
 
   const bgColor = isHome ? 'transparent' : colors.neutral.white;
@@ -47,8 +45,8 @@ export default function TabsLayout() {
               <BottomNavigation
                 activeTab={activeTab}
                 onTabChange={(tab: TabKey) => navigation.navigate(TAB_TO_ROUTE[tab])}
-                transparent={isHome || isWishlist || isCategory || isCustom || isMypage}
               />
+              <View style={[styles.navBottomFiller, { height: Math.max(insets.bottom, 25) }]} />
             </View>
           );
         }}
@@ -70,5 +68,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'transparent',
+  },
+  navBottomFiller: {
+    backgroundColor: colors.neutral.white,
   },
 });

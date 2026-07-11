@@ -13,7 +13,8 @@ import ArrowLeft from '@/assets/images/ArrowLeft.svg';
 import { colors } from '@/src/constants/colors';
 import { searchActivities } from '@/src/api/activities';
 import type { ActivitySummary } from '@/src/types/activities';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const SEARCH_DEBOUNCE_MS = 400;
 
@@ -26,10 +27,7 @@ function getDaysLeft(activity: ActivitySummary) {
 function toCardProps(activity: ActivitySummary) {
   const daysLeft = getDaysLeft(activity);
   const dday = daysLeft <= 0 ? 'D-day' : `D-${daysLeft}`;
-  const tags = activity.tags.slice(0, 2).map((label, i) => ({
-    label,
-    variant: getTagVariant(label, i),
-  }));
+  const tags = assignUniqueVariants(pickDiverseTags(activity.tags));
   return {
     dday,
     title: activity.title,
@@ -42,6 +40,7 @@ function toCardProps(activity: ActivitySummary) {
 
 export default function SearchScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [searchText, setSearchText] = useState('');
   const [debouncedKeyword, setDebouncedKeyword] = useState('');
 
@@ -131,7 +130,7 @@ export default function SearchScreen() {
                   <TouchableOpacity
                     key={item.id}
                     activeOpacity={0.7}
-                    onPress={() => router.push(`/detail/${item.id}`)}
+                    onPress={() => navigateOnce(`/detail/${item.id}`)}
                   >
                     <ActivityCard {...toCardProps(item)} />
                   </TouchableOpacity>
@@ -160,7 +159,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 23,
     paddingBottom: 40,
-    gap: 20,
+    gap: 37,
   },
   resultLabel: {
     color: colors.text.tertiary,

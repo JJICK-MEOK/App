@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Typography } from '@/src/components/Typography/Typography';
@@ -9,28 +9,21 @@ import DefaultActivity from '@/assets/images/DefaultActivity.svg';
 import { colors } from '@/src/constants/colors';
 import { addFavorite, deleteFavorite } from '@/src/api/favorites';
 
-type TagVariant = 'MOOD' | 'INTENSITY' | 'DURATION' | 'SIZE' | 'PURPOSE';
-
-type Tag = {
-  label: string;
-  variant: TagVariant;
-};
-
 type Props = {
   activityId: number;
+  category: string;
   dday: string;
   title: string;
-  tags: Tag[];
   initialSaved?: boolean;
   thumbnailUrl?: string;
   onRemove?: (activityId: number) => void;
 };
 
-export default function CardSaved({
+export default function CurationDetailCard({
   activityId,
+  category,
   dday,
   title,
-  tags,
   initialSaved = true,
   thumbnailUrl,
   onRemove,
@@ -39,6 +32,14 @@ export default function CardSaved({
   const [isSaving, setIsSaving] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imgWidth, setImgWidth] = useState(0);
+
+  useEffect(() => {
+    setSaved(initialSaved);
+  }, [initialSaved]);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [thumbnailUrl]);
 
   const handleHeartPress = () => {
     if (isSaving) return;
@@ -86,26 +87,22 @@ export default function CardSaved({
         </TouchableOpacity>
       </View>
       <View style={styles.content}>
-        <View style={styles.titleRow}>
-          <Typography
-            size="lg"
-            weight="semiBold"
-            style={styles.title}
-            numberOfLines={2}
-            lineBreakStrategyIOS="hangul-word"
-            android_hyphenationFrequency="none"
-          >
-            {title}
-          </Typography>
+        <View style={styles.topRow}>
+          <ChipBadge label={category} variant="category" />
           <Typography size="sm" weight="semiBold" style={styles.dday} numberOfLines={1}>
             {dday}
           </Typography>
         </View>
-        <View style={styles.tagsRow}>
-          {tags.map((tag, index) => (
-            <ChipBadge key={index} label={tag.label} variant={tag.variant} />
-          ))}
-        </View>
+        <Typography
+          size="lg"
+          weight="semiBold"
+          style={styles.title}
+          numberOfLines={2}
+          lineBreakStrategyIOS="hangul-word"
+          android_hyphenationFrequency="none"
+        >
+          {title}
+        </Typography>
       </View>
     </View>
   );
@@ -114,7 +111,7 @@ export default function CardSaved({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    gap: 11,
+    gap: 10,
   },
   imageArea: {
     height: 150,
@@ -127,26 +124,20 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   content: {
-    gap: 10,
+    gap: 5,
   },
-  titleRow: {
+  topRow: {
     flexDirection: 'row',
-    gap: 9,
-    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
-    flex: 1,
     color: colors.text.primary,
   },
   dday: {
     flexShrink: 0,
     color: colors.text.secondary,
     textAlign: 'right',
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    gap: 5,
-    alignItems: 'center',
   },
   heartContainer: {
     width: 29,

@@ -92,7 +92,7 @@ export default function ActivityCard({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     gap: 26,
     width: '100%',
   },
@@ -102,11 +102,13 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   titleGroup: {
-    flexDirection: 'column',
-    gap: 6,
+    position: 'relative',
   },
   ddayText: {
-    color: colors.text.primary,
+    position: 'absolute',
+    top: -20,
+    left: 0,
+    color: colors.text.secondary,
   },
   titleText: {
     color: colors.text.primary,
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 0.944,
     borderColor: colors.border.default,
+    backgroundColor: '#E8E8E8',
     overflow: 'hidden',
   },
   image: {

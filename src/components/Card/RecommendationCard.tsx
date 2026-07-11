@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
 import DefaultActivity from '@/assets/images/DefaultActivity.svg';
+import { colors } from '@/src/constants/colors';
 
 type Props = {
   category: string;
@@ -21,7 +22,7 @@ export default function RecommendationCard({
   thumbnailUrl,
 }: Props) {
   const [imageError, setImageError] = useState(false);
-  const displayTags = hashtags.slice(0, 2);
+  const displayTags = assignUniqueVariants(pickDiverseTags(hashtags));
   const ddayLabel = deadline <= 0 ? 'D-day' : `D-${deadline}`;
 
   return (
@@ -54,8 +55,8 @@ export default function RecommendationCard({
         </Typography>
       </View>
       <View style={styles.preferences}>
-        {displayTags.map((tag, i) => (
-          <ChipBadge key={i} label={tag} variant={getTagVariant(tag, i)} />
+        {displayTags.map((tag) => (
+          <ChipBadge key={tag.label} label={tag.label} variant={tag.variant} />
         ))}
       </View>
     </View>
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   dday: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 12,
-    color: '#222',
+    color: colors.text.secondary,
     textAlign: 'center',
   },
   preferences: {

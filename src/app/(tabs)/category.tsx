@@ -9,7 +9,7 @@ import {
   PanResponder,
 } from 'react-native';
 import { Loading } from '@/src/components/Loading/Loading';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -18,11 +18,13 @@ import ActivityCard from '@/src/components/Card/ActivityCard';
 import CategoryFilter from '@/src/components/Modal/CategoryFilter';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
-import { getCategoryPageData, getHomeData } from '@/src/api/pages';
+import { getCategoryPageData } from '@/src/api/pages';
+import { getMyProfile } from '@/src/api/user';
 import type { HomeActivity } from '@/src/types/activities';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
 import AppBar from '@/src/components/Bar/AppBar';
 import CategoryBar from '@/src/components/Bar/CategoryBar';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 type SheetType = 'type' | 'sort' | null;
 
@@ -30,10 +32,7 @@ const PULL_THRESHOLD = 60;
 
 function toCardProps(activity: HomeActivity) {
   const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
-  const tags = (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
-    label,
-    variant: getTagVariant(label, i),
-  }));
+  const tags = assignUniqueVariants(pickDiverseTags(activity.hashtags ?? []));
   return {
     dday,
     title: activity.title,
@@ -45,7 +44,7 @@ function toCardProps(activity: HomeActivity) {
 }
 
 export default function CategoryScreen() {
-  const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [selectedTypeValue, setSelectedTypeValue] = useState('');
   const [selectedCategoryValue, setSelectedCategoryValue] = useState('');
   const [selectedSortValue, setSelectedSortValue] = useState('');
@@ -84,11 +83,11 @@ export default function CategoryScreen() {
   });
   refetchRef.current = refetch;
 
-  const { data: homeData } = useQuery({
-    queryKey: ['home'],
-    queryFn: () => getHomeData(6),
+  const { data: profile } = useQuery({
+    queryKey: ['users', 'me', 'profile'],
+    queryFn: getMyProfile,
   });
-  const nickname = homeData?.user.nickname ?? '';
+  const nickname = profile?.nickname ?? '';
 
   const typeOptions = data?.typeOptions ?? [];
   const categoryOptions = data?.categoryOptions ?? [];
@@ -127,7 +126,7 @@ export default function CategoryScreen() {
 
   return (
     <ScreenLayout style={{ backgroundColor: colors.neutral.white }}>
-      <AppBar name={nickname} onSearchPress={() => router.push('/search')} />
+      <AppBar name={nickname} onSearchPress={() => navigateOnce('/search')} />
       <CategoryBar
         tabs={tabOptions}
         selected={selectedCategoryLabel}
@@ -186,13 +185,14 @@ export default function CategoryScreen() {
                 <TouchableOpacity
                   key={activity.id}
                   activeOpacity={0.7}
-                  onPress={() => router.push(`/detail/${activity.id}`)}
+                  onPress={() => navigateOnce(`/detail/${activity.id}`)}
                 >
                   <ActivityCard {...toCardProps(activity)} />
                 </TouchableOpacity>
               ))}
             </View>
           )}
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </View>
 
@@ -236,6 +236,11 @@ export default function CategoryScreen() {
 const styles = StyleSheet.create({
   fullWidth: {
     marginHorizontal: -20,
+  },
+  bottomSpacer: {
+    height: 25,
+    alignSelf: 'stretch',
+    backgroundColor: '#FFF',
   },
   filterRow: {
     flexDirection: 'row',

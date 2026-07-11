@@ -22,7 +22,8 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getCategoryPageData } from '@/src/api/pages';
 import type { HomeActivity } from '@/src/types/activities';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const PULL_THRESHOLD = 60;
 const PULL_MAX = 80;
@@ -31,10 +32,7 @@ type SheetType = 'category' | 'sort' | null;
 
 function toCardProps(activity: HomeActivity) {
   const dday = activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`;
-  const tags = (activity.hashtags ?? []).slice(0, 2).map((label, i) => ({
-    label,
-    variant: getTagVariant(label, i),
-  }));
+  const tags = assignUniqueVariants(pickDiverseTags(activity.hashtags ?? []));
   return {
     dday,
     title: activity.title,
@@ -54,6 +52,7 @@ type Props = {
 
 export default function CategoryListScreen({ type, title }: Props) {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const insets = useSafeAreaInsets();
   const [selectedCategoryValue, setSelectedCategoryValue] = useState('');
   const [selectedSortValue, setSelectedSortValue] = useState('');
@@ -198,7 +197,7 @@ export default function CategoryListScreen({ type, title }: Props) {
               <TouchableOpacity
                 key={activity.id}
                 activeOpacity={0.7}
-                onPress={() => router.push(`/detail/${activity.id}`)}
+                onPress={() => navigateOnce(`/detail/${activity.id}`)}
               >
                 <ActivityCard {...toCardProps(activity)} />
               </TouchableOpacity>
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 18,
     paddingBottom: 40,
     gap: 30,
   },
