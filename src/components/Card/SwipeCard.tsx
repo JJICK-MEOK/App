@@ -143,7 +143,12 @@ export default function SwipeCard({
         >
           <View style={{ gap: 5 }}>
             <Text style={[styles.semiBold, { fontSize: 12 }]}>D-{activity.days}</Text>
-            <Text style={[styles.semiBold, { fontSize: 20 }]} numberOfLines={2}>
+            <Text
+              style={[styles.semiBold, { fontSize: 20 }]}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+              lineBreakStrategyIOS="hangul-word"
+            >
               {activity.title}
             </Text>
           </View>

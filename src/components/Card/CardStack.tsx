@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useLayoutEffect, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -45,6 +46,7 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
   const handleSave = useCallback((id: string) => {
     if (inFlightIds.current.has(id)) return;
     inFlightIds.current.add(id);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const isSaved = savedIdsRef.current.has(id);
     const next = new Set(savedIdsRef.current);

@@ -12,10 +12,12 @@ import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 import DefaultActivitySvg from '@/assets/images/DefaultActivity.svg';
 
 export default function OnboardingResult() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const storedNickname = useOnboardingStore((s) => s.nickname) || '회원';
 
   const { data, isLoading } = useQuery({
@@ -24,7 +26,6 @@ export default function OnboardingResult() {
   });
 
   const nickname = data?.nickname ?? storedNickname;
-  const profileTitle = data?.tasteProfile.title;
   const activities = (data?.recommended.activities ?? []).slice(0, 3);
 
   return (
@@ -36,9 +37,7 @@ export default function OnboardingResult() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerBlock}>
           <Typography size="xxxl" weight="semiBold" style={styles.title}>
-            {profileTitle
-              ? `${nickname}님은\n${profileTitle}`
-              : `${nickname}님을 위한\n추천 활동이 준비됐어요`}
+            {`${nickname}님이 좋아할 만한\n활동을 모아봤어요!`}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
             나만을 위한 추천 활동을 확인하세요
@@ -58,7 +57,7 @@ export default function OnboardingResult() {
                 subtitle={activity.address}
                 imageUri={activity.thumbnailUrl || undefined}
                 tags={assignUniqueVariants(activity.hashtags.slice(0, 2))}
-                onPress={() => router.push(`/detail/${activity.id}`)}
+                onPress={() => navigateOnce(`/detail/${activity.id}`)}
                 renderFallback={() => <DefaultActivitySvg width="100%" height="100%" />}
               />
             ))}

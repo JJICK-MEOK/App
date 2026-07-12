@@ -11,6 +11,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getTags } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const GROUP_LABELS: Record<string, string> = {
   MOOD: '선호하는 분위기',
@@ -24,6 +25,7 @@ const GROUP_ORDER = ['MOOD', 'INTENSITY', 'PURPOSE', 'DURATION', 'SIZE'];
 
 export default function OnboardingStep4() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const { setPreferenceTagIds, preferenceTagIds } = useOnboardingStore();
   const [selectedTagIds, setSelectedTagIds] = useState<Set<number>>(new Set(preferenceTagIds));
 
@@ -57,7 +59,7 @@ export default function OnboardingStep4() {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
-      } else if (next.size < 10) {
+      } else if (next.size < 8) {
         next.add(id);
       }
       return next;
@@ -82,7 +84,7 @@ export default function OnboardingStep4() {
             {'어떤 유형의\n활동이 끌리나요?'}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
-            최대 10개까지 선택해주세요.
+            최대 8까지 선택해주세요.
           </Typography>
         </View>
 
@@ -103,9 +105,14 @@ export default function OnboardingStep4() {
           <View style={styles.sectionsContainer}>
             {groups.map((group) => (
               <View key={group} style={styles.section}>
-                <Typography size="md" weight="medium" style={styles.sectionLabel}>
-                  {GROUP_LABELS[group]}
-                </Typography>
+                <View style={styles.sectionLabelRow}>
+                  <Typography size="md" weight="medium" style={styles.sectionLabel}>
+                    {GROUP_LABELS[group]}
+                  </Typography>
+                  <Typography size="sm" weight="medium" color="tertiary">
+                    (1개 이상)
+                  </Typography>
+                </View>
                 <View style={styles.chipsRow}>
                   {tagsByGroup[group].map((tag) => {
                     const isSelected = selectedTagIds.has(tag.id);
@@ -138,7 +145,7 @@ export default function OnboardingStep4() {
           label="다음"
           onPress={() => {
             setPreferenceTagIds(Array.from(selectedTagIds));
-            router.push('/onboarding/step5');
+            navigateOnce('/onboarding/step5');
           }}
           variant="dark"
           disabled={!allCategoriesSelected}
@@ -169,6 +176,11 @@ const styles = StyleSheet.create({
   },
   section: {
     gap: 16,
+  },
+  sectionLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   sectionLabel: {
     color: colors.text.secondary,

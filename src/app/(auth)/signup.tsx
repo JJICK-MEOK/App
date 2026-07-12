@@ -14,6 +14,7 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
 import { postEmailSendCode, postEmailVerifyCode } from '@/src/api/auth';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -37,6 +38,7 @@ type Step = 'email' | 'verify';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
 
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -122,7 +124,7 @@ export default function SignupScreen() {
   const { mutate: verifyCode, isPending: isVerifying } = useMutation({
     mutationFn: () => postEmailVerifyCode(email, code),
     onSuccess: () => {
-      router.push({ pathname: '/(auth)/password', params: { email } });
+      navigateOnce({ pathname: '/(auth)/password', params: { email } });
     },
     onError: (error: any) => {
       const errorCode = error?.response?.data?.code;

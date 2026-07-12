@@ -23,6 +23,7 @@ import { getMyProfile } from '@/src/api/user';
 import { useAuthStore } from '@/src/store/authStore';
 import { colors } from '@/src/constants/colors';
 import { sortByVariantPriority } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 function MenuRow({ label, onPress }: { label: string; onPress: () => void }) {
   return (
@@ -37,6 +38,7 @@ function MenuRow({ label, onPress }: { label: string; onPress: () => void }) {
 
 export default function MyPageScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const logout = useAuthStore((s) => s.logout);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
@@ -108,7 +110,7 @@ export default function MyPageScreen() {
         <View style={styles.menuCard}>
           <MenuRow label="회원정보 관리" onPress={() => {}} />
           <MenuRow label="공지사항" onPress={() => {}} />
-          <MenuRow label="약관 및 정책" onPress={() => router.push('/terms/service')} />
+          <MenuRow label="약관 및 정책" onPress={() => navigateOnce('/terms/service')} />
           <MenuRow label="로그아웃" onPress={() => setShowLogoutModal(true)} />
         </View>
       </ScrollView>

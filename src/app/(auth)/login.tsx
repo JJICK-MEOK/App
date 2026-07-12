@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack } from 'expo-router';
 import { BottomCTA } from '@/src/components/Button/BottomCTA';
 import { CTAContainer } from '@/src/components/Layout/CTAContainer';
 import SocialLoginButton from '@/src/components/Button/SocialLoginButton';
@@ -8,6 +8,7 @@ import { colors } from '@/src/constants/colors';
 import { useKakaoLogin } from '@/src/hooks/useKakaoLogin';
 import { useGoogleLogin } from '@/src/hooks/useGoogleLogin';
 import { useNaverLogin } from '@/src/hooks/useNaverLogin';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 import CarouselAuto from '@/src/components/Carousel/CarouselAuto';
 import Ellipse37 from '@/assets/images/Ellipse 37.svg';
 import Ellipse38 from '@/assets/images/Ellipse 38.svg';
@@ -15,7 +16,7 @@ import Ellipse39 from '@/assets/images/Ellipse 39.svg';
 import Ellipse40 from '@/assets/images/Ellipse 40.svg';
 
 export default function LoginScreen() {
-  const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const { login: kakaoLogin } = useKakaoLogin();
   const { login: googleLogin } = useGoogleLogin();
   const { login: naverLogin } = useNaverLogin();
@@ -48,7 +49,7 @@ export default function LoginScreen() {
       <CTAContainer>
         <BottomCTA
           label="이메일로 시작하기"
-          onPress={() => router.push('/(auth)/email-login')}
+          onPress={() => navigateOnce('/(auth)/email-login')}
           variant="dark"
         />
       </CTAContainer>

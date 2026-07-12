@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -8,6 +7,7 @@ import CardStack from '@/src/components/Card/CardStack';
 import { getPersonalizationActivities } from '@/src/api/activities';
 import { getCustomPageData } from '@/src/api/pages';
 import { getTagVariant } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 import type { Activity } from '@/src/types/activities';
 import type { PersonalizationActivity } from '@/src/types/activities';
 
@@ -39,7 +39,7 @@ function toActivity(item: PersonalizationActivity): Activity {
 
 export default function CustomScreen() {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
+  const navigateOnce = useNavigateOnce();
 
   const { data: pageData } = useQuery({
     queryKey: ['pages', 'custom'],
@@ -58,7 +58,7 @@ export default function CustomScreen() {
   const nickname = pageData?.nickname ?? '';
 
   const handlePressCard = (activity: Activity) => {
-    router.push(`/detail/${activity.id}`);
+    navigateOnce(`/detail/${activity.id}`);
   };
 
   return (

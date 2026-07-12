@@ -13,6 +13,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getRegions } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const SEOUL_LABEL = '서울';
 const SEOUL_ALL_LABEL = '서울전체';
@@ -38,6 +39,7 @@ const getPosition = (rowIndex: number, colIndex: number, totalRows: number): Loc
 
 export default function OnboardingStep3() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [isSeoulExpanded, setIsSeoulExpanded] = useState(false);
   const [isSeoulAllSelected, setIsSeoulAllSelected] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState<Set<string>>(new Set());
@@ -272,7 +274,7 @@ export default function OnboardingStep3() {
           label="다음"
           onPress={() => {
             setRegionIds(getSelectedRegionIds());
-            router.push('/onboarding/step4');
+            navigateOnce('/onboarding/step4');
           }}
           variant="dark"
           disabled={chips.length === 0}
