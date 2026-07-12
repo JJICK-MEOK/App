@@ -44,6 +44,7 @@ export default function ActivityCard({
             size="lg"
             weight="semiBold"
             style={styles.titleText}
+            numberOfLines={2}
             lineBreakStrategyIOS="hangul-word"
             android_hyphenationFrequency="none"
           >

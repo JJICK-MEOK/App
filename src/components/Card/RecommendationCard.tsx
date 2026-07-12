@@ -48,6 +48,7 @@ export default function RecommendationCard({
         </View>
         <Typography
           style={styles.title}
+          numberOfLines={2}
           lineBreakStrategyIOS="hangul-word"
           android_hyphenationFrequency="none"
         >

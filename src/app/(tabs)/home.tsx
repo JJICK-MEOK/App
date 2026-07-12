@@ -480,8 +480,10 @@ const styles = StyleSheet.create({
   popularTitle: {
     color: '#222',
     textAlign: 'center',
-    fontFamily: 'Pretendard-Bold',
-    fontSize: 20,
+    fontFamily: 'Pretendard-SemiBold',
+    fontWeight: '600',
+    fontSize: 18,
+    letterSpacing: -0.36,
     marginLeft: 20,
   },
   recommendErrorBox: {
