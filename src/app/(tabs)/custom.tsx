@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -8,22 +8,21 @@ import CardStack from '@/src/components/Card/CardStack';
 import { getPersonalizationActivities } from '@/src/api/activities';
 import { getCustomPageData } from '@/src/api/pages';
 import { getTagVariant } from '@/src/utils/tagVariant';
+import { colors } from '@/src/constants/colors';
 import type { Activity } from '@/src/types/activities';
 import type { PersonalizationActivity } from '@/src/types/activities';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const ELLIPSE_W = SCREEN_WIDTH * (614 / 375);
-const ELLIPSE_H = SCREEN_WIDTH * (507 / 375);
 
 function pickRandomTags(tags: string[], count: number): string[] {
   const shuffled = [...tags].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
 
+function getDaysLeft(recruitEndAt: string): number {
+  return Math.ceil((new Date(recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+}
+
 function toActivity(item: PersonalizationActivity): Activity {
-  const daysLeft = Math.ceil(
-    (new Date(item.recruitEndAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
+  const daysLeft = getDaysLeft(item.recruitEndAt);
   return {
     id: String(item.id),
     title: item.title,
@@ -34,6 +33,7 @@ function toActivity(item: PersonalizationActivity): Activity {
     }),
     imageUrl: item.thumbnailUrl,
     favoriteId: item.activityFavoriteId ?? undefined,
+    matchRate: item.matchRate,
   };
 }
 
@@ -52,7 +52,8 @@ export default function CustomScreen() {
   });
 
   const activities = useMemo<Activity[]>(
-    () => (rawActivities ?? []).map(toActivity),
+    () =>
+      (rawActivities ?? []).filter((item) => getDaysLeft(item.recruitEndAt) >= 0).map(toActivity),
     [rawActivities],
   );
   const nickname = pageData?.nickname ?? '';
@@ -63,10 +64,10 @@ export default function CustomScreen() {
 
   return (
     <ScreenLayout style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.bgEllipse} />
-
       <View style={styles.bar}>
-        <Text style={styles.barText}>{nickname ? `${nickname} 님을 위해 준비했어요!` : ' '}</Text>
+        <Text style={styles.barText}>
+          {nickname ? `${nickname}님 취향에 맞춰 골라봤어요!` : ' '}
+        </Text>
       </View>
 
       <View style={styles.cardArea}>
@@ -84,15 +85,6 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: '#FFFFFF',
   },
-  bgEllipse: {
-    position: 'absolute',
-    width: ELLIPSE_W,
-    height: ELLIPSE_H,
-    top: -(SCREEN_WIDTH * (153 / 375)),
-    left: -(ELLIPSE_W - SCREEN_WIDTH) / 2,
-    borderRadius: ELLIPSE_W,
-    backgroundColor: '#222',
-  },
   bar: {
     height: 60,
     paddingHorizontal: 22,
@@ -103,7 +95,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Pretendard-SemiBold',
     fontWeight: '600',
     fontSize: 22,
-    color: '#FFFFFF',
+    color: colors.text.primary,
   },
   cardArea: {
     flex: 1,
