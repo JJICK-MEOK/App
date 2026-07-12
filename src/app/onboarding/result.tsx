@@ -26,7 +26,9 @@ export default function OnboardingResult() {
   });
 
   const nickname = data?.nickname ?? storedNickname;
-  const activities = (data?.recommended.activities ?? []).slice(0, 3);
+  const activities = (data?.recommended.activities ?? [])
+    .filter((activity) => activity.deadline >= 0)
+    .slice(0, 3);
 
   return (
     <ScreenLayout style={styles.container}>

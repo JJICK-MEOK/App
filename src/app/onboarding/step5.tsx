@@ -52,7 +52,7 @@ export default function OnboardingStep5() {
       <View style={styles.checkContainer}>
         <IconSuccess />
         <Typography size="xxxl" weight="semiBold" style={styles.title}>
-          {`${nickname} 님을 위한\n활동들이 준비됐어요`}
+          {`${nickname}님을 위한\n활동들이 준비됐어요`}
         </Typography>
       </View>
 
