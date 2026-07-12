@@ -73,7 +73,7 @@ export default function OnboardingStep3() {
     }
     const normalRows = chunkRows(provinceNames);
     const seoulRowIndex = Math.floor(provinceNames.indexOf(SEOUL_LABEL) / COLS);
-    const districtRows = chunkRows([SEOUL_ALL_LABEL, ...districtNames]);
+    const districtRows = chunkRows(districtNames);
     return [
       ...normalRows.slice(0, seoulRowIndex + 1),
       ...districtRows,
@@ -184,9 +184,8 @@ export default function OnboardingStep3() {
     const map: Record<string, number> = {};
     provinces.forEach((p) => (map[p.name] = p.id));
     seoulDistricts.forEach((d) => (map[d.name] = d.id));
-    if (seoulProvince) map[SEOUL_ALL_LABEL] = seoulProvince.id;
     return map;
-  }, [provinces, seoulDistricts, seoulProvince]);
+  }, [provinces, seoulDistricts]);
 
   const getSelectedRegionIds = (): number[] => {
     const ids: number[] = [];
