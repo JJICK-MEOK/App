@@ -4,7 +4,7 @@ import TopNav from './TopNav';
 const meta: Meta<typeof TopNav> = {
   title: 'Nav/TopNav',
   component: TopNav,
-  args: { name: '닉네임' },
+  args: {},
 };
 
 export default meta;

@@ -8,7 +8,9 @@ import {
   PanResponder,
   Image,
   Linking,
+  Alert,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -27,7 +29,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getDetailData } from '@/src/api/pages';
 import { addFavorite, deleteFavorite } from '@/src/api/favorites';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
 
 const TABS = [
   { key: 'info', label: '정보' },
@@ -138,6 +140,7 @@ export default function ActivityDetailPage() {
 
   const handleSavePress = () => {
     if (!data || isSaving) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const nextSaved = !saved;
     setSaved(nextSaved);
     setIsSaving(true);
@@ -262,7 +265,13 @@ export default function ActivityDetailPage() {
                     </View>
                   </View>
 
-                  <Typography size="xxl" weight="semiBold" style={styles.title}>
+                  <Typography
+                    size="xxl"
+                    weight="semiBold"
+                    style={styles.title}
+                    lineBreakStrategyIOS="hangul-word"
+                    android_hyphenationFrequency="none"
+                  >
                     {data?.title ?? ''}
                   </Typography>
 
@@ -275,8 +284,8 @@ export default function ActivityDetailPage() {
                   </Typography>
 
                   <View style={styles.tagsRow}>
-                    {(data?.hashtags ?? []).map((tag, i) => (
-                      <ChipBadge key={tag} label={tag} variant={getTagVariant(tag, i)} />
+                    {assignUniqueVariants(data?.hashtags ?? []).map((tag) => (
+                      <ChipBadge key={tag.label} label={tag.label} variant={tag.variant} />
                     ))}
                   </View>
                 </View>
@@ -288,7 +297,13 @@ export default function ActivityDetailPage() {
                 {activeTab === 'info' && (
                   <View style={styles.infoContent}>
                     <View style={styles.posterSection}>
-                      <Typography size="lg" weight="semiBold" style={styles.sectionTitle}>
+                      <Typography
+                        size="lg"
+                        weight="semiBold"
+                        style={styles.sectionTitle}
+                        lineBreakStrategyIOS="hangul-word"
+                        android_hyphenationFrequency="none"
+                      >
                         {`<${data?.title ?? ''}>`}
                       </Typography>
                       {hasImage && (
@@ -338,8 +353,12 @@ export default function ActivityDetailPage() {
             saved={saved}
             onSavePress={handleSavePress}
             label="바로 지원하기"
+            disabled={!data?.sourceUrl}
             onPress={() => {
-              if (data?.sourceUrl) Linking.openURL(data.sourceUrl).catch(() => {});
+              if (!data?.sourceUrl) return;
+              Linking.openURL(data.sourceUrl).catch(() => {
+                Alert.alert('링크를 열 수 없어요', '잠시 후 다시 시도해주세요.');
+              });
             }}
           />
         </View>
@@ -435,7 +454,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   DDay: {
-    color: colors.text.primary,
+    color: colors.text.secondary,
     fontSize: 12,
   },
   statText: {
@@ -517,8 +536,8 @@ const styles = StyleSheet.create({
   },
   zoomedClose: {
     position: 'absolute',
-    top: 52,
-    left: 20,
+    top: 68,
+    left: 15,
     zIndex: 10,
   },
   zoomedImage: {

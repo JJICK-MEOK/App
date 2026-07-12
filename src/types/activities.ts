@@ -25,6 +25,11 @@ export type PersonalizationActivity = {
   matchRate?: number;
 };
 
+export type PersonalizationBestType = {
+  bestType: string;
+  userTags: string[];
+};
+
 export type ActivityFavoriteResponse = {
   id: number;
   userId: number;
@@ -43,7 +48,7 @@ export type HomeActivity = {
   activityType: string;
   category: string;
   hashtags: string[];
-  isAd: boolean;
+  isAd?: boolean;
   price: number;
   viewCount: number;
   likeCount: number;
@@ -60,10 +65,38 @@ export type HomeUser = {
   profileImageUrl: string;
 };
 
+export type HomeSection = {
+  activities: HomeActivity[];
+};
+
+export type CurationThemeCard = {
+  title: string;
+  thumbnailUrl: string;
+  hashtags: string[];
+};
+
+export type CurationDetailActivityCard = {
+  id: number;
+  title: string;
+  thumbnailUrl: string;
+  activityType: string;
+  deadline: number;
+  hashtags: string[];
+  liked: boolean;
+};
+
+export type CurationDetailPageData = {
+  title: string;
+  subtitle: string;
+  hashtags: string[];
+  activities: CurationDetailActivityCard[];
+};
+
 export type HomeData = {
   user: HomeUser;
-  recommendedActivities: HomeActivity[];
-  closingSoonActivities: HomeActivity[];
+  featured: { activities: CurationThemeCard[] };
+  popular: HomeSection;
+  expandedRecommendation: HomeSection;
 };
 
 export type ActivityImage = {

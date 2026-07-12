@@ -1,13 +1,6 @@
 import { api } from '@/src/lib/api';
 import type { ActivityFavoriteResponse } from '@/src/types/activities';
 
-export async function getFavorites(
-  sort: 'saved' | 'deadline' = 'saved',
-): Promise<ActivityFavoriteResponse[]> {
-  const { data } = await api.get('/activity-favorites', { params: { sort } });
-  return data.data;
-}
-
 export async function addFavorite(activityId: number): Promise<ActivityFavoriteResponse> {
   const { data } = await api.post('/activity-favorites', { activityId });
   return data.data;

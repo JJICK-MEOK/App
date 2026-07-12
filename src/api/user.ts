@@ -31,6 +31,24 @@ export const getTags = async (type?: TagType): Promise<TagItem[]> => {
   return [...result].sort((a, b) => a.id - b.id);
 };
 
+export interface UserProfileMeTag {
+  id: number;
+  name: string;
+  type: TagType;
+  groupType: TagGroupType | null;
+}
+
+export interface UserProfileMe {
+  nickname: string;
+  profileImageUrl: string;
+  tags: UserProfileMeTag[];
+}
+
+export const getMyProfile = async (): Promise<UserProfileMe> => {
+  const { data } = await api.get('/users/me/profile');
+  return data.data;
+};
+
 interface OnboardingRequest {
   topicTagIds: number[];
   regionIds: number[];

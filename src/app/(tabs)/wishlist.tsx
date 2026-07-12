@@ -20,10 +20,10 @@ import CategoryBar from '@/src/components/Bar/CategoryBar';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
 import { Typography } from '@/src/components/Typography/Typography';
 import CardSaved from '@/src/components/Card/CardSaved';
-import { getFavorites } from '@/src/api/favorites';
-import { getDetailData } from '@/src/api/pages';
-import type { DetailActivity } from '@/src/types/activities';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { getFavoritesPageData } from '@/src/api/pages';
+import type { HomeActivity } from '@/src/types/activities';
+import { assignUniqueVariants, pickDiverseTags } from '@/src/utils/tagVariant';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const ACTIVITY_TYPE_LABEL: Record<string, string> = {
   PROGRAM: '프로그램',
@@ -41,6 +41,7 @@ const PULL_THRESHOLD = 60;
 
 export default function ProgramListScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const [selectedTab, setSelectedTab] = useState('전체');
   const [selectedSort, setSelectedSort] = useState('담은순');
   const [showSortSheet, setShowSortSheet] = useState(false);
@@ -70,26 +71,26 @@ export default function ProgramListScreen() {
   ).current;
 
   const {
-    data: activities = [],
+    data: rawActivities = [],
     refetch,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ['favorites', SORT_MAP[selectedSort]],
+    queryKey: ['favorites-page'],
     queryFn: async () => {
-      const favorites = await getFavorites(SORT_MAP[selectedSort]);
-      const results = await Promise.allSettled(favorites.map((f) => getDetailData(f.activityId)));
-      const details = results
-        .filter((r): r is PromiseFulfilledResult<DetailActivity> => r.status === 'fulfilled')
-        .map((r) => r.value);
-      if (favorites.length > 0 && details.length === 0) {
-        throw new Error('찜한 활동 상세 정보를 불러오지 못했어요.');
-      }
-      return details;
+      const { activities } = await getFavoritesPageData();
+      return activities;
     },
     staleTime: 0,
   });
   refetchRef.current = refetch;
+
+  const activities = useMemo(() => {
+    if (SORT_MAP[selectedSort] === 'deadline') {
+      return [...rawActivities].sort((a, b) => a.deadline - b.deadline);
+    }
+    return rawActivities;
+  }, [rawActivities, selectedSort]);
 
   const { data: tagsData } = useQuery({
     queryKey: ['tags', 'ACTIVITY_CATEGORY'],
@@ -112,7 +113,7 @@ export default function ProgramListScreen() {
     }, [refetch]),
   );
 
-  const filteredActivities = activities.filter((activity: DetailActivity) => {
+  const filteredActivities = activities.filter((activity: HomeActivity) => {
     if (removedIds.has(activity.id)) return false;
     if (activity.deadline < 0) return false;
     if (selectedTab === '전체') return true;
@@ -196,16 +197,13 @@ export default function ProgramListScreen() {
                           key={activity.id}
                           style={styles.gridItem}
                           activeOpacity={0.9}
-                          onPress={() => router.push(`/detail/${activity.id}`)}
+                          onPress={() => navigateOnce(`/detail/${activity.id}`)}
                         >
                           <CardSaved
                             activityId={activity.id}
                             dday={activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`}
                             title={activity.title}
-                            tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
-                              label: tag,
-                              variant: getTagVariant(tag, i),
-                            }))}
+                            tags={assignUniqueVariants(pickDiverseTags(activity.hashtags))}
                             thumbnailUrl={activity.thumbnailUrl}
                             onRemove={handleRemove}
                           />
@@ -218,6 +216,7 @@ export default function ProgramListScreen() {
               </View>
             </>
           )}
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </View>
 
@@ -248,6 +247,11 @@ export default function ProgramListScreen() {
 }
 
 const styles = StyleSheet.create({
+  bottomSpacer: {
+    height: 25,
+    alignSelf: 'stretch',
+    backgroundColor: '#FFF',
+  },
   filterRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',

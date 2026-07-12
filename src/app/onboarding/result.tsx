@@ -3,7 +3,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
 import { getCustomPageData } from '@/src/api/pages';
-import { getTagVariant } from '@/src/utils/tagVariant';
+import { assignUniqueVariants } from '@/src/utils/tagVariant';
 import { ContentCard } from '@/src/components/Card/ContentCard';
 import { Loading } from '@/src/components/Loading/Loading';
 import ProgressBar from '@/src/components/Bar/ProgressBar';
@@ -59,10 +59,7 @@ export default function OnboardingResult() {
                 title={activity.title}
                 subtitle={activity.address}
                 imageUri={activity.thumbnailUrl || undefined}
-                tags={activity.hashtags.slice(0, 2).map((tag, i) => ({
-                  label: tag,
-                  variant: getTagVariant(tag, i),
-                }))}
+                tags={assignUniqueVariants(activity.hashtags.slice(0, 2))}
                 onPress={() => router.push(`/detail/${activity.id}`)}
                 renderFallback={() => <DefaultActivitySvg width="100%" height="100%" />}
               />
