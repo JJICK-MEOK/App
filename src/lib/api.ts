@@ -29,7 +29,11 @@ api.interceptors.request.use((config) => {
 });
 
 export async function reissueTokens(refreshToken: string): Promise<string> {
-  const { data } = await axios.post(`${API_BASE_URL}/auth/reissue`, { refreshToken });
+  const { data } = await axios.post(
+    `${API_BASE_URL}/auth/reissue`,
+    { refreshToken },
+    { timeout: 5000 },
+  );
   const { accessToken, refreshToken: newRefreshToken } = data.data;
   await Promise.all([
     tokenStorage.saveAccessToken(accessToken),
