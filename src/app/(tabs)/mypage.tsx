@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
 import ArrowLeftBar from '@/src/components/Bar/ArrowLeftBar';
+import { Loading } from '@/src/components/Loading/Loading';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge, { type TagVariant } from '@/src/components/Chip/ChipBadge';
 import ButtonInsight from '@/src/components/Button/ButtonInsight';
@@ -42,10 +44,27 @@ export default function MyPageScreen() {
   const logout = useAuthStore((s) => s.logout);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const { data: profile } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['users', 'me', 'profile'],
     queryFn: getMyProfile,
   });
+
+  const errorMessage = (() => {
+    if (!isError) return null;
+    const err = error as AxiosError;
+    if (err.response?.status === 401) return '로그인 시간이 만료되었어요. 다시 로그인해주세요.';
+    if (err.message?.includes('Network Error') || err.code === 'ERR_NETWORK')
+      return '네트워크 연결을 확인해주세요.';
+    return '내 정보를 불러오지 못했어요. 다시 시도해주세요.';
+  })();
+
+  const isRetriable = isError && (error as AxiosError)?.response?.status !== 401;
 
   const nickname = profile?.nickname ?? '';
   const tags = sortByVariantPriority(
@@ -72,47 +91,72 @@ export default function MyPageScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.profileCard}>
-          <View style={styles.avatarWrapper}>
-            {profile?.profileImageUrl ? (
-              <Image source={{ uri: profile.profileImageUrl }} style={styles.avatarImage} />
-            ) : (
-              <ProfileSvg width={75} height={75} />
+        {isLoading ? (
+          <View style={styles.messageBox}>
+            <Loading />
+          </View>
+        ) : errorMessage ? (
+          <View style={styles.messageBox}>
+            <Typography size="sm" weight="medium" color="secondary" style={styles.errorText}>
+              {errorMessage}
+            </Typography>
+            {isRetriable && (
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={() => refetch()}
+                activeOpacity={0.7}
+              >
+                <Typography size="sm" weight="medium" color="secondary">
+                  다시 시도
+                </Typography>
+              </TouchableOpacity>
             )}
           </View>
-          <View style={styles.profileInfo}>
-            <View style={styles.nicknameRow}>
-              <Typography size="xxl" weight="semiBold">
-                {nickname}님
-              </Typography>
-              <TouchableOpacity onPress={() => {}} hitSlop={8}>
-                <EditSvg width={20} height={20} />
-              </TouchableOpacity>
+        ) : (
+          <>
+            <View style={styles.profileCard}>
+              <View style={styles.avatarWrapper}>
+                {profile?.profileImageUrl ? (
+                  <Image source={{ uri: profile.profileImageUrl }} style={styles.avatarImage} />
+                ) : (
+                  <ProfileSvg width={75} height={75} />
+                )}
+              </View>
+              <View style={styles.profileInfo}>
+                <View style={styles.nicknameRow}>
+                  <Typography size="xxl" weight="semiBold">
+                    {nickname}님
+                  </Typography>
+                  <TouchableOpacity onPress={() => {}} hitSlop={8}>
+                    <EditSvg width={20} height={20} />
+                  </TouchableOpacity>
+                </View>
+                <Typography size="lg" weight="medium" color="tertiary">
+                  환영합니다!
+                </Typography>
+              </View>
             </View>
-            <Typography size="lg" weight="medium" color="tertiary">
-              환영합니다!
-            </Typography>
-          </View>
-        </View>
 
-        <View style={styles.tagCard}>
-          <Typography size="md" weight="semiBold" style={styles.tagCardTitle}>
-            나의 취향 태그
-          </Typography>
-          <View style={styles.tagRow}>
-            {tags.map((tag) => (
-              <ChipBadge key={tag.id} label={`#${tag.label}`} variant={tag.variant} />
-            ))}
-          </View>
-          <ButtonInsight onPress={() => {}} />
-        </View>
+            <View style={styles.tagCard}>
+              <Typography size="md" weight="semiBold" style={styles.tagCardTitle}>
+                나의 취향 태그
+              </Typography>
+              <View style={styles.tagRow}>
+                {tags.map((tag) => (
+                  <ChipBadge key={tag.id} label={`#${tag.label}`} variant={tag.variant} />
+                ))}
+              </View>
+              <ButtonInsight onPress={() => {}} />
+            </View>
 
-        <View style={styles.menuCard}>
-          <MenuRow label="회원정보 관리" onPress={() => {}} />
-          <MenuRow label="공지사항" onPress={() => {}} />
-          <MenuRow label="약관 및 정책" onPress={() => navigateOnce('/terms/service')} />
-          <MenuRow label="로그아웃" onPress={() => setShowLogoutModal(true)} />
-        </View>
+            <View style={styles.menuCard}>
+              <MenuRow label="회원정보 관리" onPress={() => {}} />
+              <MenuRow label="공지사항" onPress={() => {}} />
+              <MenuRow label="약관 및 정책" onPress={() => navigateOnce('/terms/service')} />
+              <MenuRow label="로그아웃" onPress={() => setShowLogoutModal(true)} />
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <Modal
@@ -151,6 +195,21 @@ const styles = StyleSheet.create({
     paddingTop: 21,
     paddingBottom: 140,
     gap: 20,
+  },
+  messageBox: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 16,
+  },
+  errorText: {
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border.default,
   },
   profileCard: {
     flexDirection: 'row',
