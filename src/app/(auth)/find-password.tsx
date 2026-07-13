@@ -14,6 +14,7 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { typography } from '@/src/constants/typography';
 import { postPasswordResetSendCode, postPasswordResetVerifyCode } from '@/src/api/auth';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -37,6 +38,7 @@ type Step = 'email' | 'verify';
 
 export default function FindPasswordScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
 
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -122,7 +124,7 @@ export default function FindPasswordScreen() {
   const { mutate: verifyCode, isPending: isVerifying } = useMutation({
     mutationFn: () => postPasswordResetVerifyCode(email, code),
     onSuccess: (data) => {
-      router.push({ pathname: '/(auth)/reset-password', params: { resetToken: data.resetToken } });
+      navigateOnce({ pathname: '/(auth)/reset-password', params: { resetToken: data.resetToken } });
     },
     onError: (error: any) => {
       const errorCode = error?.response?.data?.code;

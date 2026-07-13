@@ -40,7 +40,9 @@ export interface UserProfileMeTag {
 
 export interface UserProfileMe {
   nickname: string;
+  // 생성 API로만 만든 계정(OAuth 미연동)은 항상 빈 문자열
   profileImageUrl: string;
+  // 온보딩 때 선택한 태그 기준, 백엔드에서 최대 5개까지만 반환 (MY_PROFILE_TAG_LIMIT)
   tags: UserProfileMeTag[];
 }
 

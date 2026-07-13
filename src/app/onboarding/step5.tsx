@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,6 +12,7 @@ import IconSuccess from '@/src/components/Icon/IconSuccess';
 import { postOnboarding } from '@/src/api/user';
 import { getCustomPageData } from '@/src/api/pages';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useAuthStore } from '@/src/store/authStore';
 
 export default function OnboardingStep5() {
   const router = useRouter();
@@ -29,15 +31,19 @@ export default function OnboardingStep5() {
   const nickname = customData?.nickname ?? storedNickname;
 
   const queryClient = useQueryClient();
+  const setRegistrationStatus = useAuthStore((s) => s.setRegistrationStatus);
+  const [completeError, setCompleteError] = useState('');
 
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
     onSuccess: () => {
+      setRegistrationStatus('ONBOARDING_COMPLETED');
       queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
       router.replace('/onboarding/result');
     },
     onError: (error: any) => {
       console.error('온보딩 완료 실패', error);
+      setCompleteError('온보딩 완료에 실패했어요. 다시 시도해주세요.');
     },
   });
 
@@ -57,6 +63,11 @@ export default function OnboardingStep5() {
       </View>
 
       <CTAContainer style={styles.cta}>
+        {completeError ? (
+          <Typography size="sm" color="error" style={styles.errorText}>
+            {completeError}
+          </Typography>
+        ) : null}
         <BottomCTA
           label="확인하기"
           onPress={() => completeOnboarding()}
@@ -78,6 +89,7 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   title: { textAlign: 'center' },
+  errorText: { textAlign: 'center' },
   cta: { paddingHorizontal: 20, paddingTop: 16 },
   progressContainer: { paddingHorizontal: 20, paddingTop: 9, paddingBottom: 7 },
 });

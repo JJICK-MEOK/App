@@ -28,6 +28,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export async function reissueTokens(refreshToken: string): Promise<string> {
+  const { data } = await axios.post(
+    `${API_BASE_URL}/auth/reissue`,
+    { refreshToken },
+    { timeout: 5000 },
+  );
+  const { accessToken, refreshToken: newRefreshToken } = data.data;
+  await Promise.all([
+    tokenStorage.saveAccessToken(accessToken),
+    tokenStorage.saveRefreshToken(newRefreshToken),
+  ]);
+  return accessToken;
+}
+
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
@@ -46,13 +60,7 @@ api.interceptors.response.use(
             const refreshToken = await tokenStorage.getRefreshToken();
             if (!refreshToken) throw new Error('No refresh token');
 
-            const { data } = await axios.post(`${API_BASE_URL}/auth/reissue`, { refreshToken });
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data;
-
-            await Promise.all([
-              tokenStorage.saveAccessToken(newAccessToken),
-              tokenStorage.saveRefreshToken(newRefreshToken),
-            ]);
+            const newAccessToken = await reissueTokens(refreshToken);
             useAuthStore.getState().setToken(newAccessToken);
             return newAccessToken;
           } finally {

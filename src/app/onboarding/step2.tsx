@@ -11,6 +11,7 @@ import { Typography } from '@/src/components/Typography/Typography';
 import { colors } from '@/src/constants/colors';
 import { getTags } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 import { useState } from 'react';
 import BookSvg from '@/assets/images/book.svg';
 import ArtSvg from '@/assets/images/art.svg';
@@ -46,6 +47,7 @@ function getCategoryImage(name: string): SvgComponent {
 
 export default function OnboardingStep2() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const { setTopicTagIds, topicTagIds } = useOnboardingStore();
   const [selectedTopicIds, setSelectedTopicIds] = useState<Set<number>>(new Set(topicTagIds));
 
@@ -62,8 +64,11 @@ export default function OnboardingStep2() {
   const toggleTopic = (id: number) => {
     setSelectedTopicIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else if (next.size < 5) {
+        next.add(id);
+      }
       return next;
     });
   };
@@ -81,7 +86,7 @@ export default function OnboardingStep2() {
             {'관심있는 주제를\n모두 선택해주세요!'}
           </Typography>
           <Typography size="md" style={styles.subtitle}>
-            내게 꼭 맞는 활동을 추천해드릴게요.
+            최대 5개까지 선택할 수 있어요.
           </Typography>
         </View>
 
@@ -118,7 +123,7 @@ export default function OnboardingStep2() {
           label="다음"
           onPress={() => {
             setTopicTagIds(Array.from(selectedTopicIds));
-            router.push('/onboarding/step3');
+            navigateOnce('/onboarding/step3');
           }}
           variant="dark"
           disabled={selectedTopicIds.size === 0}

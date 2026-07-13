@@ -10,7 +10,7 @@ const NAVER_REDIRECT_URI = 'jjikmeok://oauth/naver';
 
 export const useNaverLogin = () => {
   const router = useRouter();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
 
   const login = async () => {
     const result = await WebBrowser.openAuthSessionAsync(NAVER_AUTH_URL, NAVER_REDIRECT_URI);
@@ -27,6 +27,7 @@ export const useNaverLogin = () => {
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');

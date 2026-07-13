@@ -16,6 +16,8 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { postCreateProfile } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useAuthStore } from '@/src/store/authStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 type Gender = '남성' | '여성' | '선택 안함';
 
@@ -38,8 +40,10 @@ const STATUS_MAP = {
 
 export default function ProfileSetupScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const canGoBack = router.canGoBack();
   const saveNickname = useOnboardingStore((s) => s.setNickname);
+  const setRegistrationStatus = useAuthStore((s) => s.setRegistrationStatus);
 
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | null>(null);
@@ -114,7 +118,8 @@ export default function ProfileSetupScreen() {
         marketingAgreed: marketingAgree,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setRegistrationStatus(data.registrationStatus);
       saveNickname(nickname);
       router.replace('/(auth)/signup-complete');
     },
@@ -209,11 +214,11 @@ export default function ProfileSetupScreen() {
                 <Checkbox checked={serviceAgree} readOnly />
               </TouchableOpacity>
               <Text style={styles.agreeItemText}>
-                <Text onPress={() => router.push('/terms/service')} style={styles.agreeUnderline}>
+                <Text onPress={() => navigateOnce('/terms/service')} style={styles.agreeUnderline}>
                   서비스 이용약관
                 </Text>
                 <Text> 및 </Text>
-                <Text onPress={() => router.push('/terms/privacy')} style={styles.agreeUnderline}>
+                <Text onPress={() => navigateOnce('/terms/privacy')} style={styles.agreeUnderline}>
                   개인정보 취급 방침
                 </Text>
                 <Text> 동의</Text>
@@ -225,7 +230,10 @@ export default function ProfileSetupScreen() {
                 <Checkbox checked={marketingAgree} readOnly />
               </TouchableOpacity>
               <Text style={styles.agreeItemText}>
-                <Text onPress={() => router.push('/terms/marketing')} style={styles.agreeUnderline}>
+                <Text
+                  onPress={() => navigateOnce('/terms/marketing')}
+                  style={styles.agreeUnderline}
+                >
                   마케팅 정보 수신 동의
                 </Text>
                 <Text> (선택)</Text>

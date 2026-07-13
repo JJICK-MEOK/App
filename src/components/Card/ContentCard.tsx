@@ -39,7 +39,14 @@ export const ContentCard = ({
 
       <View style={styles.info}>
         <View style={styles.titleArea}>
-          <Typography size="lg" weight="semiBold" color="primary">
+          <Typography
+            size="lg"
+            weight="semiBold"
+            color="primary"
+            numberOfLines={2}
+            ellipsizeMode="tail"
+            lineBreakStrategyIOS="hangul-word"
+          >
             {title}
           </Typography>
           <Typography size="sm" weight="medium" color="secondary">
