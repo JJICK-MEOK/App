@@ -224,6 +224,7 @@ export default function HomeScreen() {
                   <View key={activity.id} style={styles.curationItem}>
                     <Curation
                       activity={activity}
+                      curationKey={curationKey}
                       onPress={() =>
                         curationKey &&
                         navigateOnce(`/detail/curation-detail?curationKey=${curationKey}`)
