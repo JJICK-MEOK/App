@@ -15,10 +15,7 @@ export const useKakaoLogin = () => {
 
   const login = async () => {
     const redirectUri = getOAuthRedirectUri('kakao');
-    const authUrl =
-      Platform.OS === 'web'
-        ? `${KAKAO_AUTH_URL}?redirectUri=${encodeURIComponent(redirectUri)}`
-        : KAKAO_AUTH_URL;
+    const authUrl = Platform.OS === 'web' ? `${KAKAO_AUTH_URL}?platform=web` : KAKAO_AUTH_URL;
     const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
     if (result.type !== 'success') return;
 

@@ -15,10 +15,7 @@ export const useGoogleLogin = () => {
 
   const login = async () => {
     const redirectUri = getOAuthRedirectUri('google');
-    const authUrl =
-      Platform.OS === 'web'
-        ? `${GOOGLE_AUTH_URL}?redirectUri=${encodeURIComponent(redirectUri)}`
-        : GOOGLE_AUTH_URL;
+    const authUrl = Platform.OS === 'web' ? `${GOOGLE_AUTH_URL}?platform=web` : GOOGLE_AUTH_URL;
     const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
     if (result.type !== 'success') return;
 

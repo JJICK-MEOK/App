@@ -15,10 +15,7 @@ export const useNaverLogin = () => {
 
   const login = async () => {
     const redirectUri = getOAuthRedirectUri('naver');
-    const authUrl =
-      Platform.OS === 'web'
-        ? `${NAVER_AUTH_URL}?redirectUri=${encodeURIComponent(redirectUri)}`
-        : NAVER_AUTH_URL;
+    const authUrl = Platform.OS === 'web' ? `${NAVER_AUTH_URL}?platform=web` : NAVER_AUTH_URL;
     const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
     if (result.type !== 'success') return;
 
