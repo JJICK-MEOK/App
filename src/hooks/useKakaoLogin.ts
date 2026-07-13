@@ -10,7 +10,7 @@ const KAKAO_REDIRECT_URI = 'jjikmeok://oauth/kakao';
 
 export const useKakaoLogin = () => {
   const router = useRouter();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
 
   const login = async () => {
     const result = await WebBrowser.openAuthSessionAsync(KAKAO_AUTH_URL, KAKAO_REDIRECT_URI);
@@ -27,6 +27,7 @@ export const useKakaoLogin = () => {
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');

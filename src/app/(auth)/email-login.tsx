@@ -30,7 +30,7 @@ const isValidEmail = (value: string): boolean => {
 export default function EmailLoginScreen() {
   const router = useRouter();
   const navigateOnce = useNavigateOnce();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
@@ -59,6 +59,7 @@ export default function EmailLoginScreen() {
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');

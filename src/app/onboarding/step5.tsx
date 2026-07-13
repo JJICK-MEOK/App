@@ -11,6 +11,7 @@ import IconSuccess from '@/src/components/Icon/IconSuccess';
 import { postOnboarding } from '@/src/api/user';
 import { getCustomPageData } from '@/src/api/pages';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useAuthStore } from '@/src/store/authStore';
 
 export default function OnboardingStep5() {
   const router = useRouter();
@@ -29,10 +30,13 @@ export default function OnboardingStep5() {
   const nickname = customData?.nickname ?? storedNickname;
 
   const queryClient = useQueryClient();
+  const setRegistrationStatus = useAuthStore((s) => s.setRegistrationStatus);
 
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
     onSuccess: () => {
+      // postOnboarding 응답엔 registrationStatus가 없지만, 성공은 곧 온보딩 완료를 의미한다.
+      setRegistrationStatus('ONBOARDING_COMPLETED');
       queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
       router.replace('/onboarding/result');
     },

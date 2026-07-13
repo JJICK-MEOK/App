@@ -27,7 +27,7 @@ export default function PasswordScreen() {
   const router = useRouter();
   const navigateOnce = useNavigateOnce();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -50,12 +50,16 @@ export default function PasswordScreen() {
   const { mutate: signup, isPending } = useMutation({
     mutationFn: async () => {
       await postSignup(email ?? '', password);
-      const { accessToken, refreshToken } = await postLogin(email ?? '', password);
+      const { accessToken, refreshToken, registrationStatus } = await postLogin(
+        email ?? '',
+        password,
+      );
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
     },
     onSuccess: () => {
       setCompleted(true);

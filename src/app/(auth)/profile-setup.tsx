@@ -16,6 +16,7 @@ import { colors } from '@/src/constants/colors';
 import { spacing } from '@/src/constants/spacing';
 import { postCreateProfile } from '@/src/api/user';
 import { useOnboardingStore } from '@/src/store/onboardingStore';
+import { useAuthStore } from '@/src/store/authStore';
 import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 type Gender = '남성' | '여성' | '선택 안함';
@@ -42,6 +43,7 @@ export default function ProfileSetupScreen() {
   const navigateOnce = useNavigateOnce();
   const canGoBack = router.canGoBack();
   const saveNickname = useOnboardingStore((s) => s.setNickname);
+  const setRegistrationStatus = useAuthStore((s) => s.setRegistrationStatus);
 
   const [nickname, setNickname] = useState('');
   const [gender, setGender] = useState<Gender | null>(null);
@@ -116,7 +118,8 @@ export default function ProfileSetupScreen() {
         marketingAgreed: marketingAgree,
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setRegistrationStatus(data.registrationStatus);
       saveNickname(nickname);
       router.replace('/(auth)/signup-complete');
     },

@@ -28,6 +28,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// reissue 응답의 refresh token은 매번 새 값으로 교체되는 rotation 방식이라 반드시 덮어써야 한다.
+export async function reissueTokens(refreshToken: string): Promise<string> {
+  const { data } = await axios.post(`${API_BASE_URL}/auth/reissue`, { refreshToken });
+  const { accessToken, refreshToken: newRefreshToken } = data.data;
+  await Promise.all([
+    tokenStorage.saveAccessToken(accessToken),
+    tokenStorage.saveRefreshToken(newRefreshToken),
+  ]);
+  return accessToken;
+}
+
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
@@ -46,13 +57,7 @@ api.interceptors.response.use(
             const refreshToken = await tokenStorage.getRefreshToken();
             if (!refreshToken) throw new Error('No refresh token');
 
-            const { data } = await axios.post(`${API_BASE_URL}/auth/reissue`, { refreshToken });
-            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data;
-
-            await Promise.all([
-              tokenStorage.saveAccessToken(newAccessToken),
-              tokenStorage.saveRefreshToken(newRefreshToken),
-            ]);
+            const newAccessToken = await reissueTokens(refreshToken);
             useAuthStore.getState().setToken(newAccessToken);
             return newAccessToken;
           } finally {
