@@ -25,11 +25,6 @@ export type PersonalizationActivity = {
   personalizationScore: number | null;
 };
 
-export type PersonalizationBestType = {
-  bestType: string;
-  userTags: string[];
-};
-
 export type ActivityFavoriteResponse = {
   id: number;
   userId: number;
