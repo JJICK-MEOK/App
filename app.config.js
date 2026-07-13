@@ -6,6 +6,12 @@ export default {
     scheme: 'jjick-meok',
     orientation: 'portrait',
     userInterfaceStyle: 'light',
+    updates: {
+      url: 'https://u.expo.dev/1a606ff9-09bc-4dd1-9121-8a8d7ca1572f',
+    },
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
     ios: {
       supportsTablet: true,
       bundleIdentifier: 'com.jjickmeok.app', //App Store 등록용 앱 고유 ID - 추후 변경
