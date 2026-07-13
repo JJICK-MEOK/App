@@ -20,6 +20,10 @@ export default {
       package: 'com.jjickmeok.app', //Play Store 등록용 앱 고유 ID - 추후 변경
       predictiveBackGestureEnabled: false,
     },
+    web: {
+      bundler: 'metro',
+      output: 'single',
+    },
     plugins: ['expo-router', 'expo-web-browser', 'expo-secure-store'],
     extra: {
       eas: {
