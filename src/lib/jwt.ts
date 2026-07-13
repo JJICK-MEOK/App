@@ -15,7 +15,6 @@ function getJwtExpiry(token: string): number | null {
   }
 }
 
-// exp는 초 단위 유닉스 타임스탬프. 디코딩 실패 시 안전하게 만료로 취급한다.
 export function isJwtExpired(token: string, skewSeconds = 30): boolean {
   const exp = getJwtExpiry(token);
   if (exp === null) return true;
