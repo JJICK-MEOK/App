@@ -36,7 +36,7 @@ function toActivity(item: PersonalizationActivity): Activity {
     }),
     imageUrl: item.thumbnailUrl,
     favoriteId: item.activityFavoriteId ?? undefined,
-    matchRate: item.matchRate,
+    personalizationScore: item.personalizationScore,
   };
 }
 
