@@ -37,7 +37,6 @@ export default function OnboardingStep5() {
   const { mutate, isPending } = useMutation({
     mutationFn: postOnboarding,
     onSuccess: () => {
-      // postOnboarding 응답엔 registrationStatus가 없지만, 성공은 곧 온보딩 완료를 의미한다.
       setRegistrationStatus('ONBOARDING_COMPLETED');
       queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
       router.replace('/onboarding/result');

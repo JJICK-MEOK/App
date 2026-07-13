@@ -49,7 +49,6 @@
     "@storybook/react": "^8.6.18",
     "@storybook/react-vite": "^8.6.18",
     "@types/react": "~19.1.10",
-    "@types/react-native": "^0.72.8",
     "eslint": "^8.47.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
