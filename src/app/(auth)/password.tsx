@@ -14,6 +14,7 @@ import { spacing } from '@/src/constants/spacing';
 import { postLogin, postSignup } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const CONDITIONS = [
   { key: 'length', label: '8자 이상', check: (pw: string) => pw.length >= 8 },
@@ -24,8 +25,9 @@ const CONDITIONS = [
 
 export default function PasswordScreen() {
   const router = useRouter();
+  const navigateOnce = useNavigateOnce();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [passwordTouched, setPasswordTouched] = useState(false);
@@ -48,16 +50,20 @@ export default function PasswordScreen() {
   const { mutate: signup, isPending } = useMutation({
     mutationFn: async () => {
       await postSignup(email ?? '', password);
-      const { accessToken, refreshToken } = await postLogin(email ?? '', password);
+      const { accessToken, refreshToken, registrationStatus } = await postLogin(
+        email ?? '',
+        password,
+      );
       await Promise.all([
         tokenStorage.saveAccessToken(accessToken),
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
     },
     onSuccess: () => {
       setCompleted(true);
-      router.push('/(auth)/profile-setup');
+      navigateOnce('/(auth)/profile-setup');
     },
     onError: (error: any) => {
       console.error('[password] signup error:', error?.response?.data ?? error);
@@ -123,7 +129,7 @@ export default function PasswordScreen() {
         ) : null}
         <BottomCTA
           label="회원가입 완료"
-          onPress={() => (completed ? router.push('/(auth)/profile-setup') : signup())}
+          onPress={() => (completed ? navigateOnce('/(auth)/profile-setup') : signup())}
           variant="dark"
           disabled={!isComplete || isPending}
         />

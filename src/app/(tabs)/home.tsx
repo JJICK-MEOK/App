@@ -253,7 +253,6 @@ export default function HomeScreen() {
               ))}
             </View>
           </View>
-
           <View style={styles.contentSheet}>
             {(isError || displayCards.length > 0) && (
               <View style={styles.popularSection}>

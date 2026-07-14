@@ -1,5 +1,5 @@
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import AddSvg from '@/assets/images/add.svg';
+import VectorSvg from '@/assets/images/Vector.svg';
 import IconSuccess from '@/src/components/Icon/IconSuccess';
 import { colors } from '@/src/constants/colors';
 
@@ -19,7 +19,7 @@ export default function AddButton({ selected = false, onPress }: Props) {
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.default}>
-      <AddSvg width={29} height={29} />
+      <VectorSvg width={22} height={16} color={colors.text.primary} />
     </TouchableOpacity>
   );
 }

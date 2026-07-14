@@ -1,5 +1,5 @@
 import { Text } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments, usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -17,6 +17,7 @@ import { theme } from '@/src/constants/theme';
 export default function AppLayout() {
   const router = useRouter();
   const segments = useSegments();
+  const pathname = usePathname();
   const initAuth = useAuthStore((s) => s.initAuth);
   const accessToken = useAuthStore((s) => s.accessToken);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -35,10 +36,11 @@ export default function AppLayout() {
   useEffect(() => {
     if (!isInitialized || (!fontsLoaded && !fontsError)) return;
     const inAuthGroup = segments[0] === '(auth)';
-    if (!accessToken && !inAuthGroup) {
+    const isSplash = pathname === '/';
+    if (!accessToken && !inAuthGroup && !isSplash) {
       router.replace('/(auth)/login');
     }
-  }, [isInitialized, accessToken, segments, fontsLoaded, fontsError]);
+  }, [isInitialized, accessToken, segments, pathname, fontsLoaded, fontsError]);
 
   if ((!fontsLoaded && !fontsError) || !isInitialized) return null;
 

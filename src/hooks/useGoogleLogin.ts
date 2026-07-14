@@ -10,7 +10,7 @@ const GOOGLE_REDIRECT_URI = 'jjikmeok://oauth/google';
 
 export const useGoogleLogin = () => {
   const router = useRouter();
-  const { setToken } = useAuthStore();
+  const { setToken, setRegistrationStatus } = useAuthStore();
 
   const login = async () => {
     const result = await WebBrowser.openAuthSessionAsync(GOOGLE_AUTH_URL, GOOGLE_REDIRECT_URI);
@@ -27,6 +27,7 @@ export const useGoogleLogin = () => {
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');

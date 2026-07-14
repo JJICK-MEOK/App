@@ -41,6 +41,15 @@ export const postHandoff = async (handoffToken: string): Promise<LoginResponse> 
   return data.data;
 };
 
+interface LogoutResponse {
+  loggedOut: boolean;
+}
+
+export const postLogout = async (): Promise<LogoutResponse> => {
+  const { data } = await api.post('/auth/logout');
+  return data.data;
+};
+
 interface SignupResponse {
   userId: number;
   email: string;

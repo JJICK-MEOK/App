@@ -13,6 +13,7 @@ import { spacing } from '@/src/constants/spacing';
 import { postLogin } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
+import { useNavigateOnce } from '@/src/hooks/useNavigateOnce';
 
 const isValidEmail = (value: string): boolean => {
   if (/[ㄱ-ㆎ가-힣]/.test(value)) return false;
@@ -28,7 +29,8 @@ const isValidEmail = (value: string): boolean => {
 
 export default function EmailLoginScreen() {
   const router = useRouter();
-  const { setToken } = useAuthStore();
+  const navigateOnce = useNavigateOnce();
+  const { setToken, setRegistrationStatus } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
@@ -57,6 +59,7 @@ export default function EmailLoginScreen() {
         tokenStorage.saveRefreshToken(refreshToken),
       ]);
       setToken(accessToken);
+      setRegistrationStatus(registrationStatus);
 
       if (registrationStatus === 'NOT_STARTED') {
         router.replace('/(auth)/profile-setup');
@@ -113,7 +116,7 @@ export default function EmailLoginScreen() {
               errorMessage={passwordError}
             />
             <TouchableOpacity
-              onPress={() => router.push('/(auth)/find-password')}
+              onPress={() => navigateOnce('/(auth)/find-password')}
               activeOpacity={0.7}
               style={styles.forgotPassword}
             >
@@ -128,7 +131,7 @@ export default function EmailLoginScreen() {
           <Typography size="sm" color="secondary">
             아직 계정이 없나요?
           </Typography>
-          <TouchableOpacity onPress={() => router.push('/(auth)/signup')} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => navigateOnce('/(auth)/signup')} activeOpacity={0.7}>
             <Typography size="md" weight="semiBold" style={styles.signupLink}>
               이메일로 회원가입
             </Typography>

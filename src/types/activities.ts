@@ -12,6 +12,7 @@ export type Activity = {
   tags: Tag[];
   imageUrl?: string;
   favoriteId?: number;
+  personalizationScore?: number | null;
 };
 
 export type PersonalizationActivity = {
@@ -21,11 +22,7 @@ export type PersonalizationActivity = {
   recruitEndAt: string;
   activityFavoriteId: number | null;
   tags?: string[];
-};
-
-export type PersonalizationBestType = {
-  bestType: string;
-  userTags: string[];
+  personalizationScore: number | null;
 };
 
 export type ActivityFavoriteResponse = {
