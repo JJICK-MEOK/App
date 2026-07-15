@@ -181,14 +181,20 @@ export default function CategoryScreen() {
             </View>
           ) : (
             <View style={styles.cards}>
-              {activities.map((activity) => (
-                <TouchableOpacity
-                  key={activity.id}
-                  activeOpacity={0.7}
-                  onPress={() => navigateOnce(`/detail/${activity.id}`)}
-                >
-                  <ActivityCard {...toCardProps(activity)} />
-                </TouchableOpacity>
+              {activities.map((activity, i) => (
+                <View key={activity.id}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                  >
+                    <ActivityCard {...toCardProps(activity)} />
+                  </TouchableOpacity>
+                  {i < activities.length - 1 && (
+                    <View style={styles.cardDividerRow}>
+                      <View style={styles.cardDivider} />
+                    </View>
+                  )}
+                </View>
               ))}
             </View>
           )}
@@ -255,7 +261,15 @@ const styles = StyleSheet.create({
   },
   cards: {
     paddingTop: 15,
-    gap: 24,
+  },
+  cardDividerRow: {
+    paddingTop: 15,
+    paddingBottom: 15,
+  },
+  cardDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#EAEAEA',
   },
   loadingArea: {
     alignItems: 'center',

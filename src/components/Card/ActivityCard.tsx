@@ -44,6 +44,7 @@ export default function ActivityCard({
             size="lg"
             weight="semiBold"
             style={styles.titleText}
+            numberOfLines={2}
             lineBreakStrategyIOS="hangul-word"
             android_hyphenationFrequency="none"
           >
@@ -100,6 +101,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     gap: 15,
+    marginTop: 20,
   },
   titleGroup: {
     position: 'relative',
