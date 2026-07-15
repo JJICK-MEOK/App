@@ -146,7 +146,7 @@ export default function MyPageScreen() {
                   <ChipBadge key={tag.id} label={`${tag.label}`} variant={tag.variant} />
                 ))}
               </View>
-              <ButtonInsight onPress={() => {}} />
+              <ButtonInsight onPress={() => navigateOnce('/insight')} />
             </View>
 
             <View style={styles.menuCard}>
