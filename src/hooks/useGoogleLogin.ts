@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
@@ -14,7 +15,8 @@ export const useGoogleLogin = () => {
 
   const login = async () => {
     const redirectUri = getOAuthRedirectUri('google');
-    const result = await WebBrowser.openAuthSessionAsync(GOOGLE_AUTH_URL, redirectUri);
+    const authUrl = Platform.OS === 'web' ? `${GOOGLE_AUTH_URL}?platform=web` : GOOGLE_AUTH_URL;
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
     if (result.type !== 'success') return;
 
     const { queryParams } = Linking.parse(result.url);
