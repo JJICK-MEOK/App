@@ -15,7 +15,12 @@ export const Dropdown = ({ label, onPress }: Props) => {
         {label}
       </Typography>
       <View style={styles.iconClip}>
-        <ArrowDownSvg width={24} height={24} fill={colors.text.primary} />
+        <ArrowDownSvg
+          width={24}
+          height={24}
+          fill={colors.text.primary}
+          style={styles.icon}
+        />
       </View>
     </Pressable>
   );
@@ -42,5 +47,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  icon: {
+    flexShrink: 0,
   },
 });
