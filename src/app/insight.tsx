@@ -115,7 +115,7 @@ export default function InsightScreen() {
                         weight="medium"
                         style={isSelected ? styles.chipTextSelected : styles.chipText}
                       >
-                        #{tag.name}
+                        {tag.name}
                       </Typography>
                     </View>
                   );

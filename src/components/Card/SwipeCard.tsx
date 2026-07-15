@@ -161,14 +161,17 @@ export default function SwipeCard({
           </View>
           <View style={styles.bottomRow}>
             <View style={[styles.tags, { gap: 5 }]}>
-              {activity.tags.map((tag) => (
-                <ChipBadge
-                  key={`${tag.type}-${tag.label}`}
-                  label={`#${tag.label}`}
-                  variant={tag.type}
-                  dark
-                />
-              ))}
+              {activity.tags.map((tag) => {
+                const label = tag.label.startsWith('#') ? tag.label.slice(1) : tag.label;
+                return (
+                  <ChipBadge
+                    key={`${tag.type}-${tag.label}`}
+                    label={`#${label}`}
+                    variant={tag.type}
+                    dark
+                  />
+                );
+              })}
             </View>
             <IconHeart saved={saved} size={29} onPressIn={handleHeartPressIn} />
           </View>
