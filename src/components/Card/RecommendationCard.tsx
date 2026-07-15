@@ -38,7 +38,7 @@ export default function RecommendationCard({
                 onError={() => setImageError(true)}
               />
             ) : (
-              <DefaultActivity width={143} height={140} />
+              <DefaultActivity width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
             )}
           </View>
           <View style={styles.infoRow}>

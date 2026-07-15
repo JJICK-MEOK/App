@@ -1,8 +1,7 @@
-import { useCallback } from 'react';
-import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Text, View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { Typography } from '@/src/components/Typography/Typography';
 import { ScreenLayout } from '@/src/components/Layout/ScreenLayout';
@@ -39,22 +38,23 @@ export default function CurationDetailScreen() {
   const { curationKey } = useLocalSearchParams<{ curationKey?: string }>();
 
   const {
-    data: curationData,
+    data,
     isLoading,
     isError,
     error,
     refetch,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['curation-detail', curationKey],
-    queryFn: () => getCurationDetailPageData(curationKey!),
+    queryFn: ({ pageParam }) => getCurationDetailPageData(curationKey!, pageParam),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.hasNext ? lastPage.nextPage : undefined),
     enabled: !!curationKey,
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      if (curationKey) refetch();
-    }, [curationKey, refetch]),
-  );
+  const curationData = data?.pages[0];
 
   const hasError = isError || !curationKey;
 
@@ -75,7 +75,9 @@ export default function CurationDetailScreen() {
   };
 
   const tags = assignUniqueVariants((curationData?.hashtags ?? []).slice(0, 2));
-  const curationActivities = (curationData?.activities ?? []).map((activity) => ({
+  const allActivities = data?.pages.flatMap((p) => p.activities) ?? [];
+  const uniqueActivities = Array.from(new Map(allActivities.map((a) => [a.id, a])).values());
+  const curationActivities = uniqueActivities.map((activity) => ({
     id: activity.id,
     category: ACTIVITY_TYPE_LABEL[activity.activityType] ?? activity.activityType,
     dday: activity.deadline <= 0 ? 'D-day' : `D-${activity.deadline}`,
@@ -101,7 +103,20 @@ export default function CurationDetailScreen() {
           )}
         </View>
       ) : (
-        <>
+        <ScrollView
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+          scrollEventThrottle={16}
+          onScroll={(e) => {
+            const { layoutMeasurement, contentOffset, contentSize } = e.nativeEvent;
+            const isNearBottom =
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - 200;
+            if (isNearBottom && hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+        >
           <View style={styles.titleBlock}>
             <Text style={styles.title}>{curationData?.title ?? ''}</Text>
             <Text style={styles.subtitle}>{curationData?.subtitle ?? ''}</Text>
@@ -147,8 +162,13 @@ export default function CurationDetailScreen() {
                 })}
               </View>
             )}
+            {isFetchingNextPage && (
+              <View style={styles.nextPageLoadingBox}>
+                <Loading />
+              </View>
+            )}
           </View>
-        </>
+        </ScrollView>
       )}
       <View style={styles.navWrapper}>
         <BottomNavigation
@@ -162,6 +182,9 @@ export default function CurationDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+  },
   titleBlock: {
     gap: 7,
     paddingHorizontal: 20,
@@ -192,6 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 60,
+  },
+  nextPageLoadingBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 20,
   },
   errorBox: {
     alignItems: 'center',

@@ -125,15 +125,21 @@ export default function SearchScreen() {
               <Typography size="lg" weight="medium" style={styles.resultLabel}>
                 {`'${searchText}'에 대한 검색 결과`}
               </Typography>
-              <View style={styles.cards}>
-                {visibleResults.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    activeOpacity={0.7}
-                    onPress={() => navigateOnce(`/detail/${item.id}`)}
-                  >
-                    <ActivityCard {...toCardProps(item)} />
-                  </TouchableOpacity>
+              <View>
+                {visibleResults.map((item, i) => (
+                  <View key={item.id}>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => navigateOnce(`/detail/${item.id}`)}
+                    >
+                      <ActivityCard {...toCardProps(item)} />
+                    </TouchableOpacity>
+                    {i < visibleResults.length - 1 && (
+                      <View style={styles.cardDividerRow}>
+                        <View style={styles.cardDivider} />
+                      </View>
+                    )}
+                  </View>
                 ))}
               </View>
             </ScrollView>
@@ -164,8 +170,14 @@ const styles = StyleSheet.create({
   resultLabel: {
     color: colors.text.tertiary,
   },
-  cards: {
-    gap: 24,
+  cardDividerRow: {
+    paddingTop: 15,
+    paddingBottom: 15,
+  },
+  cardDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#EAEAEA',
   },
   emptyState: {
     paddingTop: 23,

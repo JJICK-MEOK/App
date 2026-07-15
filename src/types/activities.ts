@@ -85,6 +85,10 @@ export type CurationDetailPageData = {
   subtitle: string;
   hashtags: string[];
   activities: CurationDetailActivityCard[];
+  page: number;
+  limit: number;
+  hasNext: boolean;
+  nextPage: number | null;
 };
 
 export type HomeData = {

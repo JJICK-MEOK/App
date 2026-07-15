@@ -10,6 +10,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
+import { useQueryClient } from '@tanstack/react-query';
 import SwipeCard, { CARD_WIDTH, CARD_HEIGHT } from './SwipeCard';
 import type { Activity } from './SwipeCard';
 import { addFavorite, deleteFavorite } from '@/src/api/favorites';
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export default function CardStack({ activities, onPressCard, onSwipe, onEndReached }: Props) {
+  const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const savedIdsRef = useRef<Set<string>>(new Set());
@@ -57,6 +59,9 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
 
     const apiCall = isSaved ? deleteFavorite(Number(id)) : addFavorite(Number(id));
     apiCall
+      .then(() => {
+        queryClient.invalidateQueries({ queryKey: ['favorites-page'] });
+      })
       .catch(() => {
         const rollback = new Set(savedIdsRef.current);
         if (isSaved) rollback.add(id);
@@ -67,7 +72,7 @@ export default function CardStack({ activities, onPressCard, onSwipe, onEndReach
       .finally(() => {
         inFlightIds.current.delete(id);
       });
-  }, []);
+  }, [queryClient]);
 
   const current = activities[currentIndex];
   const prev = activities[currentIndex - 1];

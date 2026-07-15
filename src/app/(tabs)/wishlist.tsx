@@ -81,7 +81,6 @@ export default function ProgramListScreen() {
       const { activities } = await getFavoritesPageData();
       return activities;
     },
-    staleTime: 0,
   });
   refetchRef.current = refetch;
 
@@ -109,8 +108,7 @@ export default function ProgramListScreen() {
       setSelectedTab('전체');
       setSelectedSort('담은순');
       setRemovedIds(new Set());
-      refetch();
-    }, [refetch]),
+    }, []),
   );
 
   const filteredActivities = activities.filter((activity: HomeActivity) => {

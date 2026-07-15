@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -13,8 +13,8 @@ import {
 import * as Haptics from 'expo-haptics';
 import { Loading } from '@/src/components/Loading/Loading';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import EyeOn from '@/assets/images/EyeOn.svg';
 import HeartDisabled from '@/assets/images/HeartDisabled.svg';
@@ -71,6 +71,7 @@ function formatPrice(price: number) {
 
 export default function ActivityDetailPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { id } = useLocalSearchParams<{ id: string }>();
   const activityId = Number(id);
 
@@ -132,12 +133,6 @@ export default function ActivityDetailPage() {
 
   const hasImage = !!data?.thumbnailUrl && !imageError;
 
-  useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch]),
-  );
-
   const handleSavePress = () => {
     if (!data || isSaving) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -145,7 +140,10 @@ export default function ActivityDetailPage() {
     setSaved(nextSaved);
     setIsSaving(true);
     const request = nextSaved ? addFavorite(activityId) : deleteFavorite(activityId);
-    request.catch(() => setSaved(!nextSaved)).finally(() => setIsSaving(false));
+    request
+      .then(() => queryClient.invalidateQueries({ queryKey: ['favorites-page'] }))
+      .catch(() => setSaved(!nextSaved))
+      .finally(() => setIsSaving(false));
   };
 
   const infoRows = data

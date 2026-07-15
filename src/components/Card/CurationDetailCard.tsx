@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useQueryClient } from '@tanstack/react-query';
 import { Typography } from '@/src/components/Typography/Typography';
 import ChipBadge from '@/src/components/Chip/ChipBadge';
 import HeartSaved from '@/assets/images/HeartSaved.svg';
@@ -28,6 +29,7 @@ export default function CurationDetailCard({
   thumbnailUrl,
   onRemove,
 }: Props) {
+  const queryClient = useQueryClient();
   const [saved, setSaved] = useState(initialSaved);
   const [isSaving, setIsSaving] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -51,6 +53,7 @@ export default function CurationDetailCard({
     request
       .then(() => {
         if (!nextSaved) onRemove?.(activityId);
+        queryClient.invalidateQueries({ queryKey: ['favorites-page'] });
       })
       .catch(() => setSaved(!nextSaved))
       .finally(() => setIsSaving(false));
@@ -71,7 +74,7 @@ export default function CurationDetailCard({
               onError={() => setImageError(true)}
             />
           ) : (
-            <DefaultActivity width={imgWidth} height={150} />
+            <DefaultActivity width={imgWidth} height={150} preserveAspectRatio="xMidYMid slice" />
           )}
         </View>
         <TouchableOpacity
@@ -117,6 +120,8 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: '#e8e8e8',
     borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: colors.border.default,
     overflow: 'hidden',
     paddingHorizontal: 8,
     paddingVertical: 7,
