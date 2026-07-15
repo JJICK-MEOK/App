@@ -85,6 +85,8 @@ const styles = StyleSheet.create({
     aspectRatio: 151 / 148,
     alignSelf: 'stretch',
     borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: colors.border.default,
     backgroundColor: 'rgba(195, 195, 195, 0.2)',
   },
   infoRow: {
