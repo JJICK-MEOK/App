@@ -372,7 +372,7 @@ export default function ActivityDetailPage() {
             <Image
               source={{ uri: data.thumbnailUrl }}
               style={styles.zoomedImage}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           ) : (
             <View style={styles.zoomedImage} />
@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
   },
   zoomedImage: {
     width: '100%',
-    aspectRatio: 1,
+    height: '100%',
     backgroundColor: '#D9D9D9',
   },
 });
