@@ -70,7 +70,7 @@ export default function CardSaved({
               onError={() => setImageError(true)}
             />
           ) : (
-            <DefaultActivity width={imgWidth} height={150} />
+            <DefaultActivity width={imgWidth} height={150} preserveAspectRatio="xMidYMid slice" />
           )}
         </View>
         <TouchableOpacity
@@ -120,6 +120,8 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: '#e8e8e8',
     borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: colors.border.default,
     overflow: 'hidden',
     paddingHorizontal: 8,
     paddingVertical: 7,

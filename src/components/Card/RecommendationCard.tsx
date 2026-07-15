@@ -38,7 +38,7 @@ export default function RecommendationCard({
                 onError={() => setImageError(true)}
               />
             ) : (
-              <DefaultActivity width={143} height={140} />
+              <DefaultActivity width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
             )}
           </View>
           <View style={styles.infoRow}>
@@ -48,6 +48,7 @@ export default function RecommendationCard({
         </View>
         <Typography
           style={styles.title}
+          numberOfLines={2}
           lineBreakStrategyIOS="hangul-word"
           android_hyphenationFrequency="none"
         >
@@ -84,6 +85,8 @@ const styles = StyleSheet.create({
     aspectRatio: 151 / 148,
     alignSelf: 'stretch',
     borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: colors.border.default,
     backgroundColor: 'rgba(195, 195, 195, 0.2)',
   },
   infoRow: {

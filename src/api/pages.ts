@@ -15,8 +15,12 @@ export async function getHomeData(limit = 10): Promise<HomeData> {
 
 export async function getCurationDetailPageData(
   curationKey: string,
+  page = 0,
+  limit = 10,
 ): Promise<CurationDetailPageData> {
-  const { data } = await api.get(`/pages/home/curations/${curationKey}`);
+  const { data } = await api.get(`/pages/home/curations/${curationKey}`, {
+    params: { page, limit },
+  });
   return data.data;
 }
 

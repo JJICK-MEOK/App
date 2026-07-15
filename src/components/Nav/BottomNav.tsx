@@ -35,7 +35,6 @@ const LEFT_TABS: TabConfig[] = [
     label: '카테고리',
     Selected: CategorySelected,
     Unselected: CategoryUnselected,
-    width: 35,
   },
 ];
 
