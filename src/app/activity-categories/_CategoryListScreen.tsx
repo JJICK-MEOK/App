@@ -193,14 +193,20 @@ export default function CategoryListScreen({ type, title }: Props) {
               )}
             </View>
           ) : (
-            activities.map((activity) => (
-              <TouchableOpacity
-                key={activity.id}
-                activeOpacity={0.7}
-                onPress={() => navigateOnce(`/detail/${activity.id}`)}
-              >
-                <ActivityCard {...toCardProps(activity)} />
-              </TouchableOpacity>
+            activities.map((activity, i) => (
+              <View key={activity.id}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                >
+                  <ActivityCard {...toCardProps(activity)} />
+                </TouchableOpacity>
+                {i < activities.length - 1 && (
+                  <View style={styles.cardDividerRow}>
+                    <View style={styles.cardDivider} />
+                  </View>
+                )}
+              </View>
             ))
           )}
         </ScrollView>
@@ -251,7 +257,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 40,
-    gap: 30,
+  },
+  cardDividerRow: {
+    paddingTop: 15,
+    paddingBottom: 15,
+  },
+  cardDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#EAEAEA',
   },
   pullArea: {
     overflow: 'hidden',

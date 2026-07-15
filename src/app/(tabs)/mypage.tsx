@@ -143,7 +143,7 @@ export default function MyPageScreen() {
               </Typography>
               <View style={styles.tagRow}>
                 {tags.map((tag) => (
-                  <ChipBadge key={tag.id} label={`#${tag.label}`} variant={tag.variant} />
+                  <ChipBadge key={tag.id} label={`${tag.label}`} variant={tag.variant} />
                 ))}
               </View>
               <ButtonInsight onPress={() => {}} />

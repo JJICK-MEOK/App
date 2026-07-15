@@ -34,7 +34,7 @@ const CURATION_ITEM_WIDTH = SCREEN_WIDTH * (211 / 375);
 
 const RANKING_PAGE_SIZE = 3;
 const RANKING_CARD_HEIGHT = 72;
-const RANKING_CARD_GAP = 13;
+const RANKING_CARD_GAP = 27; // 카드-구분선-카드: 13 + 1(선) + 13
 const RANKING_PAGE_PADDING_TOP = 0;
 const RANKING_PAGE_PADDING_BOTTOM = 22;
 const RANKING_PAGE_HEIGHT =
@@ -280,24 +280,29 @@ export default function HomeScreen() {
                       {chunk(displayCards, RANKING_PAGE_SIZE).map((page, pageIndex) => (
                         <View key={pageIndex} style={[styles.rankingPage, { width: SCREEN_WIDTH }]}>
                           {page.map((activity, i) => (
-                            <TouchableOpacity
-                              key={activity.id}
-                              activeOpacity={0.7}
-                              style={{ alignSelf: 'stretch' }}
-                              onPress={() => navigateOnce(`/detail/${activity.id}`)}
-                            >
-                              <RankingCard
-                                rank={pageIndex * RANKING_PAGE_SIZE + i + 1}
-                                category={
-                                  ACTIVITY_TYPE_LABEL[activity.activityType] ??
-                                  activity.activityType
-                                }
-                                title={activity.title}
-                                showAD={activity.isAd}
-                                deadline={activity.deadline}
-                                thumbnailUrl={activity.thumbnailUrl}
-                              />
-                            </TouchableOpacity>
+                            <View key={activity.id} style={{ alignSelf: 'stretch' }}>
+                              <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => navigateOnce(`/detail/${activity.id}`)}
+                              >
+                                <RankingCard
+                                  rank={pageIndex * RANKING_PAGE_SIZE + i + 1}
+                                  category={
+                                    ACTIVITY_TYPE_LABEL[activity.activityType] ??
+                                    activity.activityType
+                                  }
+                                  title={activity.title}
+                                  showAD={activity.isAd}
+                                  deadline={activity.deadline}
+                                  thumbnailUrl={activity.thumbnailUrl}
+                                />
+                              </TouchableOpacity>
+                              {i < page.length - 1 && (
+                                <View style={styles.cardDividerRow}>
+                                  <View style={styles.cardDivider} />
+                                </View>
+                              )}
+                            </View>
                           ))}
                         </View>
                       ))}
@@ -406,7 +411,7 @@ const styles = StyleSheet.create({
   },
   iconSection: {
     backgroundColor: '#FFF',
-    height: 107,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
@@ -440,7 +445,7 @@ const styles = StyleSheet.create({
   },
   recommendSection: {
     gap: 17,
-    marginTop: 70,
+    marginTop: 50,
     alignSelf: 'stretch',
   },
   recommendHeader: {
@@ -532,6 +537,16 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'flex-start',
-    gap: RANKING_CARD_GAP,
+  },
+  cardDividerRow: {
+    height: RANKING_CARD_GAP,
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#EAEAEA',
   },
 });

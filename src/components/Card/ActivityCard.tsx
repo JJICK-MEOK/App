@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     gap: 15,
+    marginTop: 20,
   },
   titleGroup: {
     position: 'relative',
