@@ -137,7 +137,12 @@ export default function SwipeCard({
             onError={() => setImageError(true)}
           />
         ) : (
-          <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
+          <DefaultActivitySvg
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid slice"
+            style={StyleSheet.absoluteFill}
+          />
         )}
         <View style={styles.matchBadge}>
           <MatchBadge percentage={activity.personalizationScore} />
