@@ -51,6 +51,7 @@ export default function ProfileSetupScreen() {
   const [status, setStatus] = useState('');
   const [serviceAgree, setServiceAgree] = useState(false);
   const [marketingAgree, setMarketingAgree] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const allAgree = serviceAgree && marketingAgree;
 
@@ -119,12 +120,15 @@ export default function ProfileSetupScreen() {
       });
     },
     onSuccess: (data) => {
+      setFormError('');
       setRegistrationStatus(data.registrationStatus);
       saveNickname(nickname);
       router.replace('/(auth)/signup-complete');
     },
     onError: (error: any) => {
       console.error('프로필 생성 실패', error);
+      const message = error?.response?.data?.message;
+      setFormError(message || '프로필 생성에 실패했어요. 다시 시도해주세요.');
     },
   });
 
@@ -148,7 +152,10 @@ export default function ProfileSetupScreen() {
           <TextField
             placeholder="닉네임을 입력해주세요"
             value={nickname}
-            onChangeText={setNickname}
+            onChangeText={(text) => {
+              setNickname(text);
+              setFormError('');
+            }}
             helperText="2자 이상 20자 이하로 입력해 주세요"
             errorMessage={nicknameError}
             maxLength={20}
@@ -244,6 +251,11 @@ export default function ProfileSetupScreen() {
       </ScrollView>
 
       <CTAContainer style={styles.cta}>
+        {formError ? (
+          <Typography size="sm" color="error" style={styles.errorText}>
+            {formError}
+          </Typography>
+        ) : null}
         <BottomCTA
           label="다음"
           onPress={() => createProfile()}
@@ -320,5 +332,9 @@ const styles = StyleSheet.create({
   cta: {
     paddingHorizontal: spacing.xl,
     paddingTop: 16,
+    gap: spacing.sm,
+  },
+  errorText: {
+    textAlign: 'center',
   },
 });
