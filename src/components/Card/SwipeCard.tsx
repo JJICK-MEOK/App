@@ -94,6 +94,11 @@ export default function SwipeCard({
   onHeartPressIn,
 }: Props) {
   const bg = '#BEBEBE';
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [activity.imageUrl]);
 
   const handleHeartPressIn = () => {
     onSave?.();
@@ -124,11 +129,12 @@ export default function SwipeCard({
           backgroundColor: bg,
         }}
       >
-        {activity.imageUrl ? (
+        {activity.imageUrl && !imageError ? (
           <Image
             source={{ uri: activity.imageUrl }}
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
+            onError={() => setImageError(true)}
           />
         ) : (
           <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
