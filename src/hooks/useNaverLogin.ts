@@ -1,19 +1,22 @@
+import { Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
 import { postHandoff } from '@/src/api/auth';
 import { tokenStorage } from '@/src/lib/secureStore';
 import { useAuthStore } from '@/src/store/authStore';
+import { getOAuthRedirectUri } from '@/src/lib/oauthRedirect';
 
 const NAVER_AUTH_URL = `${process.env.EXPO_PUBLIC_API_URL}/oauth/naver/login`;
-const NAVER_REDIRECT_URI = 'jjikmeok://oauth/naver';
 
 export const useNaverLogin = () => {
   const router = useRouter();
   const { setToken, setRegistrationStatus } = useAuthStore();
 
   const login = async () => {
-    const result = await WebBrowser.openAuthSessionAsync(NAVER_AUTH_URL, NAVER_REDIRECT_URI);
+    const redirectUri = getOAuthRedirectUri('naver');
+    const authUrl = Platform.OS === 'web' ? `${NAVER_AUTH_URL}?platform=web` : NAVER_AUTH_URL;
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
     if (result.type !== 'success') return;
 
     const { queryParams } = Linking.parse(result.url);

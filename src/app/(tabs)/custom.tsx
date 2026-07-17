@@ -110,6 +110,12 @@ export default function CustomScreen() {
               </TouchableOpacity>
             )}
           </View>
+        ) : activities.length === 0 ? (
+          <View style={styles.messageBox}>
+            <Typography size="sm" weight="medium" color="secondary" style={styles.errorText}>
+              추천 데이터가 없어요
+            </Typography>
+          </View>
         ) : (
           <CardStack activities={activities} onPressCard={handlePressCard} />
         )}

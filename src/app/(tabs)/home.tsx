@@ -272,7 +272,8 @@ export default function HomeScreen() {
                       pagingEnabled
                       showsHorizontalScrollIndicator={false}
                       style={styles.rankingPageScroll}
-                      onMomentumScrollEnd={(e) => {
+                      scrollEventThrottle={16}
+                      onScroll={(e) => {
                         const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
                         setRankPageIndex(page);
                       }}

@@ -41,14 +41,17 @@ export default function Curation({ activity, curationKey, onPress }: Props) {
         {activity.title}
       </Text>
       <View style={styles.tags}>
-        {tags.map((tag) => (
-          <ChipBadge
-            key={`${tag.type}-${tag.label}`}
-            label={`#${tag.label}`}
-            variant={tag.type}
-            dark
-          />
-        ))}
+        {tags.map((tag) => {
+          const label = tag.label.startsWith('#') ? tag.label.slice(1) : tag.label;
+          return (
+            <ChipBadge
+              key={`${tag.type}-${tag.label}`}
+              label={`#${label}`}
+              variant={tag.type}
+              dark
+            />
+          );
+        })}
       </View>
     </Pressable>
   );

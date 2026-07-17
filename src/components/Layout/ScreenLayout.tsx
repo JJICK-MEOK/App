@@ -19,7 +19,7 @@ type Props = {
 export function ScreenLayout({ children, withKeyboard = false, style }: Props) {
   const insets = useSafeAreaInsets();
 
-  if (withKeyboard) {
+  if (withKeyboard && Platform.OS !== 'web') {
     return (
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView

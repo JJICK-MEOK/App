@@ -24,8 +24,6 @@ export const CARD_HEIGHT = Math.round(CARD_WIDTH * (444 / 335));
 
 const BORDER_GRADIENT_COLORS = ['#28FFD9', '#FF5EAD', '#8B5CF6', '#28FFD9'] as const;
 const BORDER_DURATION = 8000;
-// personalizationScore가 null일 때(취향/활동 벡터 부재) 표시할 임시 기본값
-const DEFAULT_MATCH_RATE = 67;
 
 type Props = {
   activity: Activity;
@@ -96,6 +94,11 @@ export default function SwipeCard({
   onHeartPressIn,
 }: Props) {
   const bg = '#BEBEBE';
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [activity.imageUrl]);
 
   const handleHeartPressIn = () => {
     onSave?.();
@@ -126,17 +129,23 @@ export default function SwipeCard({
           backgroundColor: bg,
         }}
       >
-        {activity.imageUrl ? (
+        {activity.imageUrl && !imageError ? (
           <Image
             source={{ uri: activity.imageUrl }}
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
+            onError={() => setImageError(true)}
           />
         ) : (
-          <DefaultActivitySvg width="100%" height="100%" style={StyleSheet.absoluteFill} />
+          <DefaultActivitySvg
+            width="100%"
+            height="100%"
+            preserveAspectRatio="xMidYMid slice"
+            style={StyleSheet.absoluteFill}
+          />
         )}
         <View style={styles.matchBadge}>
-          <MatchBadge percentage={activity.personalizationScore ?? DEFAULT_MATCH_RATE} />
+          <MatchBadge percentage={activity.personalizationScore} />
         </View>
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.98)', 'rgba(0,0,0,0.98)']}
@@ -161,14 +170,17 @@ export default function SwipeCard({
           </View>
           <View style={styles.bottomRow}>
             <View style={[styles.tags, { gap: 5 }]}>
-              {activity.tags.map((tag) => (
-                <ChipBadge
-                  key={`${tag.type}-${tag.label}`}
-                  label={`#${tag.label}`}
-                  variant={tag.type}
-                  dark
-                />
-              ))}
+              {activity.tags.map((tag) => {
+                const label = tag.label.startsWith('#') ? tag.label.slice(1) : tag.label;
+                return (
+                  <ChipBadge
+                    key={`${tag.type}-${tag.label}`}
+                    label={`#${label}`}
+                    variant={tag.type}
+                    dark
+                  />
+                );
+              })}
             </View>
             <IconHeart saved={saved} size={29} onPressIn={handleHeartPressIn} />
           </View>

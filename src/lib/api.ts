@@ -45,12 +45,23 @@ export async function reissueTokens(refreshToken: string): Promise<string> {
 let isRefreshing = false;
 let refreshPromise: Promise<string> | null = null;
 
+const AUTH_REFRESH_EXCLUDED_PATHS = [
+  '/auth/login',
+  '/auth/signup',
+  '/auth/reissue',
+  '/auth/logout',
+  '/auth/handoff',
+];
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isAuthExcluded = AUTH_REFRESH_EXCLUDED_PATHS.some((path) =>
+      originalRequest?.url?.includes(path),
+    );
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthExcluded) {
       originalRequest._retry = true;
 
       if (!isRefreshing) {

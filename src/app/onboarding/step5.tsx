@@ -39,6 +39,7 @@ export default function OnboardingStep5() {
     onSuccess: () => {
       setRegistrationStatus('ONBOARDING_COMPLETED');
       queryClient.invalidateQueries({ queryKey: ['pages', 'custom'] });
+      queryClient.invalidateQueries({ queryKey: ['users', 'me', 'profile'] });
       router.replace('/onboarding/result');
     },
     onError: (error: any) => {
